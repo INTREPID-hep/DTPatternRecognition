@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from objects.Primitive import *
+import os
+from objects.Muon import *
 
 class plotter:
     def __init__(self, MB):
@@ -59,42 +60,24 @@ class plotter:
                 self.plot_cell(xmin, ymin, width, height, edgecolor = 'k')
         return 
 
-    
-    def plot_pattern(self, prim, counter = 0):
-        if isinstance(prim, list):
-            patterns = []
-            title = "Primitives in Wh%s - sector: %s - station: %s"
-            wheel = int(prim[0].wheel)
-            sector = int(prim[0].sector)
-            station = int(prim[0].station)
-            self.axes.set_title(title%(wheel, sector, station))
-            for pri in prim: 
-                patterns.append(prim)
-                self.patterns.append(patterns)
-                self.plot_pattern(pri, counter)
-                counter+=1
-            return
-        counter = 1
-        x = prim.getX()
-        y = prim.getY()
-        # Plot the track extracted with the fit
-        x_range = np.linspace(-1000, 1000, 1000)
-        y_range = prim.produce_track(x_range)
-        pat_ax, = self.axes.plot(x, y, marker = self.markers[prim.MuonType], markersize = 5, markeredgecolor = self.linecolors[counter], markerfacecolor = self.linecolors[counter], linewidth = 0)
-        fit_ax, = self.axes.plot(x_range, y_range, color = self.linecolors[counter], linewidth = 2)
-        # Now color the cells 
-        hits = prim.hits
-        for layer,hit in enumerate(hits):
-            xmin = self.current_DT.get_Layer(layer).get_cell(hit).x
-            ymin = self.current_DT.get_Layer(layer).get_cell(hit).y
-            width = self.current_DT.cellWidth
-            height = self.current_DT.cellHeight
-            self.plot_cell(xmin, ymin, width, height, 2, 'k', self.fillcolors[counter][0], self.fillcolors[counter][1])
-        self.pattern_axes.append([pat_ax, fit_ax])
-        self.pattern_labels.append("Evt: %s (%s)"%(prim.id, prim.MuonType))
-        return 
-       
-    def save_canvas(self, name):
-        self.fig.savefig(name+".pdf")
-        self.fig.savefig(name+".png")
+    def plot_pattern(self, prims):
+        ''' Method to add X in activated cells'''
+        for prim in prims:
+            hits = prim.get_hits()
+            x = []
+            y = []
+            for hit in hits:
+                x.append(hit.get_center()[0])
+                y.append(hit.get_center()[1])
+            self.axes.plot(x, y, 'gx', markersize = 5)
+            # == Plot a line as well
+            x_range = np.linspace(0, 600) # arbitrary
+            self.axes.plot(x_range, prim.getY(x_range, 0.), '--g')
+        return
+
+    def save_canvas(self, name, path = "./results"):
+        if not os.path.exists(path):
+            os.system("mkdir -p %s"%("./plots/" + path))
+        self.fig.savefig("./plots/" + path + "/" + name+".pdf")
+        self.fig.savefig("./plots/" + path + "/" + name+".png")
         return

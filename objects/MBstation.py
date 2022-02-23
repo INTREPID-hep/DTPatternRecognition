@@ -2,7 +2,7 @@ from objects.Layer import *
 
 class MBstation(object):
     nLayers = 8        
-    nCells = {"MB1" : 49, "MB2": 59, "MB3": 73, "MB4": 96}
+    
     
     """ 
          ::    Depending on the wheel the sign changes 
@@ -38,77 +38,206 @@ class MBstation(object):
                             "MB4" : [+1, +1, +1, (0, 0), -1, -1, -1, -1,  0, (+1, -1), 0, +1]},         
 
                   }
-    def __init__(self, wheel, sector, MBtype, gap, SLShift, additional_cells, cellWidth, cellHeight): 
-        # // Create a place where to store Layers
+    def __init__(self, wheel, sector, MBtype, gap, SLShift, nDriftCells, additional_cells, cellWidth, cellHeight): 
+        ''' Constructor '''
         self.Layers = []
-        # // Unpack parsed arguments
-        # - Chamber related parameters
-        self.wheel = wheel
-        self.sector = sector
-        self.MBtype = MBtype
-        # - Layer related parameters
-        self.SLShift = SLShift
-        self.nDriftCells = self.nCells[MBtype]
-        self.gap   = gap
-        self.additional_cells = additional_cells
-        # - Cell related parameters
-        self.cellWidth = cellWidth
-        self.cellHeight = cellHeight
+    
+        # == Chamber related parameters
+        self.set_wheel(wheel) 
+        self.set_sector(sector)
+        self.set_MBtype(MBtype)
 
-        # // Build the station
+        # == set_(Layer related parameters
+        self.set_SLShift(SLShift) 
+        self.set_SL_shift_sign()
+        
+        self.set_nDriftCells(nDriftCells)
+        self.set_gap(gap)   
+        self.set_additional_cells(additional_cells) 
+
+        # == set_(Cell related parameters
+        self.set_cellWidth(cellWidth) 
+        self.set_cellHeight(cellHeight)
+
+        # == set_(Build the station
         self.build_station(additional_cells)
+
+        # == Initialize a muon container
+        self.muons = []
         return
 
+    def add_muon(self, muon):    
+        self.muons.append(muon)
+        return
+
+    def get_muons(self):
+        return self.muons
+
+    def set_additional_cells(self, additional_cells):
+        self.additional_cells = additional_cells
+        return
+    def get_nLayers(self):
+        ''' Return the number of Layers in this chamber '''
+        return self.nLayers
+
+    def get_layers(self):
+        ''' Method to return the object in which Layers are stored '''
+        return self.Layers
+    def get_layer(self, layer_id):
+        ''' Get a layer from its ID list of layers '''
+        layers = self.get_layers()
+        return layers[layer_id]
+
+    def add_layer(self, layer):
+        ''' Method to add a new layer '''
+        layers = self.get_layers()
+        layers.append(layer)
+        return
+
+    def set_nDriftCells(self, nDriftCells):
+        ''' Set the number of Drift Cells for this MB station '''
+        self.nDriftCells = nDriftCells
+        return         
+    def get_nDriftCells(self):
+        ''' Return the number of DT cells per layer '''
+        return self.nDriftCells
+    
+    def set_cellWidth(self, cellWidth):
+        ''' Set the width of a cell '''
+        self.cellWidth = cellWidth
+        return
+    def get_cellWidth(self):
+        ''' Get the width of a cell '''
+        return self.cellWidth
+
+    def set_cellHeight(self, cellHeight):
+        ''' Set the height of a cell '''
+        self.cellHeight = cellHeight
+        return
+    def get_cellHeight(self):
+        ''' Set the height of a cell'''
+        return self.cellHeight
+
+    def set_wheel(self, wheel):
+        ''' Set the wheel to which this station belongs '''
+        self.wheel = wheel
+        return
+    def get_wheel(self):
+        ''' Get the wheel to which this station belongs '''
+        return self.wheel
+
+    def set_sector(self, sector):
+        ''' Set the sector to which this station belongs '''
+        self.sector = sector
+        return 
+    def get_sector(self):
+        ''' Get the sector to which this station belongs '''
+        return self.sector
+
+    def set_MBtype(self, MBtype):
+        ''' Set the type of station '''
+        self.MBtype = MBtype
+        return 
+
+    def get_MBtype(self):
+        ''' Get the type of station '''
+        return self.MBtype
+
+    def get_shift_signs(self):
+        ''' Get the shift sign for SLs'''
+        return self.shift_signs
+
+    def set_SL_shift_sign(self):
+        ''' Get the correct sign in the x-shift between SLs'''
+        wheel = self.get_wheel()
+        # -- This -1 is to adapt to python list indexing
+        sector = self.get_sector()-1 
+        station = self.get_MBtype()
+
+        entryname = "Wh"
+        if wheel > 0: 
+            entryname +=">0"
+        elif wheel < 0:
+            entryname += "<0"
+        else:
+            entryname += "0"
+        
+        shift_signs = self.get_shift_signs()
+        sign  = shift_signs[entryname][station][sector]
+        self.shift_sign = sign
+        return 
+
+    def get_SL_shift_sign(self):
+        ''' Get the SL shift sign '''
+        return self.shift_sign
+
+    def set_SLShift(self, shift):
+        ''' Set the shift (in units of DriftCell heights) between SLs '''
+        self.SLShift = shift
+        return
+
+    def get_SLshift(self):
+        ''' Get the shift (in units of DriftCell heights) between SLs '''
+        return self.SLShift
+
+    def set_gap(self, gap):
+        ''' Set the gap space between SLs'''
+        self.gap = gap
+        return
+
+    def get_gap(self):
+        ''' Get the gap space between SLs'''
+        return self.gap
+
     def build_station(self, adc):
-        # // Build layers:
-        # - Generate 8 generic layers
-        
-        for layer in range(self.nLayers):
-            self.Layers.append(Layer(self.nDriftCells, self.additional_cells, self.cellWidth, self.cellHeight))
-        
-        # - Placed them at the correct position within 
-        #   the MB station
-        # :: reference for choosing the correct shift: IN2019_003
+        ''' Method to build up the station '''
+        # == First: Generate 8 generic layers
+        nLayers = self.get_nLayers()
+        for layer in range(nLayers):
+            # -- Create a Layer object
+            nDriftCells = self.get_nDriftCells()
+            cellWidth   = self.get_cellWidth()
+            cellHeight  = self.get_cellHeight()
 
-        if self.wheel>0: sign_wheel = "Wh>0" 
-        elif self.wheel<0: sign_wheel = "Wh<0" 
-        else: sign_wheel = "Wh0"
-            #   IMPORTANT: THOUGHT OF A UNIFIED WAY OF REFERING TO SECTOR NUMBERS 
-            #   ( lists in python start counting at 0, sectors start in 1)
-            # The -1 below is hardcoded for the moment
-        shift_sign = self.shift_signs[sign_wheel][self.MBtype][self.sector-1]
-        self.shift_sign = shift_sign
-        shift = shift_sign*self.SLShift
-        space_SL = self.gap/self.cellHeight # this will be then multiplied by the height of a cell
+            # -- Create a Layer object (defined in Layers.py)
+            new_layer = Layer(nDriftCells, adc, cellWidth, cellHeight, layer+1)
+            self.add_layer(new_layer)
+        
+        # == Second: Place them at the correct position within the chamber
+        shift_sign = self.get_SL_shift_sign()
+        SLshift    = self.get_SLshift()
+        shift      = shift_sign*SLshift
+        gap        = self.get_gap()
+        space_SL   = gap/cellHeight 
 
-        # Shifts are done in units of drift cell width and height
-        self.Layers[0].shift_layer(-adc             , 0)
-        self.Layers[1].shift_layer(-adc-0.5         , 1)
-        self.Layers[2].shift_layer(-adc             , 2)
-        self.Layers[3].shift_layer(-adc-0.5         , 3)
-        self.Layers[4].shift_layer(-adc+shift       , space_SL+4)
-        self.Layers[5].shift_layer(-adc-0.5+shift   , space_SL+5)
-        self.Layers[6].shift_layer(-adc+shift       , space_SL+6)
-        self.Layers[7].shift_layer(-adc-0.5+shift   , space_SL+7)
+        # -- Shifts are done in units of drift cell width and height
+        self.get_layer(0).shift_layer(-adc          , 0)
+        self.get_layer(1).shift_layer(-adc-0.5      , 1)
+        self.get_layer(2).shift_layer(-adc          , 2)
+        self.get_layer(3).shift_layer(-adc-0.5      , 3)
+        self.get_layer(4).shift_layer(-adc+shift    , space_SL+4)
+        self.get_layer(5).shift_layer(-adc-0.5+shift, space_SL+5)
+        self.get_layer(6).shift_layer(-adc+shift    , space_SL+6)
+        self.get_layer(7).shift_layer(-adc-0.5+shift, space_SL+7)
 
         self.set_center()
         return
 
     def set_center(self):
+        ''' Set the geometric center of a DT station'''
         # == Definition of the center of the chamber:
-        # The center is define by two coordinates:
-        #  - Y: which is placed at 11.75 cm from the lower part of the chamber
-        #  - X: which, taking both SLs into account, should be placed at 
-        #       the middle of both SLs.
+        # -------------------- IMPORTANT ------------------------
+        # One has to take into account that the middle is not given by 
+        # SL1, SL3, but rather it is define also taking into account SL2!!!!
+        # This is way this is not GAP/2.0, that would not be taking into 
+        # account SL2
+        # -------------------- IMPORTANT ------------------------
+        # The center in the Y axis varies 1.8 cm for MB3 and MB4
+        # because there is no RPC there
+
 
         centery = 11.75 - 1.8*(self.MBtype in ["MB3", "MB4"])
-        # IMPORTANT: One has to take into account
-                  # that the middle is not given by SL1, SL3,
-                  # but rather it is define also taking into account SL2!!!!
-                  # This is way this is not GAP/2.0, that would not be taking into account SL2
-        # IMPORTANT: The center in the Y axis varies 1.8 cm for MB3 and MB4
-        #            because there is no RPC there
-
+        
 
         len_layer = self.nDriftCells*self.cellWidth
 
@@ -116,11 +245,22 @@ class MBstation(object):
         
 
         self.center = (centerx, centery)
-        print(self.center)
         return
 
     def get_center(self):
         return self.center
-
-    def get_Layer(self, layer_id):
-        return self.Layers[layer_id]    
+  
+    def check_in(self, muon):
+        ''' Method to check if a generated muon falls inside a chamber '''
+        layers = self.get_layers()
+        for layer in layers:
+            cells = layer.get_cells()
+            for cell in cells:
+	            # -- Check if this muon passes through this cell
+                isMIn_global, semiCellLeft, semiCellRight = cell.isIn(muon)
+                if isMIn_global:
+                    muon.add_hit(cell) 
+                    if semiCellLeft and semiCellRight: muon.add_lat(0)
+                    if semiCellLeft:  muon.add_lat(-1.)
+                    if semiCellRight: muon.add_lat(1.)
+        return

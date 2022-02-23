@@ -11,9 +11,9 @@ nDTMB4 = 102
 wheel = -2
 sector = 11
 
-MB1   = MBstation(wheel = wheel, sector = sector, MBtype="MB1", gap = SLgap, SLShift = 0.5, additional_cells = 0,  cellHeight = globalDTheight, cellWidth = globalDTwidth)
-MB2   = MBstation(wheel = wheel, sector = sector, MBtype="MB2", gap = SLgap, SLShift = 1.0, additional_cells = 0,  cellHeight = globalDTheight, cellWidth = globalDTwidth)
-MB3   = MBstation(wheel = wheel, sector = sector, MBtype="MB3", gap = SLgap, SLShift = 0.0, additional_cells = 0,  cellHeight = globalDTheight, cellWidth = globalDTwidth)
-MB4   = MBstation(wheel = wheel, sector = sector, MBtype="MB4", gap = SLgap, SLShift = 2.0, additional_cells = 0,  cellHeight = globalDTheight, cellWidth = globalDTwidth)
+MB1   = MBstation(wheel = wheel, sector = sector, MBtype="MB1", gap = SLgap, SLShift = 0.5, nDriftCells = nDTMB1, additional_cells = 0,  cellHeight = globalDTheight, cellWidth = globalDTwidth)
+MB2   = MBstation(wheel = wheel, sector = sector, MBtype="MB2", gap = SLgap, SLShift = 1.0, nDriftCells = nDTMB2, additional_cells = 0,  cellHeight = globalDTheight, cellWidth = globalDTwidth)
+MB3   = MBstation(wheel = wheel, sector = sector, MBtype="MB3", gap = SLgap, SLShift = 0.0, nDriftCells = nDTMB3, additional_cells = 0,  cellHeight = globalDTheight, cellWidth = globalDTwidth)
+MB4   = MBstation(wheel = wheel, sector = sector, MBtype="MB4", gap = SLgap, SLShift = 2.0, nDriftCells = nDTMB4, additional_cells = 0,  cellHeight = globalDTheight, cellWidth = globalDTwidth)
 
-stations = {"MB1" : MB1, "MB2" : MB2, "MB3" : MB3, "MB4" : MB4}
+

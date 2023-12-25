@@ -1,17 +1,33 @@
 ''' Script to make concentrator studies '''
-import pandas as pd
 import os
 from optparse import OptionParser
-import numpy as np
-import glob
+import ROOT as r
 
 # Geometry stuff for plotting 
 from geometry.station import station 
 
-
 def addConcentratorOptions(pr):
   pr.add_option('--inpath', '-i', type="string", dest = "inpath", default = "./results/")
+  pr.add_option('--mode', '-m', type="string", dest = "mode", default = "ntuple")
   return
+
+def color_msg(msg, color = "none", indentLevel = 0):
+    """ Prints a message with ANSI coding so it can be printout with colors """
+    codes = {
+        "none" : "0m",
+        "green" : "1;32m",
+        "red" : "1;31m",
+        "blue" : "1;34m",
+        "yellow" : "1;35m"
+    }
+
+    indentStr = ""
+    if indentLevel == 0: indentStr = ">>"
+    if indentLevel == 1: indentStr = "+"
+    if indentLevel == 2: indentStr = "*"
+    
+    print("\033[%s%s %s \033[0m"%(codes[color], "  "*indentLevel + indentStr, msg))
+    return
 
 def CMSDT(wheel, sector):
     """
@@ -38,11 +54,45 @@ def CMSDT(wheel, sector):
 
     return stations
 
+def get_tree(inpath, maxfiles = 2):
+  """ Simple function to retrieve a chain with all the trees to be analyzed """
+  tree = None
+  if "root" in inpath:
+    color_msg(f"Opening input file {inpath}", "blue", 1)
+    f = r.TFile.Open(inpath)
+    tree = f.Get("dtNtupleProducer/DTTREE")
+    f.Close()
+  else:
+    color_msg(f"Opening input files from {inpath}", "blue", 1)
+    tree = r.TChain()
+    allFiles = os.listdir(inpath)
+    nFiles = min(maxfiles, len(allFiles))
+    for iF in range(nFiles):
+      if "root" not in allFiles[iF]: continue
+      color_msg(f"File {allFiles[iF]} added", indentLevel=2)
+      tree.Add( os.path.join(inpath, allFiles[iF]) + "/dtNtupleProducer/DTTREE"  )
+  
+  return tree
+
 if __name__ == "__main__":
 
   pr = OptionParser(usage="%prog [options]")
   addConcentratorOptions(pr)
   (options, args) = pr.parse_args()
   inpath = options.inpath 
+  mode = options.mode
+  maxevents = 100
+  color_msg("SHOWER PERFORMANCE ANALYZER", "green")
+  
+  if mode == "ntuple":
+    # 1. Open input files
+    tree = get_tree(inpath)
+    
+    # 2. Iterate over tree entries
+    for iev, ev in enumerate(tree):
+      if iev > maxevents: break
 
-  print(CMSDT(10, 1)) 
+            
+    
+  
+

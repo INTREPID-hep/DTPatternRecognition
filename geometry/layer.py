@@ -17,11 +17,11 @@ idy = 0      | 1 | 2 |   |...
 
 from geometry.DriftCell import DriftCell
 
-class Layer(object):    
-    ''' Class definition of a layer '''
+class layer(object):    
+    """ Class definition of a layer """
     
     def __init__(self, nDriftCells, idy, additional_cells = 0):
-        ''' Constructor '''
+        """ Constructor """
         self.nDriftCells = nDriftCells
         self.DriftCells = []
         self.additional_cells = additional_cells
@@ -40,7 +40,7 @@ class Layer(object):
         return (nominal, additional, total)
 
     def get_cell(self, cell_id):
-        ''' Method to get a cell from the list of cells '''
+        """ Method to get a cell from the list of cells """
         cell = self.get_cells()[cell_id-1]
         # This can be vastly improved with lambda functions as callbacks...
         return cell
@@ -49,12 +49,12 @@ class Layer(object):
         return self.DriftCells
 
     def add_cell(self, cell):
-        ''' Add a new cell to the layer '''
+        """ Add a new cell to the layer """
         self.DriftCells.append(cell)
         return
 
     def create_layer(self):
-        ''' Method to ensemble layer '''
+        """ Method to ensemble layer """
         ncells_nom, ncells_add, ncells_tot = self.get_ncells()
         
         for cell in range(ncells_nom):
@@ -66,7 +66,7 @@ class Layer(object):
         return
             
     def shift_layer(self, shiftx, shifty):
-        ''' Method to shift layers inside a DT chamber '''
+        """ Method to shift layers inside a DT chamber """
         cells = self.get_cells()
         for cell in cells:
             x, y = cell.get_position_at_min()

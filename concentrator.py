@@ -6,9 +6,7 @@ import numpy as np
 import glob
 
 # Geometry stuff for plotting 
-from geometry.station import station
-from geometry.layer import layer
-from geometry.cell import cell 
+from geometry.station import station 
 
 
 def addConcentratorOptions(pr):

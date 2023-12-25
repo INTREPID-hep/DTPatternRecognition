@@ -6,54 +6,45 @@ import numpy as np
 import glob
 
 # Geometry stuff for plotting 
-import geometry.CMSDT as CMSDT
-from geometry.MBstation import MBstation
-from geometry.Layer import Layer
-from geometry.DriftCell import DriftCell
+from geometry.station import station
+from geometry.layer import layer
+from geometry.cell import cell 
 
-from particle_objects.Primitive import Primitive
-from particle_objects.Pattern import Pattern
-
-from utils.DTTrainer import DTTrainer
-from utils.DTPlotter import DTPlotter
-from utils.rfile_gen import *
-
-pr = OptionParser(usage="%prog [options]")
 
 def addConcentratorOptions(pr):
   pr.add_option('--inpath', '-i', type="string", dest = "inpath", default = "./results/")
   return
 
+def CMSDT(wheel, sector):
+    """
+    This is the definition of the CMS DT geometry
+    """ 
 
+    globalDTheight = 1.3
+    SLgap     = 28.7 - globalDTheight*8 # originally, it was 29 - globalDTheight*8  ????
+    nDTMB1 = 80
+    nDTMB2 = 59
+    nDTMB3 = 73
+    nDTMB4 = 102
+    
+    # == These are used to generate muons
+    MB1     = station(wheel = wheel, sector = sector, nDTs = nDTMB1, MBtype="MB1", gap = SLgap, SLShift = 0.5, additional_cells = 0)
+    MB2     = station(wheel = wheel, sector = sector, nDTs = nDTMB2, MBtype="MB2", gap = SLgap, SLShift = 1.0, additional_cells = 0)
+    MB3     = station(wheel = wheel, sector = sector, nDTs = nDTMB3, MBtype="MB3", gap = SLgap, SLShift = 0.0, additional_cells = 0)
+    MB4     = station(wheel = wheel, sector = sector, nDTs = nDTMB4, MBtype="MB4", gap = SLgap, SLShift = 2.0, additional_cells = 0)
+    
+    stations = {1 : MB1, 
+                2 : MB2,
+                3 : MB3,
+                4 : MB4}
 
-def combine_dataframes(dfs, axis = 0):
-  '''
-  This function combines multiple dataframes:
-    axis=0 -- concatenate rows (i.e. add more events)
-    axis=1 -- concatenate columns (i.e. add more features)
-  '''
-  ignore_index = True if axis == 0 else False
-  super_df = pd.concat(dfs, axis, ignore_index = ignore_index) 
-  return super_df
-
-def csv2df(path):
-  df = pd.DataFrame()
-  for root, dirs, files in os.walk(inpath):
-    for file_ in files:
-      print(" >> Reading file: %s in %s "%(file_, root))
-      df = combine_dataframes( [pd.read_csv(os.path.join(root, file_)), df], axis = 0)
-
-  df = df.replace(r'\[|\]', '', regex = True)
-  return df
+    return stations
 
 if __name__ == "__main__":
+
+  pr = OptionParser(usage="%prog [options]")
   addConcentratorOptions(pr)
   (options, args) = pr.parse_args()
   inpath = options.inpath 
- 
-  # Load all the data into one dataframe 
-  df = csv2df(inpath)
- 
-  # Each row is an event
-  event = df.head(100) # Get the first event  
-  print(event)
+
+  print(CMSDT(10, 1)) 

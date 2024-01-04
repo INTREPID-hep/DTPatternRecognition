@@ -11,6 +11,7 @@ additional_cells : Number of cells added to check if generated
 ----------------------------------------------------------
 """
 from geometry.layer import *
+from utils.functions import color_msg
 
 class station(object):
   nLayers = 8    
@@ -36,34 +37,43 @@ class station(object):
   """
 
   shift_signs = {
-  "Wh<0": {
-    "MB1" : [+1, +1, +1,   +1, +1, +1, +1, +1, +1, +1,    +1, +1],
-    "MB2" : [-1, -1, -1,   -1, -1, -1, -1, -1, -1, -1,    -1, -1],
-    "MB3" : [ 0,  0,  0,    0,  0,  0,  0,  0,  0,  0,     0,  0],
-    "MB4" : [-1, -1, -1, (0, 0), +1, +1, +1, +1,  0, (-1, +1), 0, -1]
-  },
-  "Wh=0": {
-    "MB1" : [+1, -1, -1,   +1, +1, -1, -1, +1, +1, -1,    -1, +1],
-    "MB2" : [-1, +1, +1,   -1, -1, +1, +1, -1, -1, +1,    +1, -1],
-    "MB3" : [ 0,  0,  0,    0,  0,  0,  0,  0,  0,  0,     0,  0],
-    "MB4" : [-1, +1, +1, (0, 0), +1, -1, -1, +1,  0, (+1, -1), 0, -1]
-  },
-  "Wh>0": {
-    "MB1" : [-1, -1, -1,   -1, -1, -1, -1, -1, -1, -1,    -1, -1],
-    "MB2" : [+1, +1, +1,   +1, +1, +1, +1, +1, +1, +1,    +1, +1],
-    "MB3" : [ 0,  0,  0,    0,  0,  0,  0,  0,  0,  0,     0,  0],
-    "MB4" : [+1, +1, +1, (0, 0), -1, -1, -1, -1,  0, (+1, -1), 0, +1]
-  }     
+    "Wh<0": {
+      "MB1" : [+1, +1, +1,   +1, +1, +1, +1, +1, +1, +1,    +1, +1],
+      "MB2" : [-1, -1, -1,   -1, -1, -1, -1, -1, -1, -1,    -1, -1],
+      "MB3" : [ 0,  0,  0,    0,  0,  0,  0,  0,  0,  0,     0,  0],
+      "MB4" : [-1, -1, -1, (0, 0), +1, +1, +1, +1,  0, (-1, +1), 0, -1]
+    },
+    "Wh0": {
+      "MB1" : [+1, -1, -1,   +1, +1, -1, -1, +1, +1, -1,    -1, +1],
+      "MB2" : [-1, +1, +1,   -1, -1, +1, +1, -1, -1, +1,    +1, -1],
+      "MB3" : [ 0,  0,  0,    0,  0,  0,  0,  0,  0,  0,     0,  0],
+      "MB4" : [-1, +1, +1, (0, 0), +1, -1, -1, +1,  0, (+1, -1), 0, -1]
+    },
+    "Wh>0": {
+      "MB1" : [-1, -1, -1,   -1, -1, -1, -1, -1, -1, -1,    -1, -1],
+      "MB2" : [+1, +1, +1,   +1, +1, +1, +1, +1, +1, +1,    +1, +1],
+      "MB3" : [ 0,  0,  0,    0,  0,  0,  0,  0,  0,  0,     0,  0],
+      "MB4" : [+1, +1, +1, (0, 0), -1, -1, -1, -1,  0, (+1, -1), 0, +1]
+    }     
   }
+  
   def __init__(self, wheel, sector, nDTs, MBtype, gap, SLShift, additional_cells): 
     """ Constructor """
     self.Layers = []
 
     # == Chamber related parameters
     self.wheel = wheel 
-    self.sector = sector
+    
+    if sector == 13:
+      self.sector = 4
+    elif sector == 14:
+      self.sector = 10
+    else:
+      self.sector = sector
+       
     self.MBtype = MBtype
 
+    self.name = f"Wheel {self.wheel} Sector {self.sector} {self.MBtype} "
     # == set_(Layer related parameters
     self.SLShift =  SLShift 
     self.set_SL_shift_sign()
@@ -74,6 +84,7 @@ class station(object):
 
     # == set_(Build the station
     self.build_station(additional_cells)
+    self.clear()
   
   def set_SL_shift_sign(self):
     """ Get the correct sign in the x-shift between SLs"""
@@ -145,6 +156,41 @@ class station(object):
     self.center = (centerx, centery)
     return
   
+  # -------------- Objects in the station
+  def clear(self):
+    self.showers = []
+    self.segments = []
+    self.digis = []
+    self.genmuons = []
+  
+  def add_digi(self, digi):
+    if digi not in self.digis: self.digis.append(digi)
+  
+  def add_segment(self, segment):
+    if segment not in self.segments: self.segments.append(segment)
+  
+  def add_genmuon(self, genmuon):
+    if genmuon not in self.genmuons: self.genmuons.append(genmuon)
+  
+  def add_shower(self, shower):
+    if shower not in self.showers: self.showers.append(shower)
+    
+  def summarize(self):
+    """ Method to summarize the contents inside a given chamber """ 
+    nDigis = len(self.digis)
+    nSegments = len(self.segments)
+    nShowers = len(self.showers)
+    hasMatchingMuon = len(self.genmuons) > 0
+    color_msg(f" ---------------- Station {self.name} ----------------", "green", indentLevel = 1)
+    color_msg(f"Number of digis: {nDigis}", indentLevel = 2)
+    color_msg(f"Number of segments: {nSegments}", indentLevel = 2)
+    color_msg(f"Algo found shower?: {nShowers > 0}", indentLevel = 2)
+    color_msg(f"has matching muon?: {hasMatchingMuon} ", indentLevel = 2)
+    for igm, gm in enumerate(self.genmuons):
+      color_msg(f"Muon properties: genPart {gm.idm}, pT {gm.pt}, eta {gm.eta} ", indentLevel = 3)
+
+  
+  # -------------- Geometry stuff
   def get_nLayers(self):
     """ Return the number of Layers in this chamber """
     return self.nLayers

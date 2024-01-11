@@ -2,56 +2,50 @@
 This repo contains a set of tools that can be used to implement pattern recognition algorithms
 considering the geometrical features of the CMS DT system.
 
-# Usage
-The user has to provide a python file with the implementation of the pattern recognition
-algorithm. The geometry of the DTs can be accessed by just importing the following libraries:
-
+## How to run 
 ```
-from geometry.MBstation import MBstation
-from geometry.Layer import Layer
-from geometry.DriftCell import DriftCell
-from geometry.CMSDT import CMSDT
-
-chambers = CMSDT(wheel, sector, station)
+python3 concentrator.py --inpath /lustrefs/hdd_pool_dir/L1T/Filter/ZprimeToMuMu_M-6000/0000/ --maxfiles 20
 ```
 
-The `CMSDT` function defined in `geometry/CMSDT.py` takes the value for the wheel, the sector and the station (**as integers numbers**) and returns a `MBstation` object. 
-An starting point of a simple simulator can be found in `testRun.py`.
+This will command will run over 20 files in the `inpath` folder, and run the analyses defined under `concentrator.py`.
 
-## How to play with the geometry objects
-The `MBstation` contains a list of 8 `Layer` objects. Each `Layer` object contains a certain amount of DriftCell objects, which simulate the different drift cells of a real DT. All the MBstations, Layers and DriftCell objects are created at runtime when the CMSDT function is called. 
+## How it works
+The `utils/ntuple_reader.py` code will read DTNtuples and fetch all the different objects that can be fetched from there:
+ * genmuons
+ * segments
+ * trigger primitives
+ * shower objects
 
-Here's a small list of things someone can do in order to work with the geometry.
+Then it will match genmuons to segments, and TPs to segments (following the Analytical Method procedure: https://github.com/jaimeleonh/DTNtuples/blob/unifiedPerf/test/DTNtupleTPGSimAnalyzer_Efficiency.C). All these objects are stored in the reader to use for creating histograms.
 
- * **Get all the 7 layers of an MBstation simultaneously**: 
-   * `MBstation.get_layers()`
-   * This method returns a list of Layer objects.
- * **Get one specific layer of an MBstation **: 
-   * `MBstation.get_layer(layer_id)`, with layer_id between 0 and 7. 
-   * This method returns a `Layer` object.
- * **Get all the cells from a layer **: 
-   * `MBstation.get_layer(layer_id).get_cells()`.
-   * This method returns the complete list of cells inside a `Layer` object. Each element of the
-     list is a DriftCell object.
- * **Get one specific cell from a layer**:
-   * `MBstation.get_layer(layer_id).get_cell(cell_id)`, with cell_id between 1 and nDriftCells+1.
-   * The number of DriftCells is specified within `geometry/CMSDT.py`.
-   * This method returns a `DriftCell` object.
+# How to define histograms
+Define your histos in `utils/baseHistos.py` following this format:
 
- * **How to access the local position of a DriftCell**
-   * `DriftCell.get_position_at_min()`: returns the position of the lower-leftmost corner of the cell
-   * `DriftCell.get_center()`: returns the center position of the cell.
-   * DriftCell positions are defined in the frame of reference that sits in the lower-leftmost corner of the first cell in the first layer of SL1 (SL1-L1-Wire0). 
-
-## How to generate digis from ntuples
-
+## For efficiencies
 ```
-python3 dumpDTDigisFromNtuples.py --inputFolder /path/to/folder/with/ntuples/ --nevents $nevents --outpath  outpath_name 
-```
- * You can also pass `--njobs [ncores]` to run in parallel (recommended for large samples). 
-
-### example:
-```
-python3 dumpDTDigisFromNtuples.py --inputFolder /eos/user/c/cvicovil/ZprimeToMuMu_M-6000_TuneCP5_14TeV-pythia8/ZprimeToMuMu_M-6000_TuneCP5_14TeV-pythia8/230204_175448/0000/ --nevents 100000 --outpath  ZprimeToMuMu_M-6000_TuneCP5_14TeV-pythia8 --njobs 6
+histos.update({
+    "HISTONAME" :  {  
+      "type" : "eff",
+      "histoDen" : r.TH1D("Denominator name", r';TitleX; Events', nBins, firstBin , lastBin),
+      "histoNum" : r.TH1D("Numerator name", r';TitleX; Events', nBins, firstBin , lastBin),
+      "func"     : lambda reader: __function_for_filing_histograms__,
+      "numdef"   : lambda reader: __condition_for_numerator__ 
+},
 ```
 
+Where:
+ * `HISTONAME`: is the name that will appear in the output ntuple.
+ * `func`: this is the function that gives the value for filling the histogram. It always takes the reader as an input, and from there
+ one can fetch all the different objects that the reader reconstructs. Can be a list. Some examples:
+    * `lambda reader: reader.genmuons[0].pt ` this will fill a histogram with the leading muon pT.
+    * `lambda reader: [seg.wh for seg in fcns.get_best_matches( reader, station = 1 )]`. This will get the best matching segments in MB1 (`station = 1`), and fill with the value of the wheel of the matching segment. The function `get_best_matches` is defined under `utils/functions.py`. 
+ * `Numdef`: defines a boolean to differentiate denominator and numerator. The numerator will only be filled when the return of this function is `True`. If the `func` option returns a list, this must return a list of booleans with the same length. 
+
+## For flat distributions
+```
+  "HISTONAME" : {
+    "type" : "distribution",
+    "histo" : r.TH1D("HISTONAME", r';TitleX; Events', nBins, firstBin , lastBin),
+    "func" : lambda reader: __function_for_filing_histograms__,
+  },
+```

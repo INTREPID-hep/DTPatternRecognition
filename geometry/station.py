@@ -162,6 +162,7 @@ class station(object):
     self.segments = []
     self.digis = []
     self.genmuons = []
+    self.tps = []
   
   def add_digi(self, digi):
     if digi not in self.digis: self.digis.append(digi)
@@ -172,6 +173,9 @@ class station(object):
   def add_genmuon(self, genmuon):
     if genmuon not in self.genmuons: self.genmuons.append(genmuon)
   
+  def add_tp(self, tp):
+    if tp not in self.tps: self.tps.append(tp)
+  
   def add_shower(self, shower):
     if shower not in self.showers: self.showers.append(shower)
     
@@ -180,12 +184,27 @@ class station(object):
     nDigis = len(self.digis)
     nSegments = len(self.segments)
     nShowers = len(self.showers)
+    nTps = len(self.tps)
     hasMatchingMuon = len(self.genmuons) > 0
+    
+    nTraversed = 0
+    nWheelsTraversed = 0
+    nSectorsTraversed = 0
+    if hasMatchingMuon:
+      nTraversed = len(self.genmuons[0].dts_traversed)
+      nWheelsTraversed = self.genmuons[0].wheels_traversed
+      nSectorsTraversed = self.genmuons[0].sectors_traversed
+
     color_msg(f" ---------------- Station {self.name} ----------------", "green", indentLevel = 1)
     color_msg(f"Number of digis: {nDigis}", indentLevel = 2)
     color_msg(f"Number of segments: {nSegments}", indentLevel = 2)
+    color_msg(f"Number of TPs: {nTps}", indentLevel = 2)
     color_msg(f"Algo found shower?: {nShowers > 0}", indentLevel = 2)
     color_msg(f"has matching muon?: {hasMatchingMuon} ", indentLevel = 2)
+    color_msg(f"Number of stations traversed by the generator muon: {nTraversed} ", indentLevel = 2)
+    color_msg(f"Number of sectors traversed by the generator muon: {nSectorsTraversed} ", indentLevel = 2)
+    color_msg(f"Number of wheels traversed by the generator muon: {nWheelsTraversed} ", indentLevel = 2)
+
     for igm, gm in enumerate(self.genmuons):
       color_msg(f"Muon properties: genPart {gm.idm}, pT {gm.pt}, eta {gm.eta} ", indentLevel = 3)
 

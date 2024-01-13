@@ -16,6 +16,9 @@ def addConcentratorOptions(pr):
   pr.add_option("--outfolder", "-o", type="string", dest = "outfolder", default = "./results")
   pr.add_option('--maxfiles', type=int, dest = "maxfiles", default = -1)
   pr.add_option('--maxevents', type=int, dest = "maxevents", default = -1)
+  
+  pr.add_option('--dumpmode', type=str, dest = "dumpmode", default = "root")
+
   return
 
 if __name__ == "__main__":
@@ -26,12 +29,13 @@ if __name__ == "__main__":
   outfolder = options.outfolder
   maxfiles = options.maxfiles
   maxevents = options.maxevents
+  dumpmode = options.dumpmode
   
   # Analyses to be run
   # (postfix, filters)
   run_over = [
     ("_AM_withShowers", [filters.baseline]),
-    ("_AM_noShowers",   [filters.baseline, filters.removeShower])
+    ("_AM_vetoShowers", [filters.baseline, filters.removeShower])
   ]
   
   for parameters in run_over:
@@ -46,3 +50,6 @@ if __name__ == "__main__":
       postfix = parameters[0]
     )
     ntuplizer.run()
+    
+    if dumpmode == "root":
+      ntuplizer.save_histograms()

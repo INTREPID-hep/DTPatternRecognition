@@ -55,7 +55,7 @@ class ntuple(object):
     t = self.tree    
     maxevents = self.maxevents if self.maxevents > 0 and self.maxevents < t.GetEntries() else t.GetEntries()
     for iev, ev in enumerate(t):
-      self.iev = iev
+      self.event = ev
       if iev >= maxevents: break # A programmer cries when seeing this :)
 
       if iev%(maxevents/10) == 0:
@@ -81,13 +81,9 @@ class ntuple(object):
       #self.summarize(iev)
       
       # Apply global selection
-      if not self.passes_event(): continue  
-      
-      # Compute numerators and denominators
-      
+      if not self.passes_event(): continue      
       self.fill_histograms()
-      self.save_histograms()
-  
+
   def passes_event(self):
     """ The selector is used to apply global cuts on the events """
     #print(self.selector( self ))
@@ -109,46 +105,8 @@ class ntuple(object):
     phiseg = [f"({seg.index:.2f}, {seg.phi:.2f}, {seg.eta:.2f})" for seg in self.segments]
     color_msg( f"(iSeg, Phi, eta): {phiseg}", indentLevel = 2) # There might be a lot of segments so don't print everything
     color_msg( f"Trigger primitives", color = "green", indentLevel = 1)
-    color_msg( f"Number of TPs: {len(self.tps)}", indentLevel = 2) # There might be a lot of segments so don't print everything
-    
-
-    
-  def fill_histograms(self):
-    """ Apply selections and fill histograms """
-    for histo, histoinfo in self.histograms.items():
-      hType = histoinfo["type"]
-      
-      # Distributions
-      if hType == "distribution":
-        h = histoinfo["histo"]
-        func = histoinfo["func"]
-        val = func(self)
-        
-        # In case a function returns multiple results
-        # and we want to fill for everything (e.g. there are multiple muons,
-        # each of them with a matching segment. And we want to account for everything)
-        if isinstance(val, list):
-          for ival in val: 
-            h.Fill( ival )
-        else:
-          h.Fill(val)
-      
-      # Efficiencies
-      elif hType == "eff":
-        func = histoinfo["func"]
-        num = histoinfo["histoNum"]
-        den = histoinfo["histoDen"]
-        numdef = histoinfo["numdef"]
-        
-        val = func(self)
-        numPasses = numdef(self)
-        for val, passes in zip(val, numPasses):
-          den.Fill(val)
-          if passes:
-            num.Fill(val)  
-               
-        
-    
+    color_msg( f"Number of TPs: {len(self.tps)}", indentLevel = 2) # There might be a lot of segments so don't print everything  
+                
   def analyze_topology(self, ev):
     """
     ---------------------------------------------------------
@@ -222,6 +180,40 @@ class ntuple(object):
     self.tps = []
     self.showers = []
     
+  def fill_histograms(self):
+    """ Apply selections and fill histograms """
+    for histo, histoinfo in self.histograms.items():
+      hType = histoinfo["type"]
+      
+      # Distributions
+      if hType == "distribution":
+        h = histoinfo["histo"]
+        func = histoinfo["func"]
+        val = func(self)
+        
+        # In case a function returns multiple results
+        # and we want to fill for everything (e.g. there are multiple muons,
+        # each of them with a matching segment. And we want to account for everything)
+        if isinstance(val, list):
+          for ival in val: 
+            h.Fill( ival )
+        else:
+          h.Fill(val)
+      
+      # Efficiencies
+      elif hType == "eff":
+        func = histoinfo["func"]
+        num = histoinfo["histoNum"]
+        den = histoinfo["histoDen"]
+        numdef = histoinfo["numdef"]
+        
+        val = func(self)
+        numPasses = numdef(self)
+        for val, passes in zip(val, numPasses):
+          den.Fill(val)
+          if passes:
+            num.Fill(val)  
+  
   def save_histograms(self):
     """ Method to store histograms in a rootfile """
     outname = os.path.join(self.outfolder, "histograms%s.root"%self.postfix)
@@ -238,4 +230,6 @@ class ntuple(object):
         histoDen.Write(histoDen.GetName())
 
     f.Close()
+    
+    
     

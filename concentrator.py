@@ -31,7 +31,7 @@ if __name__ == "__main__":
   # (postfix, filters)
   run_over = [
     ("_AM_withShowers", [filters.baseline]),
-    ("_AM_noShowers",   [filters.baseline, filters.removeShower])
+    #("_AM_noShowers",   [filters.baseline, filters.removeShower])
   ]
   
   for parameters in run_over:

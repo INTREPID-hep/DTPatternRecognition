@@ -111,8 +111,15 @@ class ntuple(object):
     color_msg( f"Trigger primitives", color = "green", indentLevel = 1)
     color_msg( f"Number of TPs: {len(self.tps)}", indentLevel = 2) # There might be a lot of segments so don't print everything
     
-
-    
+  def flatten(self,lst):
+      result = []
+      for i in lst:
+          if isinstance(i, list):
+              result.extend(self.flatten(i))
+          else:
+              result.append(i)
+      return result
+  
   def fill_histograms(self):
     """ Apply selections and fill histograms """
     for histo, histoinfo in self.histograms.items():
@@ -127,8 +134,10 @@ class ntuple(object):
         # In case a function returns multiple results
         # and we want to fill for everything (e.g. there are multiple muons,
         # each of them with a matching segment. And we want to account for everything)
-        if isinstance(val, list):
-          for ival in val: 
+        
+        if isinstance(val, (list, tuple, np.ndarray)):
+          val = self.flatten(val)
+          for ival in val:
             h.Fill( ival )
         else:
           h.Fill(val)

@@ -1,6 +1,7 @@
 import math
-import re
-from utils.functions import color_msg
+from utils.functions import color_msg,phiConv
+import numpy as np
+import statistics
 
 class gen_muon(object):
     def __init__(self, idm, pt, eta, phi, charge):
@@ -46,7 +47,7 @@ class gen_muon(object):
             return -99
         return max( [abs(math.acos( math.cos(self.phi - seg.phi))) for seg in self.matches] )
     
-    def get_dphi_segments(self): 
+    def get_dphimax_segments(self): 
         """ Computes the maximum dPhi of the segments of two adyacent stations that match to the generator muon.""" 
         if self.matches == []: 
             return -99
@@ -62,6 +63,45 @@ class gen_muon(object):
         else:               
             return max(dphi) 
         
+    def get_dphimax_tp(self):
+        """ Computes the maximum dPhi of the TPs of two adyacent stations that match to the generator muon.""" 
+        if self.matches == []: 
+            return -99
+        
+        dphi = []
+        for seg1 in self.matches:
+            phi_tp1 = [tp.phi for tp in seg1.matches]
+            for seg2 in self.matches: 
+                # ignore the same segment or any segment on the same chamber
+                if seg1.st == seg2.st: continue
+                if seg1.sc != seg2.sc: continue
+                phi_tp2 = [tp.phi for tp in seg2.matches]
+                if phi_tp1 == [] or phi_tp2 == []: continue
+                dphi.append(max([abs(math.acos(math.cos(phiConv(phi1) - phiConv(phi2)))) for phi1 in phi_tp1 for phi2 in phi_tp2]))
+
+
+        if dphi == []: 
+            return -99
+        else:               
+            return dphi
+    
+    def get_dphi_segments(self): 
+        """ Computes the maximum dPhi of the segments of two adyacent stations that match to the generator muon.""" 
+        if self.matches == []: 
+            return -99
+        
+        dphi = []
+        for seg1 in self.matches:
+            for seg2 in self.matches: 
+                # ignore the same segment or any segment on the same chamber
+                if seg1.st == seg2.st: continue 
+                dphi.append(abs(math.acos( math.cos(seg1.phi - seg2.phi))))
+        
+        if dphi == []: 
+            return -99
+        else:               
+            return dphi
+        
     def get_dphi_tp(self):
         """ Computes the maximum dPhi of the TPs of two adyacent stations that match to the generator muon.""" 
         if self.matches == []: 
@@ -72,15 +112,16 @@ class gen_muon(object):
             phi_tp1 = [tp.phi for tp in seg1.matches]
             for seg2 in self.matches: 
                 # ignore the same segment or any segment on the same chamber
-                if seg1.st == seg2.st: continue 
+                if seg1.st == seg2.st: continue
+                if seg1.sc != seg2.sc: continue
                 phi_tp2 = [tp.phi for tp in seg2.matches]
                 if phi_tp1 == [] or phi_tp2 == []: continue
-                dphi.append(max([abs(math.acos( math.cos(phi1 - phi2))) for phi1 in phi_tp1 for phi2 in phi_tp2]))
+                dphi.append([abs(math.acos(math.cos(phiConv(phi1) - phiConv(phi2)))) for phi1 in phi_tp1 for phi2 in phi_tp2])
 
         if dphi == []: 
             return -99
         else:               
-            return max(dphi)
+            return dphi
 
 
     def get_max_deta(self):

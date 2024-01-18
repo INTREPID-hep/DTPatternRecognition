@@ -54,3 +54,5 @@ def deltaR(p1, p2):
     dPhi = deltaPhi(p1.phi, p2.phi)
     return math.sqrt(dEta*dEta + dPhi*dPhi)
 
+def phiConv(phi):
+    return 0.5*phi/65536.

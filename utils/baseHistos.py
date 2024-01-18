@@ -60,8 +60,8 @@ histos.update({
   },
   "shower_eff_muon_eta" :  {  
       "type" : "eff",
-      "histoDen" : r.TH1D("Shower_eff_muon_eta_total", r';Wheel; Events', 20, 0 , 1000),
-      "histoNum" : r.TH1D("Shower_eff_muon_eta_matched", r';Wheel; Events', 20, 0 , 1000),
+      "histoDen" : r.TH1D("Shower_eff_muon_eta_total", r';Wheel; Events', 20, -1 , 1),
+      "histoNum" : r.TH1D("Shower_eff_muon_eta_matched", r';Wheel; Events', 20, -1 , 1),
       "func"     : lambda reader: [gm.eta for gm in reader.genmuons if gm.did_shower()], 
       "numdef"   : lambda reader: [ len(reader.showers) > 0 ] 
   }
@@ -134,24 +134,44 @@ histos.update({
 
 # --- Showering muon properties
 histos.update({
+    "dphimax_seg_showering_muon" : {
+      "type" : "distribution",
+      "histo" : r.TH1D("dphimax_showering_muon", r';Max #Delta#phi Seg showering muon; Events', 60, 0 , 0.3),
+      "func" : lambda reader: [gm.get_dphimax_segments() for gm in reader.genmuons if gm.did_shower()],
+    },
+    "dphimax_seg_non_showering_muon" : {
+      "type" : "distribution",
+      "histo" : r.TH1D("dphimax_non_showering_muon", r';Max #Delta#phi Seg non-showering muon; Events', 60, 0 , 0.3),
+      "func" : lambda reader: [gm.get_dphimax_segments() for gm in reader.genmuons if not gm.did_shower()],
+    },
+    "dphimax_tp_showering_muon" : {
+      "type" : "distribution",
+      "histo" : r.TH1D("dphimax_tp_showering_muon", r';Max #Delta#phi TP showering muon; Events', 60, 0 , 0.3),
+      "func" : lambda reader: [gm.get_dphimax_tp() for gm in reader.genmuons if gm.did_shower()],
+    },
+    "dphimax_tp_non_showering_muon" : {
+      "type" : "distribution",
+      "histo" : r.TH1D("dphimax_tp_non_showering_muon", r';Max #Delta#phi TP non-showering muon; Events', 60, 0 , 0.3),
+      "func" : lambda reader: [gm.get_dphimax_tp() for gm in reader.genmuons if not gm.did_shower()],
+    },
     "dphi_seg_showering_muon" : {
       "type" : "distribution",
-      "histo" : r.TH1D("dphi_showering_muon", r';#Delta#phi Seg showering muon; Events', 20, 0 , 0.6),
+      "histo" : r.TH1D("dphi_showering_muon", r';#Delta#phi Seg showering muon; Events', 60, 0 , 0.3),
       "func" : lambda reader: [gm.get_dphi_segments() for gm in reader.genmuons if gm.did_shower()],
     },
     "dphi_seg_non_showering_muon" : {
       "type" : "distribution",
-      "histo" : r.TH1D("dphi_non_showering_muon", r';#Delta#phi Seg non-showering muon; Events', 20, 0 , 0.6),
+      "histo" : r.TH1D("dphi_non_showering_muon", r';#Delta#phi Seg non-showering muon; Events', 60, 0 , 0.3),
       "func" : lambda reader: [gm.get_dphi_segments() for gm in reader.genmuons if not gm.did_shower()],
     },
     "dphi_tp_showering_muon" : {
       "type" : "distribution",
-      "histo" : r.TH1D("dphi_tp_showering_muon", r';#Delta#phi TP showering muon; Events', 20, 0 , 0.6),
+      "histo" : r.TH1D("dphi_tp_showering_muon", r';#Delta#phi TP showering muon; Events', 60, 0 , 0.3),
       "func" : lambda reader: [gm.get_dphi_tp() for gm in reader.genmuons if gm.did_shower()],
     },
     "dphi_tp_non_showering_muon" : {
       "type" : "distribution",
-      "histo" : r.TH1D("dphi_tp_non_showering_muon", r';#Delta#phi TP non-showering muon; Events', 20, 0 , 0.6),
+      "histo" : r.TH1D("dphi_tp_non_showering_muon", r';#Delta#phi TP non-showering muon; Events', 60, 0 , 0.3),
       "func" : lambda reader: [gm.get_dphi_tp() for gm in reader.genmuons if not gm.did_shower()],
     },
 })

@@ -35,11 +35,7 @@ if __name__ == "__main__":
   # (postfix, filters)
   run_over = [
     ("_AM_withShowers", [filters.baseline]),
-<<<<<<< HEAD
-    #("_AM_noShowers",   [filters.baseline, filters.removeShower])
-=======
     ("_AM_vetoShowers", [filters.baseline, filters.removeShower])
->>>>>>> cc839eb5e56c11ba0ac83dee78a594f0a90da66c
   ]
   
   for parameters in run_over:

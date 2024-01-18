@@ -48,7 +48,6 @@ if __name__ == "__main__":
 
     # Iterate over all efficiencies
     for eff in efficiencies:
-        
         # Get the numerator and denominator histograms
         num = file.Get(efficiencies[eff]["num"])
         den = file.Get(efficiencies[eff]["denom"])

@@ -105,7 +105,6 @@ class ntuple(object):
     phiseg = [f"({seg.index:.2f}, {seg.phi:.2f}, {seg.eta:.2f})" for seg in self.segments]
     color_msg( f"(iSeg, Phi, eta): {phiseg}", indentLevel = 2) # There might be a lot of segments so don't print everything
     color_msg( f"Trigger primitives", color = "green", indentLevel = 1)
-<<<<<<< HEAD
     color_msg( f"Number of TPs: {len(self.tps)}", indentLevel = 2) # There might be a lot of segments so don't print everything
     
   def flatten(self,lst):
@@ -155,10 +154,6 @@ class ntuple(object):
                
         
     
-=======
-    color_msg( f"Number of TPs: {len(self.tps)}", indentLevel = 2) # There might be a lot of segments so don't print everything  
-                
->>>>>>> cc839eb5e56c11ba0ac83dee78a594f0a90da66c
   def analyze_topology(self, ev):
     """
     ---------------------------------------------------------

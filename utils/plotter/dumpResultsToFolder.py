@@ -32,9 +32,7 @@ if __name__ == "__main__":
     # Create a ROOT.TCanvas
     canvas = ROOT.TCanvas()
 
-   # Check if efficiencies need to be drawn
-    if args.efficiencies:
-        from efficiencies import efficiencies
+    # Check if efficiencies need to be drawn
 
     # Iterate over all keys in the ROOT file
     for key in file.GetListOfKeys():
@@ -47,26 +45,26 @@ if __name__ == "__main__":
             canvas.SaveAs(os.path.join(output_dir_path, key.GetName() + '.root'))
 
     # Iterate over all efficiencies
-    for eff in efficiencies:
-        # Get the numerator and denominator histograms
-        num = file.Get(efficiencies[eff]["num"])
-        den = file.Get(efficiencies[eff]["denom"])
-        print(num, den)
-        # Create the efficiency histogram
-        if efficiencies[eff]["type"] == "efficiency":
-            eff_histo = ROOT.TEfficiency(num, den)
-        elif efficiencies[eff]["type"] == "ratio":
-            eff_histo = ROOT.TH1D(num.Clone())
-            eff_histo.Divide(den)
-        
-        eff_histo.SetName(efficiencies[eff]["histo"]["name"])
-        eff_histo.SetTitle(efficiencies[eff]["histo"]["title"])
-        # Draw the efficiency histogram
-        eff_histo.Draw()
-        # Save the canvas as PNG and PDF
-        canvas.SaveAs(os.path.join(output_dir_path, eff + '.png'))
-        canvas.SaveAs(os.path.join(output_dir_path, eff + '.pdf'))
-        canvas.SaveAs(os.path.join(output_dir_path, eff + '.root'))
+    if args.efficiencies:
+        for eff in efficiencies:
+            # Get the numerator and denominator histograms
+            num = file.Get(efficiencies[eff]["num"])
+            den = file.Get(efficiencies[eff]["denom"])
+            # Create the efficiency histogram
+            if efficiencies[eff]["type"] == "efficiency":
+                eff_histo = ROOT.TEfficiency(num, den)
+            elif efficiencies[eff]["type"] == "ratio":
+                eff_histo = ROOT.TH1D(num.Clone())
+                eff_histo.Divide(den)
+            
+            eff_histo.SetName(efficiencies[eff]["histo"]["name"])
+            eff_histo.SetTitle(efficiencies[eff]["histo"]["title"])
+            # Draw the efficiency histogram
+            eff_histo.Draw()
+            # Save the canvas as PNG and PDF
+            canvas.SaveAs(os.path.join(output_dir_path, eff + '.png'))
+            canvas.SaveAs(os.path.join(output_dir_path, eff + '.pdf'))
+            canvas.SaveAs(os.path.join(output_dir_path, eff + '.root'))
             
     # Close the ROOT file
     file.Close()

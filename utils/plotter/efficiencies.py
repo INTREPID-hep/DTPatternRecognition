@@ -1,5 +1,3 @@
-import ROOT as r
-
 efficiencies = {
     "seg_eff_MB1" :  {
         "type" : "efficiency",
@@ -39,25 +37,25 @@ efficiencies = {
         "denom" : "Shower_eff_muon_eta_total",
         "num": "Shower_eff_muon_eta_matched",
     },
-    "dphimax_tp" : {
+    "ratio_dphimax_tp" : {
         "type": "ratio",
         "histo" : {"name":"ratio_dphimax_tp", "title": ';#Delta#phi_{max} TP; Ratio (shower / no shower)'},
         "denom" : "dphimax_tp_non_showering_muon",
         "num": "dphimax_tp_showering_muon",
     },
-    "dphimax_seg" : {
+    "ratio_dphimax_seg" : {
         "type": "ratio",
         "histo" : {"name":"ratio_dphimax_seg", "title": ';#Delta#phi_{max} Seg; Ratio (shower / no shower)'},
         "denom" : "dphimax_non_showering_muon",
         "num": "dphimax_showering_muon",
     },
-    "dphi_tp" : {
+    "ratio_dphi_tp" : {
         "type": "ratio",
         "histo" : {"name":"ratio_dphi_tp", "title": ';#Delta#phi TP; Ratio (shower / no shower)'},
         "denom" : "dphi_tp_non_showering_muon",
         "num": "dphi_tp_showering_muon",
     },
-    "dphi_seg" : {
+    "ratio_dphi_seg" : {
         "type": "ratio",
         "histo" : {"name":"ratio_dphi_seg", "title": ';#Delta#phi Seg; Ratio (shower / no shower)'},
         "denom" : "dphi_non_showering_muon",

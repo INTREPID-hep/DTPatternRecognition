@@ -25,6 +25,7 @@ class ntuple(object):
                selectors,
                histograms,
                outfolder = "results", 
+               outfilename = "",
                maxevents = -1, 
                maxfiles = -1, 
                postfix = ""):
@@ -34,6 +35,7 @@ class ntuple(object):
     self.selectors = selectors
     self.histograms = histograms
     self.outfolder = outfolder
+    self.outfilename = outfilename
     self.maxevents = maxevents
     self.maxfiles = maxfiles
     self.postfix = postfix
@@ -105,8 +107,55 @@ class ntuple(object):
     phiseg = [f"({seg.index:.2f}, {seg.phi:.2f}, {seg.eta:.2f})" for seg in self.segments]
     color_msg( f"(iSeg, Phi, eta): {phiseg}", indentLevel = 2) # There might be a lot of segments so don't print everything
     color_msg( f"Trigger primitives", color = "green", indentLevel = 1)
-    color_msg( f"Number of TPs: {len(self.tps)}", indentLevel = 2) # There might be a lot of segments so don't print everything  
-                
+    color_msg( f"Number of TPs: {len(self.tps)}", indentLevel = 2) # There might be a lot of segments so don't print everything
+    
+  def flatten(self,lst):
+      result = []
+      for i in lst:
+          if isinstance(i, list):
+              result.extend(self.flatten(i))
+          else:
+              result.append(i)
+      return result
+  
+  def fill_histograms(self):
+    """ Apply selections and fill histograms """
+    for histo, histoinfo in self.histograms.items():
+      hType = histoinfo["type"]
+      
+      # Distributions
+      if hType == "distribution":
+        h = histoinfo["histo"]
+        func = histoinfo["func"]
+        val = func(self)
+        
+        # In case a function returns multiple results
+        # and we want to fill for everything (e.g. there are multiple muons,
+        # each of them with a matching segment. And we want to account for everything)
+        
+        if isinstance(val, (list, tuple, np.ndarray)):
+          val = self.flatten(val)
+          for ival in val:
+            h.Fill( ival )
+        else:
+          h.Fill(val)
+      
+      # Efficiencies
+      elif hType == "eff":
+        func = histoinfo["func"]
+        num = histoinfo["histoNum"]
+        den = histoinfo["histoDen"]
+        numdef = histoinfo["numdef"]
+        
+        val = func(self)
+        numPasses = numdef(self)
+        for val, passes in zip(val, numPasses):
+          den.Fill(val)
+          if passes:
+            num.Fill(val)  
+               
+        
+    
   def analyze_topology(self, ev):
     """
     ---------------------------------------------------------
@@ -179,44 +228,10 @@ class ntuple(object):
     self.segments = []
     self.tps = []
     self.showers = []
-    
-  def fill_histograms(self):
-    """ Apply selections and fill histograms """
-    for histo, histoinfo in self.histograms.items():
-      hType = histoinfo["type"]
-      
-      # Distributions
-      if hType == "distribution":
-        h = histoinfo["histo"]
-        func = histoinfo["func"]
-        val = func(self)
-        
-        # In case a function returns multiple results
-        # and we want to fill for everything (e.g. there are multiple muons,
-        # each of them with a matching segment. And we want to account for everything)
-        if isinstance(val, list):
-          for ival in val: 
-            h.Fill( ival )
-        else:
-          h.Fill(val)
-      
-      # Efficiencies
-      elif hType == "eff":
-        func = histoinfo["func"]
-        num = histoinfo["histoNum"]
-        den = histoinfo["histoDen"]
-        numdef = histoinfo["numdef"]
-        
-        val = func(self)
-        numPasses = numdef(self)
-        for val, passes in zip(val, numPasses):
-          den.Fill(val)
-          if passes:
-            num.Fill(val)  
-  
+
   def save_histograms(self):
     """ Method to store histograms in a rootfile """
-    outname = os.path.join(self.outfolder, "histograms%s.root"%self.postfix)
+    outname = os.path.join(self.outfolder, "histograms%s%s.root"%(self.postfix,self.outfilename))
     f = r.TFile.Open(outname, "RECREATE")
     for hname, histoinfo in self.histograms.items():
       hType = histoinfo["type"]

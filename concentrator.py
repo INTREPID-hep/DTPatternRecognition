@@ -14,6 +14,7 @@ def addConcentratorOptions(pr):
   
   # Additional
   pr.add_option("--outfolder", "-o", type="string", dest = "outfolder", default = "./results")
+  pr.add_option('--outfilename', type=str, dest = "outfilename", default = 'histos.root')
   pr.add_option('--maxfiles', type=int, dest = "maxfiles", default = -1)
   pr.add_option('--maxevents', type=int, dest = "maxevents", default = -1)
   
@@ -35,7 +36,7 @@ if __name__ == "__main__":
   # (postfix, filters)
   run_over = [
     ("_AM_withShowers", [filters.baseline]),
-    ("_AM_vetoShowers", [filters.baseline, filters.removeShower])
+    #("_AM_vetoShowers", [filters.baseline, filters.removeShower])
   ]
   
   for parameters in run_over:
@@ -45,6 +46,7 @@ if __name__ == "__main__":
       selectors = parameters[1],
       histograms = histos,
       outfolder = outfolder, 
+      outfilename = options.outfilename,
       maxevents = maxevents, 
       maxfiles = maxfiles,
       postfix = parameters[0]

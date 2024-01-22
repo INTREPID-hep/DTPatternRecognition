@@ -7,6 +7,7 @@ class ph2tpg(object):
         self.sc = ev.ph2TpgPhiEmuAm_sector[itp]
         self.st = ev.ph2TpgPhiEmuAm_station[itp]
         self.phi = ev.ph2TpgPhiEmuAm_phi[itp]
+        self.phiB = ev.ph2TpgPhiEmuAm_phiB[itp]
         self.BX = ev.ph2TpgPhiEmuAm_BX[itp] - 20 # Correct to center BX at 0
         self.quality = ev.ph2TpgPhiEmuAm_quality[itp]
         self.rpcFlag = ev.ph2TpgPhiEmuAm_rpcFlag[itp]

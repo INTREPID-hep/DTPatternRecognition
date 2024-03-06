@@ -1,0 +1,42 @@
+# Macro file for example DTSim
+# 
+# To be run preferably in batch, without graphics:
+# % exampleDTSim run2.mac
+#
+#/run/numberOfThreads 4
+/control/cout/ignoreThreadsExcept 0
+#
+/run/initialize
+#
+#  turn off randomization 
+#
+/DTSim/generator/randomizePrimary FALSE
+/DTSim/generator/sigmaMomentum 0. 
+/DTSim/generator/sigmaAngle 0.
+/run/verbose 1
+/run/printProgress 0
+#
+/DTSim/detector/armAngle 30. deg
+/gun/particle proton
+/DTSim/generator/momentum 100. GeV
+/DTSim/field/value 100. tesla
+/analysis/setFileName DTSim_proton
+/analysis/ntuple/setFileName 0 DTSimntuple_proton
+/run/beamOn 30
+#
+/DTSim/detector/armAngle 60. deg
+/gun/particle pi+
+/DTSim/generator/momentum 100. GeV
+/DTSim/field/value 200. tesla
+/analysis/setFileName DTSim_pi+
+/analysis/ntuple/setFileName 0 DTSimntuple_pi+
+/run/beamOn 30
+#
+/gun/particle e+
+/DTSim/detector/armAngle 30. deg
+/DTSim/generator/momentum 100. GeV
+/DTSim/field/value 100. tesla
+/analysis/setFileName DTSim_e+
+/analysis/ntuple/setFileName 0 DTSimntuple_e+
+/run/beamOn 30
+

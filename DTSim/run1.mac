@@ -1,0 +1,22 @@
+# Macro file for example DTSim
+# 
+# Can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+#
+# Change the default number of workers (in multi-threading mode) 
+#/run/numberOfThreads 4
+#
+# Initialize kernel
+/run/initialize
+#
+# Defaults:
+# armAngle 30. deg
+# field value: 1.0*tesla
+#
+/DTSim/field/value 2. tesla
+/run/beamOn 3
+#
+/DTSim/detector/armAngle 60. deg
+/DTSim/field/value 2. tesla
+/run/beamOn 3
+

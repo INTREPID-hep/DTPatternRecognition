@@ -1,0 +1,22 @@
+# Macro file for example DTSim
+# 
+# To be run preferably in batch, without graphics:
+# % exampleDTSim run2.mac
+#
+/run/numberOfThreads 4
+/control/cout/ignoreThreadsExcept 0
+#
+/run/initialize
+#
+#  turn off randomization 
+#
+/DTSim/generator/randomizePrimary FALSE
+/DTSim/generator/sigmaMomentum 0. 
+/DTSim/generator/sigmaAngle 0.25
+/run/verbose 1
+/run/printProgress 0
+#
+/gun/particle mu-
+/DTSim/generator/momentum 2000. GeV
+/DTSim/field/value 2. tesla
+/run/beamOn 1000

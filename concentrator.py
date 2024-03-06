@@ -1,59 +1,57 @@
 ''' Script to make concentrator studies '''
-import pandas as pd
 import os
 from optparse import OptionParser
+import ROOT as r
 import numpy as np
-import glob
 
-# Geometry stuff for plotting 
-import geometry.CMSDT as CMSDT
-from geometry.MBstation import MBstation
-from geometry.Layer import Layer
-from geometry.DriftCell import DriftCell
-
-from particle_objects.Primitive import Primitive
-from particle_objects.Pattern import Pattern
-
-from utils.DTTrainer import DTTrainer
-from utils.DTPlotter import DTPlotter
-from utils.rfile_gen import *
-
-pr = OptionParser(usage="%prog [options]")
+from utils.ntuple_reader import ntuple
+from utils.functions import color_msg
+import filters
+from utils.baseHistos import histos
 
 def addConcentratorOptions(pr):
   pr.add_option('--inpath', '-i', type="string", dest = "inpath", default = "./results/")
+  
+  # Additional
+  pr.add_option("--outfolder", "-o", type="string", dest = "outfolder", default = "./results")
+  pr.add_option('--outfilename', type=str, dest = "outfilename", default = 'histos.root')
+  pr.add_option('--maxfiles', type=int, dest = "maxfiles", default = -1)
+  pr.add_option('--maxevents', type=int, dest = "maxevents", default = -1)
+  
+  pr.add_option('--dumpmode', type=str, dest = "dumpmode", default = "root")
+
   return
 
-
-
-def combine_dataframes(dfs, axis = 0):
-  '''
-  This function combines multiple dataframes:
-    axis=0 -- concatenate rows (i.e. add more events)
-    axis=1 -- concatenate columns (i.e. add more features)
-  '''
-  ignore_index = True if axis == 0 else False
-  super_df = pd.concat(dfs, axis, ignore_index = ignore_index) 
-  return super_df
-
-def csv2df(path):
-  df = pd.DataFrame()
-  for root, dirs, files in os.walk(inpath):
-    for file_ in files:
-      print(" >> Reading file: %s in %s "%(file_, root))
-      df = combine_dataframes( [pd.read_csv(os.path.join(root, file_)), df], axis = 0)
-
-  df = df.replace(r'\[|\]', '', regex = True)
-  return df
-
 if __name__ == "__main__":
+  pr = OptionParser(usage="%prog [options]")
   addConcentratorOptions(pr)
   (options, args) = pr.parse_args()
-  inpath = options.inpath 
- 
-  # Load all the data into one dataframe 
-  df = csv2df(inpath)
- 
-  # Each row is an event
-  event = df.head(100) # Get the first event  
-  print(event)
+  inpath = options.inpath
+  outfolder = options.outfolder
+  maxfiles = options.maxfiles
+  maxevents = options.maxevents
+  dumpmode = options.dumpmode
+  
+  # Analyses to be run
+  # (postfix, filters)
+  run_over = [
+    ("_AM_withShowers", [filters.baseline]),
+    #("_AM_vetoShowers", [filters.baseline, filters.removeShower])
+  ]
+  
+  for parameters in run_over:
+    color_msg(f"Shower performance analyzer: {parameters[0]} ", "green")
+    ntuplizer = ntuple(
+      inputFolder = inpath, 
+      selectors = parameters[1],
+      histograms = histos,
+      outfolder = outfolder, 
+      outfilename = options.outfilename,
+      maxevents = maxevents, 
+      maxfiles = maxfiles,
+      postfix = parameters[0]
+    )
+    ntuplizer.run()
+    
+    if dumpmode == "root":
+      ntuplizer.save_histograms()

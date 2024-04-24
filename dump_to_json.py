@@ -1,4 +1,5 @@
 import pandas as pd
+from copy import deepcopy
 import numpy as np
 import ROOT as r
 from root_numpy import tree2array
@@ -11,20 +12,25 @@ filterwarnings(action='ignore', category=DeprecationWarning, message='`np.object
 
 path = "/eos/cms/store/user/folguera/INTREPID/DTShowers/2024_04_23/muon"
 
-list_files = [file for file in os.listdir(path) if "root" in file]
 
-# Make a tchain:
-ttree = r.TChain()
-
-for ifile in list_files:
-    ttree.Add( path + "/" + ifile + "/DTSim")
-
-#ttree = tfile.Get("DTSim")
-arr = tree2array(ttree)
+def read_files(path):
+    # Make a tchain:
+    list_files = [file for file in os.listdir(path) if "root" in file and "DTSimNtuple" in file]
+   
+    dfs = [] 
+    for ifile in list_files[:1]:
+        print("Opening: ", path + "/" + ifile)
+        tfile = r.TFile.Open( path + "/" + ifile )
+        ttree = deepcopy(tfile.Get("DTSim"))
+        arr = tree2array(ttree)
+        dfs = dfs.append( pd.DataFrame(arr) )
+        tfile.Close()
+    super_df = pd.concat(dfs, axis = 0, ignore_index = True)
+    return super_df 
 
 # -- Convertimos a dataframe
-df = pd.DataFrame(arr)
-
+df = read_files(path)
+sys.exit()
 # Assuming your DataFrame is named df
 
 # Filter and create JSON for each SLHit_SL value

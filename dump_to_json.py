@@ -1,64 +1,45 @@
+from optparse import OptionParser
+import os
 import pandas as pd
-from copy import deepcopy
 import numpy as np
 import ROOT as r
 from root_numpy import tree2array
+import uproot
 from warnings import filterwarnings
 import json
-import sys
-import os
-
 filterwarnings(action='ignore', category=DeprecationWarning, message='`np.object` is a deprecated alias')
 
-path = "/eos/cms/store/user/folguera/INTREPID/DTShowers/2024_04_23/muon"
+def add_parsing_opts():
+    ''' Function with base parsing arguments used by any script '''
+    parser = OptionParser(usage = "python dump_to_json.py [options]",  description = "Main options for dumping rootfile content into json") 
+    # -- Input and outputs
+    parser.add_option("--inpath",   "-i",  dest = "inpath",  help = "Path to the folder with the rootfiles. ")
+    parser.add_option("--maxFiles", "-m",  dest = "maxfiles",  type = int, default = 1, help = "Maximum files to convert")
+    return parser
 
 
-def read_files(path):
-    # Make a tchain:
-    list_files = [file for file in os.listdir(path) if "root" in file and "DTSimNtuple" in file]
-   
-    dfs = [] 
-    for ifile in list_files[:1]:
-        print("Opening: ", path + "/" + ifile)
-        tfile = r.TFile.Open( path + "/" + ifile )
-        ttree = deepcopy(tfile.Get("DTSim"))
-        arr = tree2array(ttree)
-        dfs = dfs.append( pd.DataFrame(arr) )
-        tfile.Close()
-    super_df = pd.concat(dfs, axis = 0, ignore_index = True)
-    return super_df 
-
-# -- Convertimos a dataframe
-df = read_files(path)
-sys.exit()
-# Assuming your DataFrame is named df
-
-# Filter and create JSON for each SLHit_SL value
-for sl in range(1, 4):  # SLHit_SL values range from 1 to 4
-    print(" Getting sl", sl)
-    sl_filtered = df[df['SLHit_SL'] == sl]
+if __name__ == "__main__": 
+    opts, args = add_parsing_opts().parse_args()
+    inpath = opts.inpath
+    maxFiles = opts.maxfiles
     
-    out = []
+    # 1. Get the files
+    rfiles = [ rfile for rfile in os.listdir( inpath ) ][:maxFiles]
 
-    for index, row in sl_filtered.iterrows():
-        out.append({
-            "event_eventNumber": row['EventNo'],
-            "digi_wheel": 0,
-            "digi_sector": 12,
-            "digi_station": 1,
-            "digi_superLayer": row['SLHit_SL'],
-            "digi_layer": row['SLHit_Layer'],
-            "digi_wire": row['SLHit_Cell'],
-            "digi_time": row['SLHit_Time'],
-            "digi_PDG": row['SLHit_PDG'],
-        }
-       )
+    # 2. Concatenate them: this is somewhat messy, but works 
+    df_ttree = pd.DataFrame()
 
-    filename = "jsonGeant4_sl{sl}.json".format(sl = sl)
-    with open(filename, 'w') as f:
-        json.dump(out, f, indent=4)
-    output_json = json.dumps(out, indent = 2)
-    print("JSON for SLHit_SL {sl}:".format(sl = sl))
-    print(output_json)
-    print("\n")
-
+    for rfile in rfiles:
+        with uproot.open( os.path.join(inpath, rfile) ) as open_rfile:
+            tree = open_rfile["DTSim"].arrays( library = "pandas" )
+            df_ttree = pd.concat([df_ttree, tree])
+    
+    # 3. Now go SL by SL            
+    for sl in range(1, 4):
+        sl_filtered = df_ttree[ df_ttree["SLHit_SL"] == sl ].to_json( orient = "records", indent = 2 )    
+        
+        # 3.1 Dump to json
+        filename = f"jsonGeant4_sl{sl}.json"
+        with open(filename, 'w') as outjson:
+            json.dump(sl_filtered, outjson, indent=2)
+        output_json = json.dumps(sl_filtered)

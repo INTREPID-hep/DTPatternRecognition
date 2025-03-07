@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "DTPatterRecognition"
 version = "0.1.0"
-description = "description here"
+description = "Set of tools to implement patter recognition algorithms on CMS DTs"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
@@ -15,7 +15,9 @@ mplhep = ">=0.3"
 PyYAML = ">=5.4.1"
 argparse = "*"
 pyqt5 = "*"
-dtpr = {path = "./dtpr-package", develop = true}
+tqdm = ">=4.6"
+natsort = ">=8.4"
+mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", branch = "main" }
 
 [tool.poetry.group.dev]
 optional = true
@@ -23,11 +25,18 @@ optional = true
 [tool.poetry.group.dev.dependencies]
 black = "*"
 
+[tool.poetry.group.doc]
+optional = true
+
+[tool.poetry.group.doc.dependencies]
+sphinx = "*"
+sphinx-rtd-theme = "*"
+
 [[tool.poetry.packages]]
-include = "src"
+include = "dtpr"
 
 [tool.poetry.scripts]
-dtpr-analysis = "src.cli:main"
+dtpr = "dtpr.cli:main"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,131 @@
+# -------------------------------- configuration for NTuples --------------------------------------#
+# ntuple_selectors:
+  # define the selectors to be used in the ntuple, always use at least no_filter
+  # comment/uncomment/add as needed...
+  # ================= available selectors - dtntuple ================= #
+  # - "dtpr.utils.filters.base_filters.baseline"
+  # - "dtpr.utils.filters.base_filters.removeShower"
+  # - "dtpr.utils.filters.base_filters.baseline_plus_hitsc"
+  # ================= available selectors - g4ntuple ================= #
+  # - ...
+
+ntuple_preprocessors:
+  # define the event preprocessors to be used in the ntuple
+  # genmuon_matcher:
+  #   src: "dtpr.utils.genmuon_functions.analyze_genmuon_matches"
+  # genmuon_showerer:
+  #   src: "dtpr.utils.genmuon_functions.analyze_genmuon_showers"
+  #   kwargs:
+  #     method: 2
+  real_shower_builder:
+    src: "dtpr.utils.shower_functions.build_real_showers"
+    kwargs:
+      threshold: 6
+      debug: False
+  # fw_shower_builder:
+  #   src: "dtpr.utils.shower_functions.build_fwshowers"
+  #   kwargs:
+  #     threshold: 6
+  # fw_shower_analyzer:
+  #   src: "dtpr.utils.shower_functions.analyze_fwshowers"
+
+# ------------------------------- configuration for particles -------------------------------------#
+
+particle_types:
+  # particles to be built into an event from .root files
+  # follow the format:
+  #
+  #   particle_name:
+  #     class: 'path.to.particle.Particle'
+  #     n_branch_name:  ROOT.TBranch (int) that could define how many particles to build
+  #     conditioner: condition to filter the particles that want to be built
+  #     sorter: how to sort the particles
+  #       by: 'property' to sort by
+  #       reverse: True/False to sort in reverse order
+  #
+  # comment/uncomment/add as needed...
+  # ================= available particles - dtntuple ================= #
+  digis:
+    class: 'dtpr.particles.Digi'
+    n_branch_name: 'digi_nDigis'
+    sorter:
+      by: 'BX'
+  segments:
+    class: 'dtpr.particles.Segment'
+    n_branch_name: 'seg_nSegments'
+  tps:
+    class: 'dtpr.particles.Ph2TP'
+    n_branch_name: 'ph2TpgPhiEmuAm_nTrigs'
+  genmuons:
+    class: 'dtpr.particles.GenMuon'
+    n_branch_name: 'gen_nGenParts'
+    conditioner: 
+      property: 'gen_pdgId'
+      condition: "==13"
+    sorter:
+      by: 'pt'
+      reverse: True
+  fwshowers:
+    class: 'dtpr.particles.Shower'
+    n_branch_name: 'ph2Shower_station'
+  simhits:
+    class: 'dtpr.particles.SimHit'
+    n_branch_name: 'simHit_nSimHits'
+
+# -------------------------------- configuration for histograms -----------------------------------#
+histo_sources:
+  # define the source modules of the histograms
+  - dtpr.utils.histograms.am_histos
+  - dtpr.utils.histograms.shower_histos
+
+histo_names:
+  # Histogram to fill - Uncomment or add histograms as needed. 
+  # They should exist in any of the source modules
+  - AM_rate_goodBX_MB1
+  - AM_rate_goodBX_MB2
+  - AM_rate_goodBX_MB3
+  - AM_rate_goodBX_MB4
+  - AM_rate_allBX_MB1
+  - AM_rate_allBX_MB2
+  - AM_rate_allBX_MB3
+  - AM_rate_allBX_MB4
+  - fwshower_rate_goodBX_MB1
+  - fwshower_rate_goodBX_MB2
+  - fwshower_rate_goodBX_MB3
+  - fwshower_rate_goodBX_MB4
+  - fwshower_rate_allBX_MB1
+  - fwshower_rate_allBX_MB2
+  - fwshower_rate_allBX_MB3
+  - fwshower_rate_allBX_MB4
+# ------------------------------- configuration for dt plots  -------------------------------------#
+dt_plots_configs:
+  mplhep-style: 'CMS'         # Style to use for the plots
+
+  figure-configs: 
+    figure.dpi: 100             # Dots per inch (resolution)
+    axes.titlesize: 'small'     # Axes title size
+    axes.labelsize: 'x-small'    # Axes label size
+    xtick.labelsize: 'x-small'    # X-axis tick label size
+    ytick.labelsize: 'x-small'    # Y-axis tick label size
+    legend.fontsize: 'small'   # Legend font size
+
+  dt-cell-info:
+    particle_type: 'digis'      # Particle type to use
+    cmap_var: 'time'            # Variable to use for the colormap
+
+  cmap-configs:
+    cmap: 'viridis'             # Colormap to use
+    cmap_under: 'none'          # Color for values under vmin
+    norm:
+      class: 'matplotlib.colors.Normalize'  # Normalization class
+      vmin: 299                             # Minimum value for normalization
+      vmax: 1000                            # Maximum value for normalization
+
+  # DT bounds and cells are matplotlib.patches.Rectangle objects
+  bounds-kwargs:
+    facecolor: ["lightgray", "lightyellow", "lightpink", "lightblue"]   # Color of the rectangle [MB, SL1, SL3, SL2]
+    edgecolor: "k"                                                      # Color of the edge
+    alpha: 0.3                                                          # Transparency of the rectangle
+
+  cells-kwargs:
+      edgecolor: "k"              # Color of the edge

@@ -6,6 +6,5 @@
 *main.sh*
 *ROOT*
 *.vscode*
-*test*
 *filters_v2.py*
-*.sh
+*_build

@@ -1,0 +1,169 @@
+pos_args:
+    # ---------------------------------- posible analysis ---------------------------------------- #
+    fill-histos:
+        name: "fill-histos"
+        help: "Fill predefined ROOT histograms based on event-by-event information from DT NTuple files."
+        func: "src.analysis.fill_histograms.fill_histos"
+        opt_args: [
+            "input-path",
+            "output-path",
+            "tag",
+            "max-files",
+            "max-events"
+        ]
+    plot-dts:
+        name: "plot-dts"
+        help: "Produce CMS DT chamber plots (global view) based on event-by-event digis information from DT NTuple files."
+        func: "src.analysis.plot_dt_chambers.plot_dt_chambers"
+        opt_args: [
+            "input-path",
+            "output-path",
+            "tag",
+            "max-files",
+            "event-number",
+            "save"
+        ]
+    plot-dt:
+        name: "plot-dt"
+        help: "Produce CMS DT chamber plot (local view) for a specific event digis information from a DT NTuple files."
+        func: "src.analysis.plot_dt_chamber.plot_dt_chamber"
+        opt_args: [
+            "input-path",
+            "output-path",
+            "tag",
+            "max-files",
+            "event-number",
+            "wheel",
+            "station",
+            "sector",
+            "save"
+        ]
+    inspect-event:
+        name: "inspect-event"
+        help: "Inspect a specific event from DT NTuple files."
+        func: "src.analysis.inspect_event.inspect_event"
+        opt_args: [
+            "input-path",
+            "output-path",
+            "max-files",
+            "event-number",
+            "debug"
+        ]
+    event-visualizer:
+        name: "event-visualizer"
+        help: "Launch the event visualizer for DT NTuple files."
+        func: "src.analysis.events_visualizer.launch_visualizer"
+        opt_args: [
+            "input-path",
+            "output-path",
+            "max-files"
+        ]
+    digis-fpga-dumper:
+        name: "fpga-dumper"
+        help: "Dump digis information from DT NTuple files to a FPGA readable format (Considering OBDT restrictions)."
+        func: "src.analysis.digis_fpga_dumper.dump_digis"
+        opt_args: [
+            "input-path",
+            "output-path",
+            "tag",
+            "max-files",
+            "max-events"
+        ]
+    # -------------------------------- posible create-templates ---------------------------------- #
+    create-config:
+        name: "create-config"
+        help: "Create a config file for running analysis."
+        func: "src.utils.create_templates.create_run_config_template"
+        opt_args: [
+            "output-path"
+        ]
+    create-analysis:
+        name: "create-analysis"
+        help: "Create a new analysis template."
+        func: "src.utils.create_templates.create_analysis_template"
+        opt_args: [
+            "output-path",
+            "template-name"
+        ]
+    create-histogram:
+        name: "create-histo"
+        help: "Create a new histogram template."
+        func: "src.utils.create_templates.create_histogram_template"
+        opt_args: [
+            "output-path",
+            "template-name"
+        ]
+
+# ---------------------------------- posible optional arguments ---------------------------------- #
+
+opt_args:
+    input-path:  
+        flags: ["-i", "--inputpath"]
+        dest: "inpath"
+        type: str
+        default: "/lustrefs/hdd_pool_dir/L1T/Filter/ZprimeToMuMu_M-6000_simHits/"
+        help: "Path to DTNTuple files (.root). This can be either a specific file or a directory containing multiple .root files."
+    output-path:
+        flags: ["-o", "--outputpath"]
+        dest: "outfolder"
+        type: str
+        default: "./results"
+        help: "Directory to save the output files. If the directory does not exist, it will be created automatically."
+    tag:
+        flags: ["-t", "--tag"]
+        dest: "tag"
+        type: str
+        default: "_thr6"
+        help: "Tag to be added to the output file names."
+    max-files:
+        flags: ["--maxfiles"]
+        dest: "maxfiles"
+        type: int
+        default: -1
+        help: "Maximum number of files to read from the specified INPATH. -1 is default to read all available files."
+    max-events:
+        flags: ["--maxevents"]
+        dest: "maxevents"
+        type: int
+        default: -1
+        help: "Maximum number of Events to read from the specified INPATH. -1 is default to read all available Events."
+    event-number:
+        flags: ["-evn", "--event-number"]
+        dest: "event_number"
+        type: "lambda arg: int(arg) if arg.isdigit() else arg"
+        default: 0
+        help: "Event number to be analyzed. Default is 0."
+    wheel:
+        flags: ["-wh", "--wheel"]
+        dest: "wheel"
+        type: int
+        default: -2
+        help: "Wheel number to be analyzed. Default is -2."
+    sector:
+        flags: ["-sc", "--sector"]
+        dest: "sector"
+        type: int
+        default: 1
+        help: "Sector number to be analyzed. Default is 1."
+    station:
+        flags: ["-st", "--station"]
+        dest: "station"
+        type: int
+        default: 1
+        help: "Station number to be analyzed. Default is 1."
+    save:
+        flags: ["-s", "--save"]
+        dest: "save"
+        action: "store_true"
+        help: "Save the products of the analysis. Default is False."
+    debug:
+        flags: ["--debug"]
+        dest: "debug"
+        action: "store_true"
+        help: "Print debug information. Default is False."
+    template-name:
+        flags: ["-n", "--name"]
+        dest: "name"
+        type: str
+        default: "analysis_template"
+        help: "Name of the template."

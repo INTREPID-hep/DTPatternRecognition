@@ -1,3 +1,11 @@
 *pyc
 *__pycache__
-results*
+*results*
+*env*/
+*.egg-info*
+*main.sh*
+*ROOT*
+*.vscode*
+*test*
+*filters_v2.py*
+*.sh

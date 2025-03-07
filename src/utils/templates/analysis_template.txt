@@ -1,0 +1,73 @@
+# Generic analysis template generated on {date}
+# 
+# Author:
+#     [Your Name]
+# Version:
+#     0.1
+#
+# This function is a template for a generic analysis based on NTuples information.
+
+import os
+import importlib
+import warnings
+from dtpr.base import Event
+from dtpr.utils.functions import color_msg
+from src.utils.functions import create_outfolder
+from src.utils.config import RUN_CONFIG
+from tqdm import tqdm
+
+def _process_event(ev: Event):
+    pass
+
+def {name}(
+        inpath: str,
+        outfolder: str,
+        tag: str,
+        maxfiles: int,
+        maxevents: int,
+        event_number: int,
+        wheel: int,
+        sector: int,
+        station: int,
+        save: bool,
+        debug: bool
+    ):
+    """
+    DOCSTRING DESCRIPTION...
+
+    Parameters:
+    inpath (str): Path to the input folder containing the ntuples.
+    outfolder (str): Path to the output folder where results will be saved.
+    ...
+    """
+
+    # Start of the analysis 
+    color_msg(f"Running program...", "green")
+
+    # Create the Ntuple object
+    _ntuple_module, _ntuple_class = RUN_CONFIG.ntuple_source.rsplit(".", 1)
+    _ntuple_module = importlib.import_module(_ntuple_module)
+    _NTUPLE =  getattr(_ntuple_module, _ntuple_class)
+
+    ntuple = _NTUPLE(
+        inputFolder=inpath,
+        maxfiles=maxfiles,
+    )
+
+    for ev in tqdm(
+        ntuple.events,
+        total=len(ntuple.events),
+        desc=color_msg(f"Running:", color="purple", indentLevel=1, return_str=True),
+        ncols=100,
+        ascii=True,
+        unit="event"
+    ):
+        if not ev: continue
+
+        _process_event(ev)
+
+    # save things as needed...
+    # color_msg(f"Saving results...", color="purple", indentLevel=1)
+    # create_outfolder(os.path.join(outfolder, "{name}_results"))
+
+    color_msg(f"Done!", color="green")

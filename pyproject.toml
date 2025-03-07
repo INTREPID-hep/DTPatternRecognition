@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "DTPatterRecognition"
+version = "0.1.0"
+description = "description here"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+# You need to install also ROOT
+python = ">=3.9"
+numpy = ">=2.0"
+pandas = ">=2.2"
+matplotlib = ">=3.9"
+mplhep = ">=0.3"
+PyYAML = ">=5.4.1"
+argparse = "*"
+pyqt5 = "*"
+dtpr = {path = "./dtpr-package", develop = true}
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+
+[[tool.poetry.packages]]
+include = "src"
+
+[tool.poetry.scripts]
+dtpr-analysis = "src.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,3 @@
+[submodule "dtpr-package"]
+	path = dtpr-package
+	url = https://github.com/DanielEstrada971102/dtpr-package.git

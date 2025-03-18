@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event &mdash; DTPatternRecognition 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/general_styles.css" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="NTuple" href="ntuple.html" />
+    <link rel="prev" title="base" href="main.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="main.html">base</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ntuple.html">NTuple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_list.html">EventList</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../particles/main.html">particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/main.html">utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="main.html">base</a></li>
+      <li class="breadcrumb-item active">Event</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/src/base/event.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="event">
+<h1>Event<a class="headerlink" href="#event" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">Event</span></code> class is designed to represent an event entry from a ROOT TTree, facilitating access
+to information by abstracting info into instances of Python objects ( <a class="reference internal" href="../particles/main.html"><span class="doc">particles</span></a> ).
+There is a set of already defined particles in the <code class="docutils literal notranslate"><span class="pre">dtpr.particles</span></code> module. Each instance of the
+<code class="docutils literal notranslate"><span class="pre">Event</span></code> class allows to comfortably access those objects such as offline segments, generation-level muons,
+simulation digis, showers, and more.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Event</span></code> class can dynamically build particles based on the TTree event’s entry information if
+specified through a <strong>configuration file</strong>. This file should contain information about the types
+of particles and how to build them, allowing for flexible and customizable event processing.</p>
+<p>To illustrate the dynamic particle building/ feature, consider the <code class="docutils literal notranslate"><span class="pre">GenMuon</span></code> class from the
+<code class="docutils literal notranslate"><span class="pre">dtpr.particles</span></code> module. Suppose we want to create instances of <code class="docutils literal notranslate"><span class="pre">GenMuon</span></code> based
+on the TTree event’s entry when an event is instantiated. This requires specifying the following in
+a <cite>YAML</cite> configuration file under the <code class="docutils literal notranslate"><span class="pre">particle_types</span></code> section:</p>
+<p class="rubric">config.yaml</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">particle_types</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">genmuons</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;dtpr.particles.gen_muon.GenMuon&#39;</span>
+<span class="w">        </span><span class="nt">n_branch_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;gen_nGenParts&#39;</span>
+<span class="w">        </span><span class="nt">conditioner</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional</span>
+<span class="w">            </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;gen_pdgId&#39;</span>
+<span class="w">            </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;==13&quot;</span>
+<span class="w">        </span><span class="nt">sorter</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional</span>
+<span class="w">            </span><span class="nt">by</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;pt&#39;</span>
+<span class="w">            </span><span class="nt">reverse</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">Event</span></code> class will create <strong>n</strong> (determined for the value of the <code class="docutils literal notranslate"><span class="pre">gen_nGenParts</span></code> branch) instances
+of the <code class="docutils literal notranslate"><span class="pre">GenMuon</span></code> class. The <code class="docutils literal notranslate"><span class="pre">conditioner</span></code> and <code class="docutils literal notranslate"><span class="pre">sorter</span></code> are optional. The former filters the TTree
+event’s entry based on specified conditions, and the <code class="docutils literal notranslate"><span class="pre">sorter</span></code> orders the created particles. Each
+particle class have a specific way to extract the information from the TTree event’s entry (coded in
+<cite>_init_from_ev</cite> class method). So, ensure that the information provided has the required branches to
+build the particles.</p>
+<p>Then, the way to create an event instance having a TTree over which iterate, should be like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.utils.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RUN_CONFIG</span>
+
+<span class="c1"># First, you need to update the configuration file path. If not,</span>
+<span class="c1"># it will work with the default one dtpr/utils/yamls/run_template.yaml.</span>
+<span class="c1"># You can also use the latter to define your own configuration file.</span>
+<span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;path/to/config.yaml&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">iev</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+    <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">iev</span><span class="p">)</span>
+    <span class="c1"># Print the event summary</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">iev</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="k">break</span> <span class="c1"># Just to show the first two events</span>
+</pre></div>
+</div>
+<p class="rubric">Output</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&gt;&gt; ------ Event 39956 info ------
++ Digis
+    * Number of digis: 81
++ Segments
+    * Number of segments: 8
++ Tps
+    * Number of tps: 21
++ Genmuons
+    * Number of genmuons: 2
+    * GenMuon 0 info --&gt;
+    --&gt; Pt: 258.0812683105469, Eta: -1.9664770364761353, Phi: 0.5708979964256287, Charge: -1, Matched_segments_stations: [], Showered: False
+    * GenMuon 1 info --&gt;
+    --&gt; Pt: 190.72511291503906, Eta: -0.2504693865776062, Phi: -2.558511257171631, Charge: 1, Matched_segments_stations: [], Showered: False
++ Emushowers
+    * Number of emushowers: 0
++ Simhits
+    * Number of simhits: 50
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">Event</span></code> class is not limited to using TTree information. It can be used just like a container
+by manually adding any type of attribute that you consider necessary. A simple example of this is,
+for instance, adding customized particles to the event. For practice, let us take
+the class <code class="docutils literal notranslate"><span class="pre">Shower</span></code> from the <code class="docutils literal notranslate"><span class="pre">dtpr.particles</span></code> module just to illustrate how to add
+objects to the event:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.particles</span><span class="w"> </span><span class="kn">import</span> <span class="n">Shower</span>
+
+<span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">showers</span> <span class="o">=</span> <span class="p">[</span><span class="n">Shower</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>
+<span class="n">event</span><span class="o">.</span><span class="n">showers</span> <span class="o">=</span> <span class="n">showers</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">showers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<p class="rubric">Output</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&gt;&gt; ------ Event 0 info ------
++ Showers
+    * Number of showers: 5
+&gt;&gt; Shower 4 info --&gt;
++ Wh: 1, Sc: 1, St: 1, Sl: None, Ndigis: None, Bx: None, Min_wire: None, Max_wire: None, Avg_pos: None, Avg_time: None, Wires_profile: []
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="main.html" class="btn btn-neutral float-left" title="base" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ntuple.html" class="btn btn-neutral float-right" title="NTuple" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

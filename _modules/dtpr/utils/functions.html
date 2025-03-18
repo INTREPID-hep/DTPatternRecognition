@@ -1,0 +1,492 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dtpr.utils.functions &mdash; DTPatternRecognition 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/general_styles.css" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/base/main.html">base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/particles/main.html">particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/utils/main.html">utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dtpr.utils.functions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dtpr.utils.functions</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Miscelaneous &quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">LambdaType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.utils.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
+
+<span class="c1"># Make Iterators for when we want to iterate over different subdetectors</span>
+<span class="n">wheels</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">sectors</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">stations</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">superlayers</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+<div class="viewcode-block" id="color_msg">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.color_msg">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">color_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bkg_color</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prints a message with ANSI coding so it can be printed with colors.</span>
+
+<span class="sd">    :param msg: The message to print.</span>
+<span class="sd">    :type msg: str</span>
+<span class="sd">    :param color: The color to use for the message. Default is &quot;none&quot;.</span>
+<span class="sd">    :type color: str</span>
+<span class="sd">    :param indentLevel: The level of indentation. Default is -1.</span>
+<span class="sd">    :type indentLevel: int</span>
+<span class="sd">    :param return_str: If True, returns the formatted message as a string. Default is False.</span>
+<span class="sd">    :type return_str: bool</span>
+<span class="sd">    :param bold: If True, makes the text bold. Default is False.</span>
+<span class="sd">    :type bold: bool</span>
+<span class="sd">    :param underline: If True, underlines the text. Default is False.</span>
+<span class="sd">    :type underline: bool</span>
+<span class="sd">    :param bkg_color: The background color. Default is &quot;none&quot;.</span>
+<span class="sd">    :type bkg_color: str</span>
+<span class="sd">    :return: The formatted message if return_str is True.</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">style_digit</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+    <span class="k">if</span> <span class="n">bold</span> <span class="ow">and</span> <span class="n">underline</span><span class="p">:</span>
+        <span class="n">style_digit</span> <span class="o">=</span> <span class="s2">&quot;1;4&quot;</span>
+    <span class="k">elif</span> <span class="n">bold</span><span class="p">:</span>
+        <span class="n">style_digit</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+    <span class="k">elif</span> <span class="n">underline</span><span class="p">:</span>
+        <span class="n">style_digit</span> <span class="o">=</span> <span class="s2">&quot;4&quot;</span>
+
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;purple&quot;</span><span class="p">,</span> <span class="s2">&quot;cyan&quot;</span><span class="p">,</span> <span class="s2">&quot;white&quot;</span><span class="p">]</span>
+    <span class="n">font_colors</span> <span class="o">=</span> <span class="p">{</span><span class="n">color</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;;</span><span class="si">{</span><span class="mi">30</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">colors</span><span class="p">)}</span>
+    <span class="n">background_colors</span> <span class="o">=</span> <span class="p">{</span><span class="n">color</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;;</span><span class="si">{</span><span class="mi">40</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">colors</span><span class="p">)}</span>
+    <span class="n">font_colors</span><span class="p">[</span><span class="s2">&quot;none&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">background_colors</span><span class="p">[</span><span class="s2">&quot;none&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ansi_code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">style_digit</span><span class="si">}{</span><span class="n">font_colors</span><span class="p">[</span><span class="n">color</span><span class="p">]</span><span class="si">}{</span><span class="n">background_colors</span><span class="p">[</span><span class="n">bkg_color</span><span class="p">]</span><span class="si">}</span><span class="s2">m&quot;</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">ansi_code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">style_digit</span><span class="si">}{</span><span class="n">font_colors</span><span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">]</span><span class="si">}{</span><span class="n">background_colors</span><span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">m&quot;</span>
+
+    <span class="n">indentStr</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">indentLevel</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">indentStr</span> <span class="o">=</span> <span class="s2">&quot;&gt;&gt;&quot;</span>
+    <span class="k">if</span> <span class="n">indentLevel</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">indentStr</span> <span class="o">=</span> <span class="s2">&quot;+&quot;</span>
+    <span class="k">if</span> <span class="n">indentLevel</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">indentStr</span> <span class="o">=</span> <span class="s2">&quot;*&quot;</span>
+    <span class="k">if</span> <span class="n">indentLevel</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">indentStr</span> <span class="o">=</span> <span class="s2">&quot;--&gt;&quot;</span>
+    <span class="k">if</span> <span class="n">indentLevel</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">indentStr</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span>
+
+    <span class="n">formatted_msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[</span><span class="si">%s%s</span><span class="s2"> </span><span class="si">%s</span><span class="se">\033</span><span class="s2">[0m&quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">ansi_code</span><span class="p">,</span>
+        <span class="s2">&quot;  &quot;</span> <span class="o">*</span> <span class="n">indentLevel</span> <span class="o">+</span> <span class="n">indentStr</span><span class="p">,</span>
+        <span class="n">msg</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">formatted_msg</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">formatted_msg</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="warning_handler">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.warning_handler">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">warning_handler</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">line</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handles warnings by printing them with color formatting.</span>
+
+<span class="sd">    :param message: The warning message.</span>
+<span class="sd">    :type message: str</span>
+<span class="sd">    :param category: The category of the warning.</span>
+<span class="sd">    :type category: Warning</span>
+<span class="sd">    :param filename: The name of the file where the warning occurred.</span>
+<span class="sd">    :type filename: str</span>
+<span class="sd">    :param lineno: The line number where the warning occurred.</span>
+<span class="sd">    :type lineno: int</span>
+<span class="sd">    :param file: The file object. Default is None.</span>
+<span class="sd">    :type file: file object, optional</span>
+<span class="sd">    :param line: The line of code where the warning occurred. Default is None.</span>
+<span class="sd">    :type line: str, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">color_msg</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">category</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> in:&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span>
+                    <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">color_msg</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">lineno</span><span class="si">}</span><span class="s2"> :&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span>
+                    <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">color_msg</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="error_handler">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.error_handler">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">error_handler</span><span class="p">(</span><span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handles errors by printing them with color formatting.</span>
+
+<span class="sd">    :param exc_type: The type of the exception.</span>
+<span class="sd">    :type exc_type: type</span>
+<span class="sd">    :param exc_value: The exception instance.</span>
+<span class="sd">    :type exc_value: Exception</span>
+<span class="sd">    :param exc_traceback: The traceback object.</span>
+<span class="sd">    :type exc_traceback: traceback</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">color_msg</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exc_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                    <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">color_msg</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exc_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span>
+                <span class="p">),</span>
+                <span class="n">color_msg</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="s2">&quot;Traceback (most recent call last):&quot;</span>
+                        <span class="o">+</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_tb</span><span class="p">(</span><span class="n">exc_traceback</span><span class="p">))</span>
+                        <span class="k">if</span> <span class="n">exc_traceback</span>
+                        <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">),</span>
+                    <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">),</span>  <span class="c1"># [-2:]</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="flatten">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.flatten">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flattens a nested list. If the input is not a list, returns the single value as a list.</span>
+
+<span class="sd">    :param lst: The nested list to flatten.</span>
+<span class="sd">    :type lst: list</span>
+<span class="sd">    :return: The flattened list or the single value as a list.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">lst</span><span class="p">]</span>
+    
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">flatten</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="wrap_lambda">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.wrap_lambda">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">wrap_lambda</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">LambdaType</span><span class="p">)</span> <span class="ow">and</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;&lt;lambda&gt;&quot;</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrapped_func</span>
+    <span class="k">return</span> <span class="n">func</span></div>
+
+
+<div class="viewcode-block" id="create_outfolder">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.create_outfolder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_outfolder</span><span class="p">(</span><span class="n">outname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates an output directory if it does not exist.</span>
+
+<span class="sd">    :param outname: The path of the output directory.</span>
+<span class="sd">    :type outname: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">outname</span><span class="p">)):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">outname</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="save_mpl_canvas">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.save_mpl_canvas">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_mpl_canvas</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;./results&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save the given matplotlib figure to the specified path in SVG format.</span>
+
+<span class="sd">    :param fig: The figure to save.</span>
+<span class="sd">    :type fig: matplotlib.figure.Figure</span>
+<span class="sd">    :param name: The name of the file (without extension).</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :param path: The directory where the file will be saved. Default is &quot;./results&quot;.</span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    :param dpi: The resolution of the saved figure. Default is 500.</span>
+<span class="sd">    :type dpi: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">name</span><span class="o">+</span><span class="s2">&quot;.svg&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="init_ntuple_from_config">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.init_ntuple_from_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">init_ntuple_from_config</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">Config</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">inputFolder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">maxfiles</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">tree_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/dtNtupleProducer/DTTREE&quot;</span>
+    <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes an NTuple object using a configuration object that supplies selectors and preprocessors.</span>
+
+<span class="sd">    :param config: The configuration object. Defaults to None.</span>
+<span class="sd">    :type config: dtpr.utils.config.Config, optional</span>
+<span class="sd">    :param inputFolder: The folder containing the input files. Default is `&quot;&quot;`.</span>
+<span class="sd">    :type inputFolder: str</span>
+<span class="sd">    :param maxfiles: The maximum number of files to process. Defaults to -1 (process all files).</span>
+<span class="sd">    :type maxfiles: int, optional</span>
+<span class="sd">    :param tree_name: The name of the tree in the input files. Default is &quot;/dtNtupleProducer/DTTREE&quot;.</span>
+<span class="sd">    :type tree_name: str, optional</span>
+<span class="sd">    :return: An NTuple object initialized with the given parameters.</span>
+<span class="sd">    :rtype: dtpr.base.NTuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">selectors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">preprocessors</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;ntuple_selectors&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">selector_module</span><span class="p">,</span> <span class="n">selector_name</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">selector_module</span><span class="p">)</span>
+            <span class="n">selectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">pp_info</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;ntuple_preprocessors&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">preprocessor_module</span><span class="p">,</span> <span class="n">preprocessor_name</span> <span class="o">=</span> <span class="n">pp_info</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">preprocessor_module</span><span class="p">)</span>
+            <span class="n">preprocessor</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">preprocessor_name</span><span class="p">)</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="n">pp_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kwargs&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">preprocessors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">preprocessor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">inputFolder</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">NTuple</span>
+        <span class="k">return</span> <span class="n">NTuple</span><span class="p">(</span><span class="n">inputFolder</span><span class="p">,</span> <span class="n">selectors</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">maxfiles</span><span class="p">,</span> <span class="n">tree_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input folder </span><span class="si">{</span><span class="n">inputFolder</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_unique_locs">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.get_unique_locs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_unique_locs</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">loc_ids</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;wh&quot;</span><span class="p">,</span> <span class="s2">&quot;sc&quot;</span><span class="p">,</span> <span class="s2">&quot;st&quot;</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the unique locations of the specified particle types.</span>
+
+<span class="sd">    :param particles: The list of particle objects.</span>
+<span class="sd">    :type particles: list</span>
+<span class="sd">    :param loc_ids: The location IDs. Default is [&quot;wh&quot;, &quot;sc&quot;, &quot;st&quot;].</span>
+<span class="sd">    :type loc_ids: list, optional</span>
+<span class="sd">    :return: The unique locations of the specified particle types in tuple format.</span>
+<span class="sd">    :rtype: set</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">locs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">particles</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="n">particles</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">locs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="n">particle</span><span class="p">,</span> <span class="n">loc_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">loc_id</span> <span class="ow">in</span> <span class="n">loc_ids</span><span class="p">]))</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">er</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Location Id attribute not found in particle object: </span><span class="si">{</span><span class="n">er</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">locs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_best_matches">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.get_best_matches">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_best_matches</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the best matching segments for each generator muon.</span>
+
+<span class="sd">    :param reader: The reader object containing generator muons.</span>
+<span class="sd">    :type reader: object</span>
+<span class="sd">    :param station: The station number. Default is 1.</span>
+<span class="sd">    :type station: int</span>
+<span class="sd">    :return: The best matching segments.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">genmuons</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">genmuons</span>
+
+    <span class="n">bestMatches</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">igm</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">genmuons</span><span class="p">))]</span>
+
+    <span class="c1"># This is what&#39;s done in Jaime&#39;s code: https://github.com/jaimeleonh/DTNtuples/blob/unifiedPerf/test/DTNtupleTPGSimAnalyzer_Efficiency.C#L181-L208</span>
+    <span class="c1"># Basically: get the best matching segment to a generator muon per MB chamber</span>
+
+    <span class="c1"># color_msg(f&quot;[FUNCTIONS::GET_BEST_MATCHES] Debugging with station {station}&quot;, color = &quot;red&quot;, indentLevel = 0)</span>
+    <span class="k">for</span> <span class="n">igm</span><span class="p">,</span> <span class="n">gm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">genmuons</span><span class="p">):</span>
+        <span class="c1"># color_msg(f&quot;[FUNCTIONS::GET_BEST_MATCHES] igm {igm}&quot;, indentLevel = 1)</span>
+        <span class="c1"># gm.summarize(indentLevel = 2)</span>
+        <span class="k">for</span> <span class="n">bestMatch</span> <span class="ow">in</span> <span class="n">gm</span><span class="o">.</span><span class="n">matches</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bestMatch</span><span class="o">.</span><span class="n">st</span> <span class="o">==</span> <span class="n">station</span><span class="p">:</span>
+                <span class="n">bestMatches</span><span class="p">[</span><span class="n">igm</span><span class="p">]</span> <span class="o">=</span> <span class="n">bestMatch</span>
+
+    <span class="c1"># Remove those that are None which are simply dummy values</span>
+    <span class="n">bestMatches</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">key</span><span class="p">:</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bestMatches</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bestMatches</span></div>
+
+
+<div class="viewcode-block" id="deltaPhi">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.deltaPhi">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">deltaPhi</span><span class="p">(</span><span class="n">phi1</span><span class="p">,</span> <span class="n">phi2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the difference in phi between two angles.</span>
+
+<span class="sd">    :param phi1: The first angle in radians.</span>
+<span class="sd">    :type phi1: float</span>
+<span class="sd">    :param phi2: The second angle in radians.</span>
+<span class="sd">    :type phi2: float</span>
+<span class="sd">    :return: The difference in phi.</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">phi1</span> <span class="o">-</span> <span class="n">phi2</span>
+    <span class="k">while</span> <span class="n">res</span> <span class="o">&gt;</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">-=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+    <span class="k">while</span> <span class="n">res</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+
+<div class="viewcode-block" id="deltaR">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.deltaR">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">deltaR</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the delta R between two particles. Particles must have attributes eta and phi.</span>
+
+<span class="sd">    :param p1: The first particle with attributes eta and phi.</span>
+<span class="sd">    :type p1: object</span>
+<span class="sd">    :param p2: The second particle with attributes eta and phi.</span>
+<span class="sd">    :type p2: object</span>
+<span class="sd">    :return: The delta R value.</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dEta</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">eta</span> <span class="o">-</span> <span class="n">p2</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+    <span class="n">dPhi</span> <span class="o">=</span> <span class="n">deltaPhi</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">phi</span><span class="p">,</span> <span class="n">p2</span><span class="o">.</span><span class="n">phi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dEta</span> <span class="o">*</span> <span class="n">dEta</span> <span class="o">+</span> <span class="n">dPhi</span> <span class="o">*</span> <span class="n">dPhi</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="phiConv">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.phiConv">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">phiConv</span><span class="p">(</span><span class="n">phi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a phi value.</span>
+
+<span class="sd">    :param phi: The phi value to convert.</span>
+<span class="sd">    :type phi: float</span>
+<span class="sd">    :return: The converted phi value.</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">phi</span> <span class="o">/</span> <span class="mf">65536.0</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

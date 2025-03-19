@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>base &mdash; DTPatternRecognition 0.1.0 documentation</title>
+  <title>event-visualizer &mdash; DTPatternRecognition 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/general_styles.css" />
@@ -20,8 +20,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Event" href="event.html" />
-    <link rel="prev" title="digis-fpga-dumper" href="../analysis/digis-fpga-dumper.html" /> 
+    <link rel="next" title="digis-fpga-dumper" href="digis-fpga-dumper.html" />
+    <link rel="prev" title="plot-dt / plot-dts" href="plot-dts.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,13 +45,15 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../analysis/main.html">analysis</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">base</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="event.html">Event</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ntuple.html">NTuple</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event_list.html">EventList</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="main.html">analysis</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="inspect-event.html">inspect-event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fill-histos.html">fill-histos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot-dts.html">plot-dt / plot-dts</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">event-visualizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="digis-fpga-dumper.html">digis-fpga-dumper</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../base/main.html">base</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../particles/main.html">particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../utils/main.html">utils</a></li>
 </ul>
@@ -70,9 +72,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">base</li>
+          <li class="breadcrumb-item"><a href="main.html">analysis</a></li>
+      <li class="breadcrumb-item active">event-visualizer</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/src/base/main.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/src/analysis/event-visualizer.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -80,19 +83,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="base">
-<h1>base<a class="headerlink" href="#base" title="Link to this heading"></a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">dtpr.base</span></code> contains Classes designed to offer simple and versatile methods
-for manipulating <strong>Event</strong> information derived from ROOT TTrees of <strong>NTuples</strong>. The classes facilitate the
-extraction, transformation, and analysis of event data. Each class is equipped with methods tailored
-to handle specific aspects of event data processing, ensuring efficient and effective data manipulation.</p>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="event.html">Event</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ntuple.html">NTuple</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event_list.html">EventList</a></li>
-</ul>
+  <section id="event-visualizer">
+<h1>event-visualizer<a class="headerlink" href="#event-visualizer" title="Link to this heading"></a></h1>
+<p>For debugging or performing multiple visual inspections across several events or DT chambers,
+running the previous command each time can be cumbersome. To streamline this process, a simple
+Graphical User Interface (GUI) was implemented. This GUI dynamically loads event information and
+produces the required plots, as demonstrated in the following short clip:</p>
+<p align="center">
+    <img src="../../_static/gui_visualizer.gif" width="600">
+</p><p>To open the GUI, run the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>event-visualizer<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span>
+<span class="c1"># The OUTPATH argument is only required if a custom run_config.yaml will be used.</span>
+</pre></div>
 </div>
 </section>
 
@@ -100,8 +102,8 @@ to handle specific aspects of event data processing, ensuring efficient and effe
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../analysis/digis-fpga-dumper.html" class="btn btn-neutral float-left" title="digis-fpga-dumper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="event.html" class="btn btn-neutral float-right" title="Event" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="plot-dts.html" class="btn btn-neutral float-left" title="plot-dt / plot-dts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="digis-fpga-dumper.html" class="btn btn-neutral float-right" title="digis-fpga-dumper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

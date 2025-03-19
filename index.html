@@ -20,7 +20,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="base" href="src/base/main.html" /> 
+    <link rel="next" title="analysis" href="src/analysis/main.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,6 +44,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="src/analysis/main.html">analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="src/base/main.html">base</a></li>
 <li class="toctree-l1"><a class="reference internal" href="src/particles/main.html">particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="src/utils/main.html">utils</a></li>
@@ -75,35 +76,63 @@
              
   <section id="dt-pattern-recognition-package">
 <h1>DT Pattern Recognition Package<a class="headerlink" href="#dt-pattern-recognition-package" title="Link to this heading"></a></h1>
-<p>This package provides a set of base tools for implementing pattern recognition algorithms using
-input data in Ntuple format. It also includes visualization tools for DT Ntuples, taking into account
-the geometrical features of the CMS DT system.</p>
+<p>This package provides a set of base tools for implementing pattern recognition algorithms for the CMS DT system
+using input data in NTuples format. It also includes visualization tools for DT Ntuples, taking into account
+the geometrical features of the CMS DT system by using another auxiliary package <a class="reference external" href="https://github.com/DanielEstrada971102/mplDTs">mplDTs</a>.</p>
+<p>The main concept of this framework is to facilitate analysis on input data using an event-by-event approach
+with Python classes. This allows for more intuitive and readable code, such as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">muon</span> <span class="ow">in</span> <span class="n">events</span><span class="o">.</span><span class="n">genmuons</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">muon</span><span class="o">.</span><span class="n">pt</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+   <span class="nb">print</span><span class="p">(</span><span class="n">muon</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>compared to:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">gen_pdgID</span><span class="p">)):</span>
+<span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">gen_pt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+   <span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">gen_eta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Some useful, and as general as possible, tools using the framework have been implemented to facilitate some common tasks
+such as fill ROOT histograms, or inspect or visualize information from the DT Ntuples. They are accessible through the
+<cite>dtpr</cite> CLI command and are described in the <a class="reference internal" href="src/analysis/main.html"><span class="doc">analysis</span></a> section. But, reading,
+manipulating, and mapping the information from the input files into the respective classes are handled
+by central classes, just go  around the <a class="reference internal" href="src/base/main.html"><span class="doc">base</span></a> section to know more about them.</p>
+<p>The package is just in its early stages, so feel free to contribute, report bugs, or suggest improvements.
+Take a look to the <cite>Contributors &lt;&gt;</cite> and <cite>Developers &lt;&gt;</cite> guides.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
 <p>First, download the source files or clone the repository:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/DanielEstrada971102/DTPatternRecognition.git
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/DanielEstrada971102/DTPatternRecognition.git
 <span class="nb">cd</span><span class="w"> </span>DTPatternRecognition
 </pre></div>
 </div>
 <p>You can then install the package with pip by running:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>.
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 <p>To check if the package was installed successfully, run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>show<span class="w"> </span>DTPatternRecognition
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>show<span class="w"> </span>DTPatternRecognition
 </pre></div>
 </div>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>Be aware that the package requires PyROOT, so you should have it installed. If you are working in
 a Python virtual environment, ensure to include ROOT in it. To do this, use the command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>--system-site-packages<span class="w"> </span>ROOT<span class="w"> </span>ENV_DIR<span class="o">[</span>ENV_DIR<span class="w"> </span>...<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>--system-site-packages<span class="w"> </span>ROOT<span class="w"> </span>ENV_DIR<span class="o">[</span>ENV_DIR<span class="w"> </span>...<span class="o">]</span>
 </pre></div>
 </div>
 </div>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="src/analysis/main.html">analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/inspect-event.html">inspect-event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/fill-histos.html">fill-histos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/plot-dts.html">plot-dt / plot-dts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/event-visualizer.html">event-visualizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/digis-fpga-dumper.html">digis-fpga-dumper</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="src/base/main.html">base</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="src/base/event.html">Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="src/base/ntuple.html">NTuple</a></li>
@@ -135,7 +164,7 @@ a Python virtual environment, ensure to include ROOT in it. To do this, use the 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="src/base/main.html" class="btn btn-neutral float-right" title="base" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="src/analysis/main.html" class="btn btn-neutral float-right" title="analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

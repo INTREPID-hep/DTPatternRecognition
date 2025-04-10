@@ -1,10 +1,8 @@
 """ Miscelaneous """
 import os
 import math
-import importlib
 from types import LambdaType
-from functools import partial
-from dtpr.utils.config import Config
+from importlib import import_module
 
 # Make Iterators for when we want to iterate over different subdetectors
 wheels = range(-2, 3)
@@ -153,6 +151,28 @@ def error_handler(exc_type, exc_value, exc_traceback):
         )
     )
 
+def get_callable_from_src(src_str: str):
+    """
+    Returns the callable object from the given source string.
+
+    :param src_str: The source string containing the callable.
+    :type src: str
+    :return: The callable object.
+    """
+    callable = None
+    if src_str:
+        try:
+            _module_name, _callable_name = src_str.rsplit(".", 1)
+            _module = import_module(_module_name)
+            callable = getattr(_module, _callable_name)
+        except AttributeError as e:
+            raise AttributeError(f"{_callable_name} callable not found: {e}")
+        except ImportError as e:
+            raise ImportError(f"Error importing {src_str}: {e}")
+
+    return callable
+
+
 def flatten(lst):
     """
     Flattens a nested list. If the input is not a list, returns the single value as a list.
@@ -207,47 +227,6 @@ def save_mpl_canvas(fig, name, path = "./results", dpi=500):
         os.system("mkdir -p %s"%(path))
     fig.savefig(path + "/" + name+".svg", dpi=dpi)
     return
-
-def init_ntuple_from_config(
-    config: Config = None,
-    inputFolder: str = "",
-    maxfiles: int = -1,
-    tree_name: str = "/dtNtupleProducer/DTTREE"
-    ):
-    """
-    Initializes an NTuple object using a configuration object that supplies selectors and preprocessors.
-
-    :param config: The configuration object. Defaults to None.
-    :type config: dtpr.utils.config.Config, optional
-    :param inputFolder: The folder containing the input files. Default is `""`.
-    :type inputFolder: str
-    :param maxfiles: The maximum number of files to process. Defaults to -1 (process all files).
-    :type maxfiles: int, optional
-    :param tree_name: The name of the tree in the input files. Default is "/dtNtupleProducer/DTTREE".
-    :type tree_name: str, optional
-    :return: An NTuple object initialized with the given parameters.
-    :rtype: dtpr.base.NTuple
-    """
-    selectors = []
-    preprocessors = []
-
-    if config:
-        for source in getattr(config, "ntuple_selectors", []):
-            selector_module, selector_name = source.rsplit('.', 1)
-            module = importlib.import_module(selector_module)
-            selectors.append(getattr(module, selector_name))
-
-        for _, pp_info in getattr(config, "ntuple_preprocessors", {}).items():
-            preprocessor_module, preprocessor_name = pp_info['src'].rsplit('.', 1)
-            module = importlib.import_module(preprocessor_module)
-            preprocessor = getattr(module, preprocessor_name)
-            kwargs = pp_info.get('kwargs', {})
-            preprocessors.append(partial(preprocessor, **kwargs))
-    if os.path.exists(inputFolder):
-        from dtpr.base import NTuple
-        return NTuple(inputFolder, selectors, preprocessors, maxfiles, tree_name)
-    else:
-        raise ValueError(f"Input folder {inputFolder} does not exist.")
 
 def get_unique_locs(particles, loc_ids=["wh", "sc", "st"]):
     """

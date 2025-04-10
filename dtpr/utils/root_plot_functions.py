@@ -24,7 +24,6 @@ def make_plots(
     graphs = []
 
     for info in info_for_plots:
-        print(info_for_plots)
         file_name = info["file_name"]
         histo_names = info["histos_names"]
         legends = info["legends"]
@@ -149,7 +148,6 @@ def make_hist_div_allWheels(
     eff.Divide(total_den)
     r.gStyle.SetErrorX(0.0001)
 
-    print(type(eff))
     return eff
 
 def make_hist_plot_allWheels(

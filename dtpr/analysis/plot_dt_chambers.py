@@ -6,23 +6,28 @@ from pandas import DataFrame
 from mplhep import style
 from copy import deepcopy
 
-from dtpr.base import Event
-from dtpr.utils.functions import color_msg, init_ntuple_from_config, save_mpl_canvas
+from dtpr.base import Event, NTuple
+from dtpr.utils.functions import color_msg, save_mpl_canvas
 from mpldts.geometry.station import Station as DT
 from mpldts.patches.dt_patch import DTPatch
 from dtpr.utils.config import RUN_CONFIG
 
 def embed_dtwheel2axes(ev, wheel, ax=None, bounds_kwargs=None, cells_kwargs=None):
     """
-    Create the axes for a specific wheel for the given event.
+    Add the dt patches for a specific wheel for the given event.
 
-    Parameters:
-    ev (Event): The event containing DT data.
-    wheel (int): The wheel number (-2 to 2).
-    ax (matplotlib.axes._subplots.AxesSubplot): The axes to plot on. Default is None.
-
-    Returns:
-    matplotlib.axes._subplots.AxesSubplot: The axes for the specified wheel.
+    :param ev: The event containing DT data.
+    :type ev: Event
+    :param wheel: The wheel number to plot.
+    :type wheel: int
+    :param ax: The axes to plot on. Default is None, which creates a new figure.
+    :type ax: matplotlib.axes._subplots.AxesSubplot
+    :param bounds_kwargs: Additional keyword arguments for the bounds of the patch.
+    :type bounds_kwargs: dict
+    :param cells_kwargs: Additional keyword arguments for the cells of the patch.
+    :type cells_kwargs: dict
+    :return: The axes for the specified wheel.
+    :return type:  matplotlib.axes._subplots.AxesSubplot
     """
     if not ax:
         _, ax = plt.subplots(figsize=(8, 6))
@@ -71,26 +76,25 @@ def embed_dtwheel2axes(ev, wheel, ax=None, bounds_kwargs=None, cells_kwargs=None
 
     return ax
 
-def _make_dt_plots(
-        ev: Event,
-        name="test_dt_plot",
-        path="./results",
-        save=False):
+def make_dt_plots(ev: Event, name="test_dt_plot", path=".", save=False):
     """
-    Create the global DT plots for the given event.
+    Create and display the global DT plots for the given event.
 
-    Parameters:
-    ev (Event): The event containing DT data.
-    name (str): The name of the plot file.
-    path (str): The directory where the plot file will be saved. Default is ".results".
-    save (bool): Whether to save the plot to disk. Default is False.
+    :param ev: The event containing DT data.
+    :type ev: Event
+    :param name: (str): The name of the plot file. Default is "test_dt_plot".
+    :type name: str
+    :param path: (str): The directory where the plot file will be saved. Default is ".".
+    :type path: str
+    :param save: Whether to save the plot to disk. Default is False.
+    :type save: bool
     """
-    fig, axs = plt.subplots(2, 3, figsize=(50,30), layout="constrained")
+    fig, axs = plt.subplots(2, 3, figsize=(25,15), layout="constrained")
     axs = axs.flat
     fig.suptitle(f"Event #{ev.index}")
 
     bounds_kwargs = deepcopy(RUN_CONFIG.dt_plots_configs["bounds-kwargs"])
-    cells_kwargs = deepcopy	(RUN_CONFIG.dt_plots_configs["cells-kwargs"])
+    cells_kwargs = deepcopy(RUN_CONFIG.dt_plots_configs["cells-kwargs"])
 
     cmap_configs = deepcopy(RUN_CONFIG.dt_plots_configs["cmap-configs"])
 
@@ -107,7 +111,7 @@ def _make_dt_plots(
         _ = embed_dtwheel2axes(ev, iaxs, axs[iaxs + 2], bounds_kwargs=bounds_kwargs, cells_kwargs=cells_kwargs)
 
     axs[-1].remove()
-
+    fig.tight_layout()
     if save:
         save_mpl_canvas(fig, name, path, dpi=RUN_CONFIG.dt_plots_configs["figure-configs"]["figure.dpi"])
     else:
@@ -141,10 +145,9 @@ def plot_dt_chambers(
     color_msg(f"Running program to produce DT plots based on DTNTuples", "green")
 
     # Create the Ntuple object
-    ntuple = init_ntuple_from_config(
+    ntuple = NTuple(
         inputFolder=inpath,
         maxfiles=maxfiles,
-        config=RUN_CONFIG,
     )
 
     color_msg(f"Making plots...", color="purple", indentLevel=1)
@@ -155,7 +158,7 @@ def plot_dt_chambers(
         return
     with plt.style.context(getattr(style,RUN_CONFIG.dt_plots_configs["mplhep-style"])):
         plt.rcParams.update(RUN_CONFIG.dt_plots_configs["figure-configs"]) 
-        _make_dt_plots(ev, name=f"dt_plot{tag}_ev{ev.index}", path=os.path.join(outfolder, "dt_plots"), save=save)
+        _make_dt_plots(ev, name=f"dt_plots{tag}_ev{ev.index}", path=os.path.join(outfolder, "dt_plots"), save=save)
 
     color_msg(f"Done!", color="green")
 

@@ -10,11 +10,13 @@ class EventList:
 
         :param tree: The ROOT TTree containing the events information.
         :type tree: ROOT.TChain
-        :param processor: The methods to preprocess the events (default is None, which is interpreted as a lambda function that returns the event as is).
+        :param processor: The methods to preprocess the events.
         :type processor: function, optional
+        :param use_config: Flag to indicate if configuration file should be used to build events (default is False).
+        :type use_config: bool, optional
         """
         self._tree = tree
-        self._processor = processor if processor else lambda ev: ev
+        self._processor = processor
         self._length = tree.GetEntries()
 
     def __len__(self):
@@ -46,8 +48,11 @@ class EventList:
 
             for iev, ev in enumerate(self._tree):
                 if iev == index:
-                    event = Event(ev, iev)
-                    return self._processor(event)
+                    event = Event(ev, iev, use_config=True)
+                    if self._processor:
+                        return self._processor(event)
+                    else:
+                        return event
             raise IndexError("Event index out of range")
         else:
             raise TypeError("Invalid argument type")
@@ -65,7 +70,7 @@ class EventList:
         :raises: ValueError: If no event with the specified number is found.
         """
         for iev, ev in enumerate(self._tree):
-            event = Event(ev, iev)
+            event = Event(ev, iev, use_config=True)
             if event.number == number:
                 return self._processor(event)
         raise ValueError(f"No event found with number: {number}")
@@ -75,7 +80,7 @@ class EventList:
         Iterate over the events in the EventList.
         """
         for iev, ev in enumerate(self._tree):
-            event = Event(ev, iev)
+            event = Event(ev, iev, use_config=True)
             yield self._processor(event)
 
     def __repr__(self):

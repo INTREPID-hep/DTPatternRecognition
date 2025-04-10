@@ -50,6 +50,7 @@ def analyze_genmuon_showers(ev: Event, method=1):
         for gm in ev.genmuons:
             locs = set(gm.matched_segments_stations)
             for st, sc, wh in locs:
-                if any([abs(simhit.particle_type) == 11 for simhit in ev.filter_particles("simhits", wh=wh, sc=sc, st=st)]):
+                simhits = ev.filter_particles("simhits", wh=wh, sc=sc, st=st)
+                if len([simhit for simhit in simhits if abs(simhit.particle_type) == 11]) >= 8:
                     gm.showered = True
                     break

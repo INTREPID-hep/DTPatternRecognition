@@ -1,9 +1,9 @@
 import os
 import warnings
-from importlib import import_module
 from dtpr.utils.config import RUN_CONFIG
 from dtpr.utils.functions import color_msg
-from dtpr.particles._particle import Particle  # Import the base Particle class
+from dtpr.base.particle import Particle  # Import the base Particle class
+from dtpr.utils.functions import get_callable_from_src
 
 class Event:
     """
@@ -22,19 +22,31 @@ class Event:
         direct user access. Instead, users should access particles by their type name
         (e.g., `event.genmuons`).
     """
-    def __init__(self, ev=None, index=None):
+    def __init__(self, ev=None, index=None, use_config=False):
         """
         Initialize an Event instance.
 
         :param ev: The ROOT TTree entry containing event data.
         :param index: The index of the event in the TTree iteration.
         :type index: int
+        :param use_config: Flag to indicate whether to use the configuration file to build particles.
+        :type use_config: bool
         """
         self.index = index
-        self.number = index  # Default to the index if the event number is not found
+        self.number = index
         self._particles = {}  # Initialize an empty dictionary for particles
+
         if ev is not None:
-            self._init_from_ev(ev)
+            # Default to the index if the event number is not found
+            self.number = getattr(ev, "event_eventNumber", self.number)
+
+        if use_config and hasattr(RUN_CONFIG, 'particle_types'):
+            for ptype, pinfo in getattr(RUN_CONFIG, "particle_types", {}).items():
+                    self._build_particles(ev, ptype, pinfo)
+        else:
+            warnings.warn(
+                "No particle types defined in the configuration file. Initializing an empty Event instance."
+            )
 
     def __getattr__(self, name):
         """
@@ -135,72 +147,93 @@ class Event:
             dict_out[ptype] = [p.__dict__ for p in particles]
         return dict_out
 
-    def _init_from_ev(self, ev):
-        self.number = getattr(ev, "event_eventNumber", self.number)
-        if hasattr(RUN_CONFIG, 'particle_types'):
-            for ptype, pinfo in getattr(RUN_CONFIG, "particle_types", {}).items():
-                self._build_particles(ev, ptype, pinfo)
-        else:
-            warnings.warn(
-                "No particle types defined in the configuration file. Initializing an empty Event instance."
-            )
 
     def _build_particles(self, ev, ptype, pinfo):
         """
-        Build particles of a specific type based on the information of the TTree event entry.
+        Build particles of a specific type based on the information indicated in the config file.
 
         :param ev: The ROOT TTree entry containing event data.
-        :param ptype: The type of particles to build. It will be the name of the attribute in the 
+        :param ptype: The type (name) of particles to build. It will be the attribute name in the 
             Event instance.
         :param pinfo: The information dictionary for the particle type builder. It should contain 
             the class builder path, the name of the branch to infer the number of particles, and 
             optional conditions and sorting parameters.
         """
-        try:
-            module_name, class_name = pinfo["class"].rsplit(".", 1)
-            module = import_module(module_name)
-            ParticleClass = getattr(module, class_name)
-        except AttributeError as e:
-            raise AttributeError(f"{ptype} class not found: {e}")
-        except ImportError as e:
-            raise ImportError(f"Error importing {pinfo['class']}: {e}")
-
-        try:
-            num_particles = (
-            n
-            if isinstance(n := eval(f"ev.{pinfo['n_branch_name']}"), int)
-            else len(n)
-            )
-        except AttributeError as e:
-            raise AttributeError(f"Branch {pinfo['n_branch_name']} not found in the event entry or not included in the config file: {e}")
-        except Exception as e:
-            raise RuntimeError(f"Error evaluating branch {pinfo['n_branch_name']}: {e}")
-
-        if "conditioner" in pinfo:
-            conditioner = pinfo.get("conditioner", {})
-            if "property" not in conditioner or "condition" not in conditioner:
-                raise ValueError("Conditioner must have 'property' and 'condition'")
-            particles = [
-                ParticleClass(i, ev)
-                for i in range(num_particles)
-                if eval(
-                    f"abs(ev.{conditioner['property']}[{i}]){conditioner['condition']}"
-                )  # abs should not be hardcoded
-            ]
+        # determine the number of particles to build
+        _amount_attr = pinfo.get("amount", None)
+        if _amount_attr is None:
+            raise ValueError(f"Particle type {pinfo} does not specify an amount of instances to build.")
         else:
-            particles = [ParticleClass(i, ev) for i in range(num_particles)]
+            if isinstance(_amount_attr, int):
+                num_particles = _amount_attr
+            elif isinstance(_amount_attr, str):
+                _n = getattr(ev, _amount_attr, None)
+                if _n is None:
+                    raise ValueError(f"Branch {_amount_attr} not found in the event entry.")
+                if isinstance(_n, int):
+                    num_particles = _n
+                else:
+                    try:
+                        num_particles = len(_n) 
+                    except Exception as e:
+                        raise RuntimeError(f"Amount of particles can be determined from {_amount_attr} branch: {e}")
 
-        if "sorter" in pinfo:
-            sorter = pinfo.get("sorter", {})
-            if "by" not in sorter:
-                raise ValueError("Sorter must have 'by' attribute")
-            particles = sorted(
-                particles,
-                key=lambda p: getattr(p, sorter["by"]),
-                reverse=sorter["reverse"] if "reverse" in sorter else False,
+        # determine the class to be used to build the particles
+        if "class" in pinfo:
+            ParticleClass = get_callable_from_src(pinfo["class"])
+            if ParticleClass is None:
+                raise ValueError(f"Particle class {pinfo['class']} wrongly defined.")
+        else:
+            ParticleClass = Particle # Default to the base Particle class
+
+        # Build the particles
+        _particles = []
+        for i in range(num_particles):
+            _particle = ParticleClass(
+                index=i,
+                ev=ev,
+                branches=pinfo.get("branches", None),
+                **pinfo.get("attributes", {}),
+            )
+            if _particle.name == "Particle":
+                # If the name is not set, set it to the particle type
+                _particle.name = ptype.capitalize()[:-1]
+
+            if "filter" in pinfo:  # Only keep the particles that pass the filter, if defined
+                filter_expr = pinfo["filter"]
+                if not isinstance(filter_expr, str):
+                    raise ValueError(f"The 'filter' must be a string, got {type(filter_expr)} instead.")
+                try:
+                    # Validate the filter expression by compiling it
+                    compile(filter_expr, "<string>", "eval")
+                except SyntaxError as e:
+                    raise ValueError(f"Invalid filter expression: {filter_expr}. Error: {e}")
+
+                if eval(filter_expr, {}, {"p": _particle, "ev": ev}):
+                    _particles.append(_particle)
+            else:
+                _particles.append(_particle)
+
+        if "sorter" in pinfo: # Sort the particles if a sorter is defined
+            sorter_info = pinfo["sorter"]
+            if "by" not in sorter_info:
+                raise ValueError(f"Sorter information must contain 'by' key, got {sorter_info.keys()} instead.")
+            key_expr = sorter_info["by"]
+            if not isinstance(key_expr, str):
+                raise ValueError(f"The sorter 'by' must be a string, got {type(key_expr)} instead.")
+            try:
+                # Validate the sorter expression by compiling it
+                compile(key_expr, "<string>", "eval")
+            except SyntaxError as e:
+                raise ValueError(f"Invalid sorter expression: {key_expr}. Error: {e}")
+
+            _particles = sorted(
+                _particles,
+                key=lambda p, ev=ev: eval(key_expr),
+                reverse=sorter_info.get("reverse", False),
             )
 
-        setattr(self, ptype, particles)  # Add the particles to the Event instance
+        setattr(self, ptype, _particles)  # Add the particles to the Event instance
 
     def filter_particles(self, particle_type, **kwargs):
         """
@@ -253,33 +286,43 @@ if __name__ == "__main__":
     """
     Example of how to use the Event class to build particles and analyze them.
     """
-    from ROOT import TFile
-    from dtpr.particles import Shower
-
-    # _maxevents = 1
-    # with TFile(
-    #     os.path.abspath(
-    #         os.path.join(
-    #             os.path.dirname(__file__),
-    #             "../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
-    #         )
-    #     ),
-    #     "read",
-    # ) as ntuple:
-    #     tree = ntuple["dtNtupleProducer/DTTREE;1"]
-
-    #     for iev, ev in enumerate(tree):
-    #         if iev >= _maxevents:
-    #             break
-    #         event = Event(ev=ev)
-    #         # Print the event summary
-    #         print(event)
-
-    event = Event(index=0)
+    # [start-example-1]
+    event = Event(index=1) # initialize an empty event with index 1
     print(event)
 
-    showers = [Shower(index=i, wh=1, sc=1, st=1) for i in range(5)]
-    event.showers = showers
+    # It is possible to manually add particles or other attributes
+    from dtpr.base import Particle
+
+    showers = [Particle(index=i, wh=1, sc=1, st=1, name="Shower") for i in range(5)] # create 5 showers
+    event.showers = showers # add them to the event
 
     print(event)
     print(event.showers[-1])
+    # [end-example-1]
+    # The event can be built from a TTree entry
+    input_file= os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+        )
+    )
+    cf_path = RUN_CONFIG.path
+    # [start-example-2]
+    from ROOT import TFile
+    from dtpr.utils.config import RUN_CONFIG
+
+    # update the configuration file -> if it is not set, it will use the default one 'run_config.yaml'
+    RUN_CONFIG.change_config_file(config_path=cf_path)
+
+    # first, create a TFile object to read the dt ntuple (this is not necessary by using NTuple Class)
+    with TFile(input_file, "read") as ntuple:
+        tree = ntuple["dtNtupleProducer/DTTREE;1"]
+
+        for iev, ev in enumerate(tree):
+            # use_config=True to use the configuration file to build the particles
+            event = Event(index=iev, ev=ev, use_config=True)
+
+            # Print the event summary
+            print(event)
+
+            break # break after the first event

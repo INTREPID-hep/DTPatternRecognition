@@ -1,6 +1,6 @@
 import math
 from dtpr.utils.functions import  phiConv
-from dtpr.particles import Particle
+from dtpr.base import Particle
 
 class GenMuon(Particle):
     """
@@ -23,7 +23,7 @@ class GenMuon(Particle):
     showered : bool
         True if the generator muon showered, False otherwise.
     """
-    def __init__(self, index, ev=None, **kwargs):
+    def __init__(self, index, ev=None, branches=None, **kwargs):
         """
         Initialize a Generator Level Muon instance.
 
@@ -34,28 +34,16 @@ class GenMuon(Particle):
         :param ev: The TTree event entry containing event data.
         :param kwargs: Additional attributes to set explicitly.
         """
+        # set explicit attributes to guarantee that they are set
         self.pt = kwargs.pop("pt", None)
         self.eta = kwargs.pop("eta", None)
         self.phi = kwargs.pop("phi", None)
         self.charge = kwargs.pop("charge", None)
-
-        super().__init__(index, ev, **kwargs)
-
-        # Attributes
         self.matches = []
         self.matched_segments_stations = []
         self.showered = False
 
-    def _init_from_ev(self, ev):
-        """
-        Properties taken from TBranches: {gen_pt, gen_eta, gen_phi, gen_charge}
-
-        :param ev: The TTree event entry containing event data.
-        """
-        self.pt = ev.gen_pt[self.index]
-        self.eta = ev.gen_eta[self.index]
-        self.phi = ev.gen_phi[self.index]
-        self.charge = ev.gen_charge[self.index]
+        super().__init__(index, ev, branches, **kwargs)
 
     def add_match(self, seg):
         """

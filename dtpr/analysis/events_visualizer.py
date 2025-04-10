@@ -11,10 +11,10 @@ from copy import deepcopy
 from mplhep import style
 
 from dtpr.utils.gui.mplwidget import PlotWidget  # Import PlotWidget
+from dtpr.base import NTuple
 from dtpr.analysis.plot_dt_chambers import embed_dtwheel2axes
 from dtpr.analysis.plot_dt_chamber import embed_dt2axes
 from dtpr.utils.config import RUN_CONFIG
-from dtpr.utils.functions import init_ntuple_from_config
 
 
 class EventsVisualizer(QMainWindow):
@@ -22,10 +22,9 @@ class EventsVisualizer(QMainWindow):
         super().__init__()
 
         # Create the Ntuple object
-        self.ntuple = init_ntuple_from_config(
+        self.ntuple = NTuple(
             inputFolder=inpath,
             maxfiles=maxfiles,
-            config=RUN_CONFIG,
         )
 
         # load configs for plotting

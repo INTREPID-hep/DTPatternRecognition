@@ -1,16 +1,13 @@
 from dtpr.utils.functions import color_msg
 from dtpr.utils.functions import create_outfolder, get_unique_locs
-from dtpr.particles.shower import Shower
-from dtpr.base import Event
-from dtpr.analysis.plot_dt_chamber import _make_dt_plot
+from dtpr.base import Event, Particle
 import warnings
 from pandas import DataFrame
 import matplotlib.pyplot as plt
 from numpy import ceil, array
 import gc
 from collections import deque
-import os
-import sys
+
 
 def build_fwshowers(ev: Event, threshold=None, debug=False, debug_step=4, debug_path="./results"):
     """
@@ -81,7 +78,7 @@ def build_fwshowers(ev: Event, threshold=None, debug=False, debug_step=4, debug_
         gc.collect()
 
     for ish, ((wh, sc, st, sl), (nHits, bx)) in enumerate(shower_info.items()):
-        _shower = Shower(index=ish, wh=wh, sc=sc, st=st, nDigis=nHits, BX=bx)
+        _shower = Particle(index=ish, wh=wh, sc=sc, st=st, nDigis=nHits, BX=bx, name="Shower")
         _shower.sl = sl
         ev.fwshowers.append(_shower)
 
@@ -214,7 +211,7 @@ def build_real_showers(ev: Event, threshold=None, debug=False):
         
         if _build_shower:
             _index = ev.realshowers[-1].index + 1 if ev.realshowers else 0
-            _shower = Shower(index=_index, wh=wh, sc=sc, st=st) 
+            _shower = Particle(index=_index, wh=wh, sc=sc, st=st, name="Shower") 
             _shower.shower_type = shower_type
             _shower.sl = sl
             ev.realshowers.append(_shower)
@@ -225,7 +222,6 @@ def build_real_showers(ev: Event, threshold=None, debug=False):
                     indentLevel=2,
                 )
 
-                _make_dt_plot(ev, wh, sc, st)
 
 
 def analyze_fwshowers(ev: Event):

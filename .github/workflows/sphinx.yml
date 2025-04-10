@@ -17,7 +17,7 @@ jobs:
         python-version: '3.x'
     - name: Install dependencies
       run: |
-        pip install . && pip install sphinx sphinx_rtd_theme
+        pip install . && pip install sphinx sphinx_rtd_theme sphinx-copybutton
     - name: Build docs
       run: |
         cd $GITHUB_WORKSPACE/docs && make html

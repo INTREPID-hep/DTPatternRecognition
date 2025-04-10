@@ -6,17 +6,19 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NTuple &mdash; DTPatternRecognition 0.1.0 documentation</title>
+  <title>NTuple &mdash; DTPatternRecognition 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../../_static/general_styles.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -47,6 +49,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../analysis/main.html">analysis</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="main.html">base</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="particle.html">Particle</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event.html">Event</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">NTuple</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event_list.html">EventList</a></li>
@@ -73,7 +76,8 @@
           <li class="breadcrumb-item"><a href="main.html">base</a></li>
       <li class="breadcrumb-item active">NTuple</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/src/base/ntuple.rst.txt" rel="nofollow"> View page source</a>
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -83,92 +87,128 @@
              
   <section id="ntuple">
 <h1>NTuple<a class="headerlink" href="#ntuple" title="Link to this heading"></a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class serves as a simple gateway to access information from single or multiple <cite>.root</cite>
-Ntuples (flat) located in the specified input path. It represents an interface to build <code class="docutils literal notranslate"><span class="pre">Event</span></code> instances
-directly from the TTree event entries. This class is capable of preprocessing, filtering and building <code class="docutils literal notranslate"><span class="pre">Event</span></code>
+<p>The <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class serves as a simple gateway to access information from single or multiple <code class="docutils literal notranslate"><span class="pre">.root</span></code>
+Ntuples located in the specified input path. It represents an interface to build <code class="docutils literal notranslate"><span class="pre">Event</span></code> instances
+directly from the TTree event entries automatically. This class is capable of preprocessing, filtering and building <code class="docutils literal notranslate"><span class="pre">Event</span></code>
 instances according to the <strong>preprocessors</strong>, and <strong>selectors</strong> passed.</p>
-<p>A preprocessor refers to a function that takes an <code class="docutils literal notranslate"><span class="pre">Event</span></code> instance as input and returns the same
-<code class="docutils literal notranslate"><span class="pre">Event</span></code> instance after applying any necessary modifications or additions. A selector refers to a
-function that returns a boolean based on the information of an <code class="docutils literal notranslate"><span class="pre">Event</span></code>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class is designed to be generic and handle many types of NTuple since <code class="docutils literal notranslate"><span class="pre">Event</span></code> creation can be
-controlled through <strong>particle classes</strong> definitions and <strong>configuration files</strong>. The <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class only loads
+<p>A <strong>preprocessor</strong> refers to a function that takes an <code class="docutils literal notranslate"><span class="pre">Event</span></code> instance as input and applies
+any necessary modifications or additions. A <strong>selector</strong> refers to a function that returns a
+boolean based on the information of an <code class="docutils literal notranslate"><span class="pre">Event</span></code> passed as input.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class is designed to be generic and handle many types of NTuple formats since <code class="docutils literal notranslate"><span class="pre">Event</span></code> creation can be
+controlled through a <strong>configuration</strong> <code class="docutils literal notranslate"><span class="pre">YAML</span></code> <strong>file</strong>. Internally, the <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class just loads
 the ROOT TTrees in a TChain (accessible through the attribute <code class="docutils literal notranslate"><span class="pre">tree</span></code>), and generates <code class="docutils literal notranslate"><span class="pre">Event</span></code> instances
-on the fly (accessible through the attribute <code class="docutils literal notranslate"><span class="pre">events</span></code>), applying before returning, the <code class="docutils literal notranslate"><span class="pre">NTuple._event_preprocessor</span></code>
-method to perform any necessary processing and selecting steps.</p>
-<p>This was implemented in that way to allow creating selectors based on properties that by default
-do not come directly from the input NTuples, but can be computed with extra preprocess functions
-steps before applying the selection.</p>
-<p>The following example shows how to use the <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class to read DT Ntuples and access to events.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.utils.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RUN_CONFIG</span>
+on the fly by demand (accessible through the attribute <code class="docutils literal notranslate"><span class="pre">events</span></code>), applying the preprocessors
+and selectors methods before returning to perform any necessary processing and selecting steps.</p>
+<p>The preprocessing feature was implemented in that way to allow creating selectors based on properties that by default
+do not come directly from the input NTuples, but can be computed with extra preprocessing functions
+steps before applying the selection methods.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class admits specifying the following maps into the configuration file:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ntuple-tree-name</span></code>: The name of the TTree to be used. It is supposed to be the same for all the files in the input folder.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ntuple_preprocessors</span></code>:  A map containing the preprocessors to be used in the NTuple.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ntuple_selectors</span></code>: A map containing the selectors to be used in the NTuple.</p></li>
+</ul>
+<p>Both, preprocessors and selectors maps should contains a <code class="docutils literal notranslate"><span class="pre">src</span></code> key that specifies the path to the function
+to be used, and optionally, a <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> map for additional parameters of the preprocessor.</p>
+<p class="rubric">example</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1">#...</span>
+<span class="nt">ntuple_tree_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;/dtNtupleProducer/DTTREE&#39;</span>
 
-<span class="c1"># First, you need to update the configuration file path since Events creation</span>
-<span class="c1"># requires it, If not, it will work with the default one dtpr/utils/yamls/run_template.yaml.</span>
-<span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;path/to/config.yaml&quot;</span><span class="p">)</span>
+<span class="nt">selector_name</span><span class="p">:</span><span class="w"> </span><span class="c1"># Any name, not relevant to the codes</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;path.to.selector&#39;</span>
+<span class="w">    </span><span class="nt">kwargs</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional arguments to be passed to the selector</span>
+<span class="w">        </span><span class="nt">arg1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value1</span>
+<span class="c1">#...</span>
+<span class="nt">prepocessor_name</span><span class="p">:</span><span class="w"> </span><span class="c1"># Any name, not relevant to the codes</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;path.to.preprocessor&#39;</span>
+<span class="w">    </span><span class="nt">kwargs</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional arguments to be passed to the preprocessor</span>
+<span class="w">        </span><span class="nt">arg1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value1</span>
+<span class="c1">#...</span>
+</pre></div>
+</div>
+<p>The following example shows how to use the <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class to read DT Ntuples and access events.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.utils.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RUN_CONFIG</span>
 
-<span class="c1"># path to the DT Ntuple, it could be a folder with several files</span>
-<span class="n">input_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
-        <span class="s2">&quot;../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
+<span class="c1"># update the configuration file -&gt; if it is not set, it will use the default one &#39;run_config.yaml&#39;</span>
+<span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config_file</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="n">cf_path</span><span class="p">)</span>
 
-<span class="n">ntuple</span> <span class="o">=</span> <span class="n">NTuple</span><span class="p">(</span><span class="n">input_folder</span><span class="p">,</span> <span class="n">tree_name</span><span class="o">=</span><span class="s2">&quot;/dtNtupleProducer/DTTREE&quot;</span><span class="p">)</span>
+<span class="c1"># input_file could be the path to the DT Ntuple, or to a folder with several files</span>
+<span class="n">ntuple</span> <span class="o">=</span> <span class="n">NTuple</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span> <span class="c1"># It also admits passing a list of selectors and preprocessors when instantiating</span>
+
 <span class="c1"># you can access events by index or slice such as a list</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ntuple</span><span class="o">.</span><span class="n">events</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ntuple</span><span class="o">.</span><span class="n">events</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ntuple</span><span class="o">.</span><span class="n">events</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">5</span><span class="p">])</span> <span class="c1"># slicing return a generator</span>
 
-<span class="c1"># or loop over the events</span>
+<span class="c1"># you can also loop over the events</span>
 <span class="k">for</span> <span class="n">iev</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ntuple</span><span class="o">.</span><span class="n">events</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
     <span class="k">break</span>
 
-<span class="c1"># or simply use the TTree</span>
+<span class="c1"># or simply, you can still use the TTree (It is a ROOT.TChain)</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ntuple</span><span class="o">.</span><span class="n">tree</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">event_orbitNumber</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event orbit number: </span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">event_orbitNumber</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">break</span>
 </pre></div>
 </div>
 <p class="rubric">Output</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>+ Opening input file /root/DTPatternRecognition/test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root
-&gt;&gt; ------ Event 39963 info ------
-+ Index: 10
+&gt;&gt; ------ Event 39954 info ------
++ Index: 9
 + Digis
-    * Number of digis: 105
+    * Number of digis: 167
 + Segments
-    * Number of segments: 14
+    * Number of segments: 21
+    * AM-Seg matches:
+    --&gt; Segment 1 info --&gt;
+        - Wh: -2, Sc: 5, St: 1, Phi: 2.2211668491363525, Eta: -0.9381515979766846
+    --&gt; Segment 2 info --&gt;
+        - Wh: -2, Sc: 5, St: 1, Phi: 2.2211666107177734, Eta: -0.9440188407897949
+    --&gt; Segment 8 info --&gt;
+        - Wh: -2, Sc: 5, St: 2, Phi: 2.221505880355835, Eta: -0.9430407881736755
+    --&gt; Segment 9 info --&gt;
+        - Wh: -2, Sc: 5, St: 2, Phi: 2.2215068340301514, Eta: -0.9163724184036255
+    --&gt; Segment 10 info --&gt;
+        - Wh: -2, Sc: 12, St: 2, Phi: -0.6958962082862854, Eta: -0.8441917300224304
 + Tps
-    * Number of tps: 20
+    * Number of tps: 32
 + Genmuons
     * Number of genmuons: 2
     * GenMuon 1 info --&gt;
-    --&gt; Pt: 28.614336013793945, Eta: 4.255909442901611, Phi: -1.395720362663269, Charge: 1, Matched_segments_stations: [], Showered: False
+    --&gt; Pt: 548.1250610351562, Eta: -0.8365859985351562, Phi: -0.6915670037269592, Charge: 1, Matched_segments_stations: [(2, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (1, 5, -2), (1, 5, -2), (2, 5, -2), (2, 5, -2)], Showered: True
     * GenMuon 0 info --&gt;
-    --&gt; Pt: 23.001548767089844, Eta: 2.4365286827087402, Phi: 1.7807667255401611, Charge: -1, Matched_segments_stations: [], Showered: False
+    --&gt; Pt: 511.7483215332031, Eta: -0.9357022643089294, Phi: 2.2167818546295166, Charge: -1, Matched_segments_stations: [(2, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (1, 5, -2), (1, 5, -2), (2, 5, -2), (2, 5, -2)], Showered: True
 + Emushowers
     * Number of emushowers: 1
 + Simhits
-    * Number of simhits: 0
-&lt;generator object EventList.__getitem__.&lt;locals&gt;.&lt;genexpr&gt; at 0x7f00c424b440&gt;
+    * Number of simhits: 188
++ Realshowers
+    * Number of realshowers: 3
+&lt;generator object EventList.__getitem__.&lt;locals&gt;.&lt;genexpr&gt; at 0x7ff5a640a740&gt;
 &gt;&gt; ------ Event 39956 info ------
 + Index: 0
 + Digis
     * Number of digis: 81
 + Segments
     * Number of segments: 8
+    * AM-Seg matches:
+    --&gt; Segment 5 info --&gt;
+        - Wh: 0, Sc: 8, St: 1, Phi: -2.5716519355773926, Eta: -0.2304154634475708
+    --&gt; Segment 7 info --&gt;
+        - Wh: -1, Sc: 8, St: 4, Phi: -2.5743513107299805, Eta: -0.36347508430480957
 + Tps
     * Number of tps: 21
 + Genmuons
     * Number of genmuons: 2
     * GenMuon 0 info --&gt;
-    --&gt; Pt: 258.0812683105469, Eta: -1.9664770364761353, Phi: 0.5708979964256287, Charge: -1, Matched_segments_stations: [], Showered: False
+    --&gt; Pt: 258.0812683105469, Eta: -1.9664770364761353, Phi: 0.5708979964256287, Charge: -1, Matched_segments_stations: [(2, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (1, 5, -2), (1, 5, -2), (2, 5, -2), (2, 5, -2), (1, 8, 0), (4, 8, -1)], Showered: True
     * GenMuon 1 info --&gt;
-    --&gt; Pt: 190.72511291503906, Eta: -0.2504693865776062, Phi: -2.558511257171631, Charge: 1, Matched_segments_stations: [], Showered: False
+    --&gt; Pt: 190.72511291503906, Eta: -0.2504693865776062, Phi: -2.558511257171631, Charge: 1, Matched_segments_stations: [(2, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (3, 12, -2), (1, 5, -2), (1, 5, -2), (2, 5, -2), (2, 5, -2), (1, 8, 0), (4, 8, -1)], Showered: True
 + Emushowers
     * Number of emushowers: 0
 + Simhits
     * Number of simhits: 50
++ Realshowers
+    * Number of realshowers: 0
 Event orbit number: -1
 </pre></div>
 </div>
@@ -177,38 +217,6 @@ Event orbit number: -1
 <p>The <code class="docutils literal notranslate"><span class="pre">NTuple.events</span></code> attribute is not a simple list, but an instance of the <a class="reference internal" href="event_list.html"><span class="doc">EventList</span></a> class.
 This design prevents loading all events into memory simultaneously. Instead, it allows iteration and access by index and slice,
 while internally iterating over the root tree entries to create the required event on the fly.</p>
-</div>
-<p>Previous example does not use any preprocessor or selector, but you can define them and pass as
-arguments to the <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class. But, since Events creation requires from a config file, an already
-defined function (<code class="docutils literal notranslate"><span class="pre">init_ntuple_from_config</span></code>) that instantiates the NTuple class and passes
-preprocessors and selectors taken from the <code class="docutils literal notranslate"><span class="pre">YAML</span></code> configuration file is available in <code class="docutils literal notranslate"><span class="pre">dtpr.utils.functions</span></code>.
-This only requires specifying the following in the configuration file under <code class="docutils literal notranslate"><span class="pre">ntuple_preprocessors</span></code>
-and <code class="docutils literal notranslate"><span class="pre">ntuple_selectors</span></code> sections:</p>
-<p class="rubric">config.yaml</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ntuple_selectors</span><span class="p">:</span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;dtpr.utils.filters.base_filters.baseline&quot;</span>
-<span class="c1"># Add other as needed ....</span>
-
-<span class="nt">ntuple_preprocessors</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">genmuon_matcher</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.genmuon_functions.analyze_genmuon_matches&quot;</span>
-<span class="w">    </span><span class="nt">genmuon_showerer</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.genmuon_functions.analyze_genmuon_showers&quot;</span>
-<span class="w">        </span><span class="nt">kwargs</span><span class="p">:</span><span class="w"> </span><span class="c1"># if the function requires arguments...</span>
-<span class="w">            </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="w">    </span><span class="c1"># ...</span>
-<span class="c1"># ...</span>
-</pre></div>
-</div>
-<p>and then, insted of creating the NTuple instance directly, you can use the function after updating the configuration file path.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.utils.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_ntuple_from_config</span>
-
-<span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;path/to/config.yaml&quot;</span><span class="p">)</span>
-<span class="c1"># ntuple = NTuple(input_folder, tree_name=&quot;/dtNtupleProducer/DTTREE&quot;)</span>
-<span class="n">ntuple</span> <span class="o">=</span> <span class="n">init_ntuple_from_config</span><span class="p">(</span><span class="n">input_folder</span><span class="p">,</span> <span class="n">tree_name</span><span class="o">=</span><span class="s2">&quot;/dtNtupleProducer/DTTREE&quot;</span><span class="p">)</span>
-
-<span class="c1"># ...</span>
-</pre></div>
 </div>
 </section>
 
@@ -223,7 +231,7 @@ and <code class="docutils literal notranslate"><span class="pre">ntuple_selector
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Daniel Estrada.</p>
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

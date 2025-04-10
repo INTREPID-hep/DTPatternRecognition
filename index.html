@@ -6,17 +6,19 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DT Pattern Recognition Package &mdash; DTPatternRecognition 0.1.0 documentation</title>
+  <title>DT Pattern Recognition Package &mdash; DTPatternRecognition 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="_static/general_styles.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -66,7 +68,8 @@
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">DT Pattern Recognition Package</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -79,26 +82,30 @@
 <p>This package provides a set of base tools for implementing pattern recognition algorithms for the CMS DT system
 using input data in NTuples format. It also includes visualization tools for DT Ntuples, taking into account
 the geometrical features of the CMS DT system by using another auxiliary package <a class="reference external" href="https://github.com/DanielEstrada971102/mplDTs">mplDTs</a>.</p>
-<p>The main concept of this framework is to facilitate analysis on input data using an event-by-event approach
-with Python classes. This allows for more intuitive and readable code, such as:</p>
+<p>The core idea of this framework is to simplify the analysis of input data by adopting an event-by-event approach
+using Python classes. This approach makes the code more intuitive and readable. For example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">muon</span> <span class="ow">in</span> <span class="n">events</span><span class="o">.</span><span class="n">genmuons</span><span class="p">:</span>
    <span class="k">if</span> <span class="n">muon</span><span class="o">.</span><span class="n">pt</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
-   <span class="nb">print</span><span class="p">(</span><span class="n">muon</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+      <span class="nb">print</span><span class="p">(</span><span class="n">muon</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>compared to:</p>
+<p>is much clearer compared to the traditional method:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">gen_pdgID</span><span class="p">)):</span>
-<span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">gen_pt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
-   <span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">gen_eta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+   <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">gen_pt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">gen_eta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 </pre></div>
 </div>
+<p>In addition to the event-by-event approach, the framework is designed to be highly flexible, aiming to support various
+data formats since the mapping of input data into Python classes is configurable through a <code class="docutils literal notranslate"><span class="pre">YAML</span></code> configuration file, as you will
+see along the different sections. The idea is that this allows users to adapt the framework to their specific needs.</p>
 <p>Some useful, and as general as possible, tools using the framework have been implemented to facilitate some common tasks
-such as fill ROOT histograms, or inspect or visualize information from the DT Ntuples. They are accessible through the
+such as fill ROOT histograms, or inspect or visualize information from the NTuples. They are accessible through the
 <cite>dtpr</cite> CLI command and are described in the <a class="reference internal" href="src/analysis/main.html"><span class="doc">analysis</span></a> section. But, reading,
 manipulating, and mapping the information from the input files into the respective classes are handled
 by central classes, just go  around the <a class="reference internal" href="src/base/main.html"><span class="doc">base</span></a> section to know more about them.</p>
-<p>The package is just in its early stages, so feel free to contribute, report bugs, or suggest improvements.
-Take a look to the <cite>Contributors &lt;&gt;</cite> and <cite>Developers &lt;&gt;</cite> guides.</p>
+<p>Bear in mind that the package is just in its early stages, so feel free to contribute, report bugs, or suggest improvements.
+Take a look at the <cite>Contributors &lt;https://github.com/DanielEstrada971102/DTPatternRecognition/CONTRIBUTING.md&gt;</cite> and
+<cite>Developers &lt;https://github.com/DanielEstrada971102/DTPatternRecognition/DEVELOPERS.md&gt;</cite> guides.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
 <p>First, download the source files or clone the repository:</p>
@@ -126,14 +133,14 @@ a Python virtual environment, ensure to include ROOT in it. To do this, use the 
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="src/analysis/main.html">analysis</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="src/analysis/inspect-event.html">inspect-event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="src/analysis/fill-histos.html">fill-histos</a></li>
 <li class="toctree-l2"><a class="reference internal" href="src/analysis/plot-dts.html">plot-dt / plot-dts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="src/analysis/event-visualizer.html">event-visualizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/analysis/digis-fpga-dumper.html">digis-fpga-dumper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/inspect-event.html">inspect-event</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="src/base/main.html">base</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/base/particle.html">Particle</a></li>
 <li class="toctree-l2"><a class="reference internal" href="src/base/event.html">Event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="src/base/ntuple.html">NTuple</a></li>
 <li class="toctree-l2"><a class="reference internal" href="src/base/event_list.html">EventList</a></li>
@@ -141,13 +148,8 @@ a Python virtual environment, ensure to include ROOT in it. To do this, use the 
 </li>
 <li class="toctree-l1"><a class="reference internal" href="src/particles/main.html">particles</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="src/particles/gen_muon.html">GenMuon</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/particles/digi.html">Digi</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/particles/g4digi.html">G4Digi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="src/particles/segment.html">Segment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/particles/ph2TP.html">Ph2TP</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/particles/shower.html">Shower</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/particles/simhit.html">SimHit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/particles/main.html#particle">Particle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/particles/g4digi.html">G4Digi</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="src/utils/main.html">utils</a><ul>
@@ -170,7 +172,7 @@ a Python virtual environment, ensure to include ROOT in it. To do this, use the 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Daniel Estrada.</p>
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

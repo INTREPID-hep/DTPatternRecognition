@@ -6,22 +6,24 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>fill-histos &mdash; DTPatternRecognition 0.1.0 documentation</title>
+  <title>fill-histos &mdash; DTPatternRecognition 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../../_static/general_styles.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="plot-dt / plot-dts" href="plot-dts.html" />
-    <link rel="prev" title="inspect-event" href="inspect-event.html" /> 
+    <link rel="prev" title="analysis" href="main.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,7 +48,6 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="main.html">analysis</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="inspect-event.html">inspect-event</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">fill-histos</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#for-efficiencies">For Efficiencies</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#for-flat-distributions">For Flat Distributions</a></li>
@@ -54,7 +55,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="plot-dts.html">plot-dt / plot-dts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event-visualizer.html">event-visualizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="digis-fpga-dumper.html">digis-fpga-dumper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inspect-event.html">inspect-event</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../base/main.html">base</a></li>
@@ -79,7 +80,8 @@
           <li class="breadcrumb-item"><a href="main.html">analysis</a></li>
       <li class="breadcrumb-item active">fill-histos</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/src/analysis/fill-histos.rst.txt" rel="nofollow"> View page source</a>
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -89,7 +91,8 @@
              
   <section id="fill-histos">
 <h1>fill-histos<a class="headerlink" href="#fill-histos" title="Link to this heading"></a></h1>
-<p>This tool allows you to recursively fill predefined histograms event by event. Histograms should be contained in a Python dictionary called <cite>histo</cite> and follow the formats below:</p>
+<p>This tool allows you to recursively fill predefined histograms event by event. Histograms should be
+contained in a Python dictionary called <code class="docutils literal notranslate"><span class="pre">histo</span></code> and follow the formats below:</p>
 <section id="for-efficiencies">
 <h2>For Efficiencies<a class="headerlink" href="#for-efficiencies" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">histos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
@@ -104,15 +107,15 @@
 </pre></div>
 </div>
 <p>Where:</p>
-<ul class="simple">
+<ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">HISTONAME</span></code>: The name that will appear in the output <code class="docutils literal notranslate"><span class="pre">.root</span></code> file.</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">func</span></code>: A function that provides the value for filling the histogram. It takes the <code class="docutils literal notranslate"><span class="pre">reader</span></code> as input and can fetch all the objects reconstructed by the <code class="docutils literal notranslate"><span class="pre">reader</span></code>. Examples:</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">func</span></code>: A function that provides the value for filling the histogram. It takes the <code class="docutils literal notranslate"><span class="pre">reader</span></code> as input and can fetch all the objects reconstructed by the <code class="docutils literal notranslate"><span class="pre">reader</span></code>. Examples:</p>
+<blockquote>
+<div><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">reader:</span> <span class="pre">reader.genmuons[0].pt</span></code> fills a histogram with the leading muon pT.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">reader:</span> <span class="pre">[seg.wh</span> <span class="pre">for</span> <span class="pre">seg</span> <span class="pre">in</span> <span class="pre">fcns.get_best_matches(reader,</span> <span class="pre">station=1)]</span></code> gets the best matching segments in MB1 (<code class="docutils literal notranslate"><span class="pre">station=1</span></code>) and fills with the wheel value of the matching segment. The <code class="docutils literal notranslate"><span class="pre">get_best_matches</span></code> function is defined in <code class="docutils literal notranslate"><span class="pre">utils/functions.py</span></code>.</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">numdef</span></code>: A boolean function to differentiate between the denominator and numerator. The numerator is filled only when this function returns <code class="docutils literal notranslate"><span class="pre">True</span></code>. If <code class="docutils literal notranslate"><span class="pre">func</span></code> returns a list, this must return a list of booleans of the same length.</p></li>
 </ul>
@@ -120,25 +123,21 @@
 <section id="for-flat-distributions">
 <h2>For Flat Distributions<a class="headerlink" href="#for-flat-distributions" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;HISTONAME&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;distribution&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;distribution&quot;</span><span class="p">,</span> <span class="c1"># it also supports distribution2d, distribution3d</span>
     <span class="s2">&quot;histo&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;HISTONAME&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;TitleX; Events&#39;</span><span class="p">,</span> <span class="n">nBins</span><span class="p">,</span> <span class="n">firstBin</span><span class="p">,</span> <span class="n">lastBin</span><span class="p">),</span>
     <span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="n">__function_for_filling_histograms__</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The <cite>reader</cite> argument in functions represents an <cite>event</cite> entry, which should be an instance of <code class="docutils literal notranslate"><span class="pre">dtpr.base.Event</span></code> created by the implemented <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> child. A set of predefined histograms is available in <code class="docutils literal notranslate"><span class="pre">dtpr/utils/histograms</span></code>.</p>
-<p>Once your histograms are defined, include them in the <code class="docutils literal notranslate"><span class="pre">run_config.yaml</span></code> file by specifying:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="l l-Scalar l-Scalar-Plain">.</span>
-
-<span class="l l-Scalar l-Scalar-Plain">histo_sources</span><span class="p p-Indicator">:</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">reader</span></code> argument in functions represents an <code class="docutils literal notranslate"><span class="pre">event</span></code> entry, which should be an instance of
+<code class="docutils literal notranslate"><span class="pre">dtpr.base.Event</span></code>. A set of predefined histograms is available in <code class="docutils literal notranslate"><span class="pre">dtpr/utils/histograms</span></code>.</p>
+<p>Once your histograms are defined, you can include them in the <strong>configuration file</strong> by specifying:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
+<span class="nt">histo_sources</span><span class="p">:</span>
 <span class="w">    </span><span class="c1"># Define the source modules of the histograms</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dtpr.utils.histograms.baseHistos</span>
 <span class="w">    </span><span class="c1"># Add additional source modules as needed</span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="c1"># ...</span>
 
 <span class="nt">histo_names</span><span class="p">:</span>
 <span class="w">    </span><span class="c1"># List the histograms to fill - Uncomment or add histograms as needed</span>
@@ -146,15 +145,16 @@
 <span class="w">    </span><span class="c1"># ============ efficiencies ============ #</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">seg_eff_MB1</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">seg_eff_MB2</span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">.</span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="c1"># ...</span>
 </pre></div>
 </div>
-<p>Then, run the following command to fill the histograms:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>fill-histos<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span><span class="w"> </span>...
+<p>And then, by running the command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>fill-histos<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span><span class="w"> </span>-cf<span class="w"> </span><span class="o">[</span>CONFIGFILE<span class="o">]</span><span class="w"> </span><span class="c1">#... Other options can be added as needed</span>
 </pre></div>
 </div>
+<p>You will get a <code class="docutils literal notranslate"><span class="pre">.root</span></code> file in the <code class="docutils literal notranslate"><span class="pre">--outpath</span></code> directory containing the filled histograms.</p>
+<p>You can also use directly the methods <code class="docutils literal notranslate"><span class="pre">fill_histograms</span></code> and <code class="docutils literal notranslate"><span class="pre">save_histograms</span></code> from the <code class="docutils literal notranslate"><span class="pre">dtpr.analysis.fill_histograms</span></code>
+module.</p>
 </section>
 </section>
 
@@ -162,14 +162,14 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="inspect-event.html" class="btn btn-neutral float-left" title="inspect-event" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="main.html" class="btn btn-neutral float-left" title="analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="plot-dts.html" class="btn btn-neutral float-right" title="plot-dt / plot-dts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Daniel Estrada.</p>
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

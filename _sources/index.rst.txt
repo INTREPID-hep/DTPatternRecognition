@@ -4,32 +4,36 @@ This package provides a set of base tools for implementing pattern recognition a
 using input data in NTuples format. It also includes visualization tools for DT Ntuples, taking into account
 the geometrical features of the CMS DT system by using another auxiliary package `mplDTs <https://github.com/DanielEstrada971102/mplDTs>`_.
 
-The main concept of this framework is to facilitate analysis on input data using an event-by-event approach
-with Python classes. This allows for more intuitive and readable code, such as:
+The core idea of this framework is to simplify the analysis of input data by adopting an event-by-event approach 
+using Python classes. This approach makes the code more intuitive and readable. For example:
 
 .. code-block:: python
 
    for muon in events.genmuons:
       if muon.pt > 5:
-      print(muon.eta)
+         print(muon.eta)
 
-compared to:
+is much clearer compared to the traditional method:
 
 .. code-block:: python
 
    for i in range(len(tree.gen_pdgID)):
-   if tree.gen_pt[i] > 5:
-      print(tree.gen_eta[i])
+      if tree.gen_pt[i] > 5:
+         print(tree.gen_eta[i])
 
+In addition to the event-by-event approach, the framework is designed to be highly flexible, aiming to support various 
+data formats since the mapping of input data into Python classes is configurable through a ``YAML`` configuration file, as you will 
+see along the different sections. The idea is that this allows users to adapt the framework to their specific needs.
 
 Some useful, and as general as possible, tools using the framework have been implemented to facilitate some common tasks 
-such as fill ROOT histograms, or inspect or visualize information from the DT Ntuples. They are accessible through the
+such as fill ROOT histograms, or inspect or visualize information from the NTuples. They are accessible through the
 `dtpr` CLI command and are described in the :doc:`src/analysis/main` section. But, reading, 
 manipulating, and mapping the information from the input files into the respective classes are handled
 by central classes, just go  around the :doc:`src/base/main` section to know more about them.
 
-The package is just in its early stages, so feel free to contribute, report bugs, or suggest improvements.
-Take a look to the `Contributors <>` and `Developers <>` guides.
+Bear in mind that the package is just in its early stages, so feel free to contribute, report bugs, or suggest improvements.
+Take a look at the `Contributors <https://github.com/DanielEstrada971102/DTPatternRecognition/CONTRIBUTING.md>` and 
+`Developers <https://github.com/DanielEstrada971102/DTPatternRecognition/DEVELOPERS.md>` guides.
 
 
 Installation

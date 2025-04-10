@@ -5,17 +5,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dtpr.utils.functions &mdash; DTPatternRecognition 0.1.0 documentation</title>
+  <title>dtpr.utils.functions &mdash; DTPatternRecognition 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/general_styles.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -76,10 +78,8 @@
 <span></span><span class="sd">&quot;&quot;&quot; Miscelaneous &quot;&quot;&quot;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">LambdaType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.utils.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_module</span>
 
 <span class="c1"># Make Iterators for when we want to iterate over different subdetectors</span>
 <span class="n">wheels</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -237,6 +237,31 @@
     <span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="get_callable_from_src">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.get_callable_from_src">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_callable_from_src</span><span class="p">(</span><span class="n">src_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the callable object from the given source string.</span>
+
+<span class="sd">    :param src_str: The source string containing the callable.</span>
+<span class="sd">    :type src: str</span>
+<span class="sd">    :return: The callable object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">callable</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">src_str</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_module_name</span><span class="p">,</span> <span class="n">_callable_name</span> <span class="o">=</span> <span class="n">src_str</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">_module</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">_module_name</span><span class="p">)</span>
+            <span class="nb">callable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_module</span><span class="p">,</span> <span class="n">_callable_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_callable_name</span><span class="si">}</span><span class="s2"> callable not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error importing </span><span class="si">{</span><span class="n">src_str</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">callable</span></div>
+
+
+
 <div class="viewcode-block" id="flatten">
 <a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.flatten">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
@@ -302,50 +327,6 @@
         <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">name</span><span class="o">+</span><span class="s2">&quot;.svg&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
     <span class="k">return</span></div>
-
-
-<div class="viewcode-block" id="init_ntuple_from_config">
-<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.init_ntuple_from_config">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">init_ntuple_from_config</span><span class="p">(</span>
-    <span class="n">config</span><span class="p">:</span> <span class="n">Config</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">inputFolder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">maxfiles</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">tree_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/dtNtupleProducer/DTTREE&quot;</span>
-    <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Initializes an NTuple object using a configuration object that supplies selectors and preprocessors.</span>
-
-<span class="sd">    :param config: The configuration object. Defaults to None.</span>
-<span class="sd">    :type config: dtpr.utils.config.Config, optional</span>
-<span class="sd">    :param inputFolder: The folder containing the input files. Default is `&quot;&quot;`.</span>
-<span class="sd">    :type inputFolder: str</span>
-<span class="sd">    :param maxfiles: The maximum number of files to process. Defaults to -1 (process all files).</span>
-<span class="sd">    :type maxfiles: int, optional</span>
-<span class="sd">    :param tree_name: The name of the tree in the input files. Default is &quot;/dtNtupleProducer/DTTREE&quot;.</span>
-<span class="sd">    :type tree_name: str, optional</span>
-<span class="sd">    :return: An NTuple object initialized with the given parameters.</span>
-<span class="sd">    :rtype: dtpr.base.NTuple</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">selectors</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">preprocessors</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">if</span> <span class="n">config</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;ntuple_selectors&quot;</span><span class="p">,</span> <span class="p">[]):</span>
-            <span class="n">selector_module</span><span class="p">,</span> <span class="n">selector_name</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">selector_module</span><span class="p">)</span>
-            <span class="n">selectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">selector_name</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">pp_info</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;ntuple_preprocessors&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">preprocessor_module</span><span class="p">,</span> <span class="n">preprocessor_name</span> <span class="o">=</span> <span class="n">pp_info</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">preprocessor_module</span><span class="p">)</span>
-            <span class="n">preprocessor</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">preprocessor_name</span><span class="p">)</span>
-            <span class="n">kwargs</span> <span class="o">=</span> <span class="n">pp_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kwargs&#39;</span><span class="p">,</span> <span class="p">{})</span>
-            <span class="n">preprocessors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">preprocessor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">inputFolder</span><span class="p">):</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">NTuple</span>
-        <span class="k">return</span> <span class="n">NTuple</span><span class="p">(</span><span class="n">inputFolder</span><span class="p">,</span> <span class="n">selectors</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">,</span> <span class="n">maxfiles</span><span class="p">,</span> <span class="n">tree_name</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input folder </span><span class="si">{</span><span class="n">inputFolder</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="get_unique_locs">
@@ -470,7 +451,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Daniel Estrada.</p>
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

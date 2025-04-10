@@ -6,17 +6,19 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>particles &mdash; DTPatternRecognition 0.1.0 documentation</title>
+  <title>particles &mdash; DTPatternRecognition 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../../_static/general_styles.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -49,21 +51,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../base/main.html">base</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">particles</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="gen_muon.html">GenMuon</a></li>
-<li class="toctree-l2"><a class="reference internal" href="digi.html">Digi</a></li>
-<li class="toctree-l2"><a class="reference internal" href="g4digi.html">G4Digi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="segment.html">Segment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ph2TP.html">Ph2TP</a></li>
-<li class="toctree-l2"><a class="reference internal" href="shower.html">Shower</a></li>
-<li class="toctree-l2"><a class="reference internal" href="simhit.html">SimHit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#particle">Particle</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dtpr.particles.Particle"><code class="docutils literal notranslate"><span class="pre">Particle</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#dtpr.particles.Particle.__init__"><code class="docutils literal notranslate"><span class="pre">Particle.__init__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dtpr.particles.Particle.__str__"><code class="docutils literal notranslate"><span class="pre">Particle.__str__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dtpr.particles.Particle._init_from_ev"><code class="docutils literal notranslate"><span class="pre">Particle._init_from_ev()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="g4digi.html">G4Digi</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../utils/main.html">utils</a></li>
@@ -85,7 +74,8 @@
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">particles</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/src/particles/main.rst.txt" rel="nofollow"> View page source</a>
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -95,153 +85,15 @@
              
   <section id="particles">
 <h1>particles<a class="headerlink" href="#particles" title="Link to this heading"></a></h1>
-<p>In the context of <code class="docutils literal notranslate"><span class="pre">dtpr</span></code>, a particle is a class that represents any object you would like to
-add to an <a class="reference internal" href="../base/event.html"><span class="doc">Event</span></a> instance. The purpose of defining a particle is to easily access the
-information of <code class="docutils literal notranslate"><span class="pre">TBranches</span></code> and to have the possibility to build them on the fly each time an Event
-instance is produced. However, you can also manually add a particle to an event instance if desired by passing
-the corresponding attributes.</p>
-<p>Every particle class should inherit from the base class <a class="reference internal" href="#particle"><span class="std std-ref">Particle</span></a> and implement the method
-that handles the initialization of attributes from TBranches of a supplied TTree entry, <code class="docutils literal notranslate"><span class="pre">_init_from_ev</span></code>.
-Classes that inherit from <code class="docutils literal notranslate"><span class="pre">Particle</span></code> ensure that the particle class has a custom <code class="docutils literal notranslate"><span class="pre">__str__</span></code> method that returns a string
-using the <code class="docutils literal notranslate"><span class="pre">color_msg</span></code> function from <code class="docutils literal notranslate"><span class="pre">dtpr.utils.functions</span></code> to color the output.</p>
-<p>You can generate a skeleton for a particle class using the dtpr command as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>create-particle<span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>output_folder<span class="o">]</span><span class="w"> </span>--name<span class="w"> </span>TestParticle
-</pre></div>
-</div>
-<p>This will create a new file called <code class="docutils literal notranslate"><span class="pre">testparticle.py</span></code> in the specified output folder with the following
-content:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.particles</span><span class="w"> </span><span class="kn">import</span> <span class="n">Particle</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">TestParticle</span><span class="p">(</span><span class="n">Particle</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">ev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Initialize a TestParticle instance.</span>
-
-<span class="sd">    description here...</span>
-
-<span class="sd">    :param index: The index of the TestParticle.</span>
-<span class="sd">    :type index: int</span>
-<span class="sd">    :param ev: The root event object containing event data.</span>
-<span class="sd">    :param kwargs: Additional attributes to set explicitly.</span>
-<span class="sd">    .</span>
-<span class="sd">    . (add more parameters here if needed)</span>
-<span class="sd">    .</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Initialize the attributes of the instance with the input arguments</span>
-    <span class="c1"># self.attr1 = kwargs.pop(&quot;attr1&quot;, None)</span>
-    <span class="c1"># .</span>
-    <span class="c1"># (add more attrributes here if needed)</span>
-    <span class="c1"># .</span>
-    <span class="c1"># .</span>
-
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_init_from_ev</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-    <span class="c1"># constructor with root event entry info</span>
-    <span class="c1"># Extract the need attributes from the root event entry</span>
-    <span class="c1"># and assign them to the corresponding attributes of the instance</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided event does not contain information.&quot;</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="c1"># Test the class here</span>
-    <span class="n">particle_instance</span> <span class="o">=</span> <span class="n">TestParticle</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="n">particle_instance</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>To have your particle type generated on the fly when Event instances are created, you need to add
-the necessary information into an event configuration file as described in the <a class="reference internal" href="../base/event.html"><span class="doc">Event</span></a>
-section. You can also generate a copy of the base event configuration file using the <code class="docutils literal notranslate"><span class="pre">dtpr</span></code> bash
-command as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>create-config<span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>output_folder<span class="o">]</span>
-</pre></div>
-</div>
-<p>This will create a copy of the base file <code class="docutils literal notranslate"><span class="pre">dtpr/utils/yamls/run_config.yaml</span></code> in the specified output
-folder. Then, add your particle to your configuration file and ensure that the correct file path is set
-in <cite>RUN_CONFIG</cite> by doing:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.utils.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RUN_CONFIG</span>
-
-<span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;path/to/event_config.yaml&quot;</span><span class="p">)</span>
-<span class="c1"># your code here...</span>
-</pre></div>
-</div>
 <p>The following particles are available in the package:</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="gen_muon.html">GenMuon</a></li>
-<li class="toctree-l1"><a class="reference internal" href="digi.html">Digi</a></li>
-<li class="toctree-l1"><a class="reference internal" href="g4digi.html">G4Digi</a></li>
 <li class="toctree-l1"><a class="reference internal" href="segment.html">Segment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ph2TP.html">Ph2TP</a></li>
-<li class="toctree-l1"><a class="reference internal" href="shower.html">Shower</a></li>
-<li class="toctree-l1"><a class="reference internal" href="simhit.html">SimHit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="g4digi.html">G4Digi</a></li>
 </ul>
 </div>
-<section id="particle">
-<h2>Particle<a class="headerlink" href="#particle" title="Link to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="dtpr.particles.Particle">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dtpr.particles.</span></span><span class="sig-name descname"><span class="pre">Particle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/particles/_particle.html#Particle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.particles.Particle" title="Link to this definition"></a></dt>
-<dd><p>Abstract base class for particles. metaclass=abc.ABCMeta.</p>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h3>
-<dl class="simple">
-<dt>index<span class="classifier">int</span></dt><dd><p>The index of the particle.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="dtpr.particles.Particle.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/particles/_particle.html#Particle.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.particles.Particle.__init__" title="Link to this definition"></a></dt>
-<dd><p>Initialize a Particle instance.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>index</strong> (<em>int</em>) – The index of the particle.</p></li>
-<li><p><strong>ev</strong> – The TTree event entry containing event data.</p></li>
-<li><p><strong>kwargs</strong> – Additional attributes to set explicitly.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dtpr.particles.Particle.__str__">
-<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indentLevel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/particles/_particle.html#Particle.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.particles.Particle.__str__" title="Link to this definition"></a></dt>
-<dd><p>Generate a string representation of the DTParticle instance.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>indentLevel</strong> (<em>int</em>) – The indentation level for the summary.</p></li>
-<li><p><strong>include</strong> (<em>list</em><em> or </em><em>None</em>) – List of property names to include in the summary. If None, include all.</p></li>
-<li><p><strong>exclude</strong> (<em>list</em><em> or </em><em>None</em>) – List of property names to exclude from the summary. If None, exclude none.</p></li>
-<li><p><strong>kwargs</strong> – Additional keyword arguments to pass to the <code class="docutils literal notranslate"><span class="pre">color_msg</span></code> function.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The particle summary.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dtpr.particles.Particle._init_from_ev">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_init_from_ev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ev</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/particles/_particle.html#Particle._init_from_ev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.particles.Particle._init_from_ev" title="Link to this definition"></a></dt>
-<dd><p>Initialize the particle from the TTree event entry. It must be implemented in derived classes.</p>
-</dd></dl>
-
-</section>
-</dd></dl>
-
-</section>
 </section>
 
 
@@ -255,7 +107,7 @@ in <cite>RUN_CONFIG</cite> by doing:</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Daniel Estrada.</p>
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

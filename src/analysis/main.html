@@ -6,21 +6,23 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>analysis &mdash; DTPatternRecognition 0.1.0 documentation</title>
+  <title>analysis &mdash; DTPatternRecognition 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../../_static/general_styles.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="inspect-event" href="inspect-event.html" />
+    <link rel="next" title="fill-histos" href="fill-histos.html" />
     <link rel="prev" title="DT Pattern Recognition Package" href="../../index.html" /> 
 </head>
 
@@ -46,11 +48,10 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">analysis</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="inspect-event.html">inspect-event</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fill-histos.html">fill-histos</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot-dts.html">plot-dt / plot-dts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event-visualizer.html">event-visualizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="digis-fpga-dumper.html">digis-fpga-dumper</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inspect-event.html">inspect-event</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../base/main.html">base</a></li>
@@ -74,7 +75,8 @@
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">analysis</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/src/analysis/main.rst.txt" rel="nofollow"> View page source</a>
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -102,18 +104,15 @@ be explored using the <code class="docutils literal notranslate"><span class="pr
 <p>As explained in the <a class="reference internal" href="../base/main.html"><span class="doc">base</span></a> section, the framework is aimeded to be as generic as possible.
 So, parameters such as the particle classes to construct in an Event or the preprocessors and selector
 functions to apply, are defined in a <code class="docutils literal notranslate"><span class="pre">YAML</span></code> configuration file. Therefore, analyses also utilize this configuration
-file to define parameters like which histograms to fill or which matplotlib styles to apply. By default, analyses look
-for a file named <code class="docutils literal notranslate"><span class="pre">run_config.yaml</span></code> in the <code class="docutils literal notranslate"><span class="pre">--outpath</span></code> directory. If not found, the default configuration
-is used (<code class="docutils literal notranslate"><span class="pre">dtpr/utils/yamls/run_config.yaml</span></code>).</p>
+file to define parameters like which histograms to fill or which matplotlib styles to apply.</p>
 </div>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Analyses:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="inspect-event.html">inspect-event</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fill-histos.html">fill-histos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plot-dts.html">plot-dt / plot-dts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="event-visualizer.html">event-visualizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="digis-fpga-dumper.html">digis-fpga-dumper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspect-event.html">inspect-event</a></li>
 </ul>
 </div>
 </section>
@@ -123,13 +122,13 @@ is used (<code class="docutils literal notranslate"><span class="pre">dtpr/utils
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../../index.html" class="btn btn-neutral float-left" title="DT Pattern Recognition Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="inspect-event.html" class="btn btn-neutral float-right" title="inspect-event" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="fill-histos.html" class="btn btn-neutral float-right" title="fill-histos" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Daniel Estrada.</p>
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

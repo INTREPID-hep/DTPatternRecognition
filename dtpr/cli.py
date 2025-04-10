@@ -9,11 +9,11 @@ from copy import deepcopy
 from dtpr.utils.functions import color_msg, warning_handler, error_handler
 from dtpr.utils.config import RUN_CONFIG, CLI_CONFIG
 
-# warnings.filterwarnings(action="once", category=UserWarning)
-# # Set the custom warning handler
-# warnings.showwarning = warning_handler
-# # Set the custom error handler
-# sys.excepthook = error_handler
+warnings.filterwarnings(action="once", category=UserWarning)
+# Set the custom warning handler
+warnings.showwarning = warning_handler
+# Set the custom error handler
+sys.excepthook = error_handler
 
 
 def add_arguments(parser: argparse.ArgumentParser, args: list) -> None:
@@ -76,7 +76,6 @@ def main():
             "plot-dt",
             "inspect-event",
             "event-visualizer",
-            "digis-fpga-dumper",
             # ---- config commands ----
             "create-particle",
             "create-config",
@@ -88,18 +87,22 @@ def main():
     # Parse the command line
     args = parser.parse_args()
 
-    # update the run config file if it exists in the output folder
-    if not "create" in args.command:
-        cfg_changed = False
-        for root, _, files in os.walk(args.outfolder):
-            if "run_config.yaml" in files:
-                cfg_changed = True
-                config_file_path = os.path.join(root, "run_config.yaml")
-                color_msg(f"Using configuration file: {config_file_path}", "yellow")
-                RUN_CONFIG.change_config_file(config_path=config_file_path)
-                break
-        if not cfg_changed:
-            color_msg(f"No configuration file found in the output path. Using default configuration file: {RUN_CONFIG.path}", "yellow")
+    if "create" not in args.command:
+        change_cfg = False
+        if args.config_file:
+            change_cfg = True
+        else:
+            with os.scandir(getattr(args, "outfolder", ".")) as entries:
+                for entry in entries:
+                    if entry.is_file() and entry.name.endswith(".yaml"):
+                        change_cfg = True
+                        args.config_file = entry.path
+                        break
+        if change_cfg:
+            color_msg(f"Using configuration file: {args.config_file}", "yellow")
+            RUN_CONFIG.change_config_file(config_path=args.config_file)
+        else:
+            color_msg(f"No configuration file provided or found in the output path. Using default configuration file: {RUN_CONFIG.path}", "yellow")
 
     # Run the function
     args.func(args)

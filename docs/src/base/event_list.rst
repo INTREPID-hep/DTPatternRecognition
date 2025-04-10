@@ -1,22 +1,20 @@
 EventList
 =========
 
-Since a ROOT TTree can contain many events (entries), it is useful to have a class that can manage 
-a list of events, allowing the user to access a specific event by index or slice. The current version
-of the ``EventList`` class is designed to handle ``Event`` instances created directly from a ROOT TTree.
-Therefore, an instance of ``EventList`` cannot be created by directly passing ``Event`` instances. 
+A ROOT TTree can contain many events (entries), so, it is useful to have a class that manages 
+a list of ``Event`` instances. The ``EventList`` class allows users to access specific events by index or slice. 
+It is designed to handle ``Event`` instances created directly from a ROOT TTree. 
 
-This restriction exists because the class aims to minimize memory allocation for events. Instead of storing 
-all events in memory, it generates event instances on the fly when the user requests a specific event or 
-a subset of them. 
+An ``EventList`` instance cannot be created by directly passing ``Event`` instances. This restriction exists 
+to minimize memory usage. Instead of storing all events in memory, the class generates event instances 
+on demand when the user requests a specific event or a subset of events.
 
-With this in mind, an ``EventList`` instance requires only the ROOT tree and an optional event preprocessing 
-function, which is applied to each created ``Event`` instance. By default, a dummy function is used that returns 
-the event as is.
+To create an ``EventList`` instance, only the ROOT tree and an optional event preprocessing function 
+are required. The preprocessing function is applied to each generated ``Event`` instance.
 
 .. warning::
-    Based on the description above, this class is not intended to be instantiated directly by the user. Instead, 
-    it is used internally by the :doc:`ntuple` class to manage events.
+    This class is not intended to be instantiated directly by the user. It is used internally by the 
+    :doc:`ntuple` class to manage events.
 
 .. autoclass:: dtpr.base.EventList
     :members:

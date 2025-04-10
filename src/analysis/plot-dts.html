@@ -98,36 +98,37 @@ specific example.</p>
 in the configuration file, you will be able to access this information through statements like
 <code class="docutils literal notranslate"><span class="pre">event[i].digis[j].property</span></code>, where <code class="docutils literal notranslate"><span class="pre">property</span></code> could be <code class="docutils literal notranslate"><span class="pre">time</span></code>, <code class="docutils literal notranslate"><span class="pre">BX</span></code>, etc. To visualize the
 digi patterns in a DT chamber, you can configure the following in your configuration file:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">mplhep-style</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;CMS&#39;</span><span class="w">         </span><span class="c1"># Style to use for the plots</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">dt_plots_configs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">mplhep-style</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;CMS&#39;</span><span class="w">         </span><span class="c1"># Style to use for the plots</span>
 
-<span class="nt">figure-configs</span><span class="p">:</span>
-<span class="w">    </span><span class="c1"># Any valid matplotlib figure rc parameters can be used here</span>
+<span class="w">    </span><span class="nt">figure-configs</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># Any valid matplotlib figure rc parameters can be used here</span>
 
-<span class="nt">dt_plots_configs</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">dt-cell-info</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digis&#39;</span><span class="w">      </span><span class="c1"># Particle type to use</span>
-<span class="w">        </span><span class="nt">cmap_var</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;time&#39;</span><span class="w">            </span><span class="c1"># Variable to use for the colormap</span>
+<span class="w">    </span><span class="nt">dt_plots_configs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">dt-cell-info</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digis&#39;</span><span class="w">      </span><span class="c1"># Particle type to use</span>
+<span class="w">            </span><span class="nt">cmap_var</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;time&#39;</span><span class="w">            </span><span class="c1"># Variable to use for the colormap</span>
 
-<span class="w">    </span><span class="nt">cmap-configs</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">cmap</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;viridis&#39;</span><span class="w">             </span><span class="c1"># Colormap to use</span>
-<span class="w">        </span><span class="nt">cmap_under</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="w">          </span><span class="c1"># Color for values under vmin</span>
-<span class="w">        </span><span class="nt">norm</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;matplotlib.colors.Normalize&#39;</span><span class="w">  </span><span class="c1"># Normalization class</span>
-<span class="w">            </span><span class="nt">vmin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">299</span><span class="w">                             </span><span class="c1"># Minimum value for normalization</span>
-<span class="w">            </span><span class="nt">vmax</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span><span class="w">                            </span><span class="c1"># Maximum value for normalization</span>
+<span class="w">        </span><span class="nt">cmap-configs</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">cmap</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;viridis&#39;</span><span class="w">             </span><span class="c1"># Colormap to use</span>
+<span class="w">            </span><span class="nt">cmap_under</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;none&#39;</span><span class="w">          </span><span class="c1"># Color for values under vmin</span>
+<span class="w">            </span><span class="nt">norm</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;matplotlib.colors.Normalize&#39;</span><span class="w">  </span><span class="c1"># Normalization class</span>
+<span class="w">                </span><span class="nt">vmin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">299</span><span class="w">                             </span><span class="c1"># Minimum value for normalization</span>
+<span class="w">                </span><span class="nt">vmax</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span><span class="w">                            </span><span class="c1"># Maximum value for normalization</span>
 
-<span class="w">    </span><span class="c1"># DT bounds and cells are matplotlib.patches.Rectangle objects, so other rc parameters can be used</span>
-<span class="w">    </span><span class="nt">bounds-kwargs</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">facecolor</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;lightgray&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightyellow&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightpink&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightblue&quot;</span><span class="p p-Indicator">]</span><span class="w">   </span><span class="c1"># Color of the rectangle [MB, SL1, SL3, SL2]</span>
-<span class="w">        </span><span class="nt">edgecolor</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;k&quot;</span><span class="w">                                                      </span><span class="c1"># Color of the edge</span>
-<span class="w">        </span><span class="nt">alpha</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.3</span><span class="w">                                                          </span><span class="c1"># Transparency of the rectangle</span>
-<span class="w">        </span><span class="nt">linewidth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span><span class="w">                                                      </span><span class="c1"># Width of the edge</span>
-<span class="w">        </span><span class="c1"># ...</span>
+<span class="w">        </span><span class="c1"># DT bounds and cells are matplotlib.patches.Rectangle objects, so other rc parameters can be used</span>
+<span class="w">        </span><span class="nt">bounds-kwargs</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">facecolor</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;lightgray&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightyellow&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightpink&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightblue&quot;</span><span class="p p-Indicator">]</span><span class="w">   </span><span class="c1"># Color of the rectangle [MB, SL1, SL3, SL2]</span>
+<span class="w">            </span><span class="nt">edgecolor</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;k&quot;</span><span class="w">                                                      </span><span class="c1"># Color of the edge</span>
+<span class="w">            </span><span class="nt">alpha</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.3</span><span class="w">                                                          </span><span class="c1"># Transparency of the rectangle</span>
+<span class="w">            </span><span class="nt">linewidth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span><span class="w">                                                      </span><span class="c1"># Width of the edge</span>
+<span class="w">            </span><span class="c1"># ...</span>
 
-<span class="w">    </span><span class="nt">cells-kwargs</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">edgecolor</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;k&quot;</span><span class="w">              </span><span class="c1"># Color of the edge</span>
-<span class="w">        </span><span class="nt">linewidth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.025</span><span class="w">              </span><span class="c1"># Width of the edge</span>
-<span class="w">        </span><span class="c1">#...</span>
+<span class="w">        </span><span class="nt">cells-kwargs</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">edgecolor</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;k&quot;</span><span class="w">              </span><span class="c1"># Color of the edge</span>
+<span class="w">            </span><span class="nt">linewidth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.025</span><span class="w">              </span><span class="c1"># Width of the edge</span>
+<span class="w">            </span><span class="c1">#...</span>
 </pre></div>
 </div>
 <p>And then, by running the command:</p>

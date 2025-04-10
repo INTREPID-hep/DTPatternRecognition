@@ -22,18 +22,18 @@ is much clearer compared to the traditional method:
          print(tree.gen_eta[i])
 
 In addition to the event-by-event approach, the framework is designed to be highly flexible, aiming to support various 
-data formats since the mapping of input data into Python classes is configurable through a ``YAML`` configuration file, as you will 
+data formats since the mapping of input data into Python classes is configurable through a ``YAML`` :download:`configuration file <./_static/run_config.yaml>`, as you will 
 see along the different sections. The idea is that this allows users to adapt the framework to their specific needs.
 
 Some useful, and as general as possible, tools using the framework have been implemented to facilitate some common tasks 
-such as fill ROOT histograms, or inspect or visualize information from the NTuples. They are accessible through the
-`dtpr` CLI command and are described in the :doc:`src/analysis/main` section. But, reading, 
-manipulating, and mapping the information from the input files into the respective classes are handled
-by central classes, just go  around the :doc:`src/base/main` section to know more about them.
+such as fill ROOT histograms, or inspect or visualize information from the NTuples. They are accessible through the 
+`dtpr` CLI command and are described in the :doc:`src/analysis/main` section. But, reading, manipulating, and mapping
+the information from the input files into the respective classes are handled
+by central classes, just go around the :doc:`src/base/main` section to know more about them.
 
 Bear in mind that the package is just in its early stages, so feel free to contribute, report bugs, or suggest improvements.
-Take a look at the `Contributors <https://github.com/DanielEstrada971102/DTPatternRecognition/CONTRIBUTING.md>` and 
-`Developers <https://github.com/DanielEstrada971102/DTPatternRecognition/DEVELOPERS.md>` guides.
+Take a look at the :`Contributors <https://github.com/DanielEstrada971102/DTPatternRecognition/CONTRIBUTING.md>`_ and 
+`Developers <https://github.com/DanielEstrada971102/DTPatternRecognition/DEVELOPERS.md>`_ guides.
 
 
 Installation

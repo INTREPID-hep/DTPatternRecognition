@@ -114,16 +114,19 @@ to be used, and optionally, a <code class="docutils literal notranslate"><span c
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1">#...</span>
 <span class="nt">ntuple_tree_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;/dtNtupleProducer/DTTREE&#39;</span>
 
-<span class="nt">selector_name</span><span class="p">:</span><span class="w"> </span><span class="c1"># Any name, not relevant to the codes</span>
-<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;path.to.selector&#39;</span>
-<span class="w">    </span><span class="nt">kwargs</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional arguments to be passed to the selector</span>
-<span class="w">        </span><span class="nt">arg1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value1</span>
-<span class="c1">#...</span>
-<span class="nt">prepocessor_name</span><span class="p">:</span><span class="w"> </span><span class="c1"># Any name, not relevant to the codes</span>
-<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;path.to.preprocessor&#39;</span>
-<span class="w">    </span><span class="nt">kwargs</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional arguments to be passed to the preprocessor</span>
-<span class="w">        </span><span class="nt">arg1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value1</span>
-<span class="c1">#...</span>
+<span class="nt">ntuple_preprocessors</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">prepocessor_name</span><span class="p">:</span><span class="w"> </span><span class="c1"># Any name, not relevant to the codes</span>
+<span class="w">        </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;path.to.preprocessor&#39;</span>
+<span class="w">        </span><span class="nt">kwargs</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional arguments to be passed to the preprocessor</span>
+<span class="w">            </span><span class="nt">arg1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value1</span>
+<span class="w">        </span><span class="c1">#...</span>
+
+<span class="nt">ntuple_selectors</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">selector_name</span><span class="p">:</span><span class="w"> </span><span class="c1"># Any name, not relevant to the codes</span>
+<span class="w">        </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;path.to.selector&#39;</span>
+<span class="w">        </span><span class="nt">kwargs</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional arguments to be passed to the selector</span>
+<span class="w">            </span><span class="nt">arg1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value1</span>
+<span class="w">    </span><span class="c1">#...</span>
 </pre></div>
 </div>
 <p>The following example shows how to use the <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class to read DT Ntuples and access events.</p>

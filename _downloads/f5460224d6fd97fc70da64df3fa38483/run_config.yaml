@@ -290,7 +290,7 @@ histo_names:
   # - digi_wl3d_gmtns_MB4
 
 # ----------------------------- configuration for event inspector ---------------------------------#
-inspector-functions:
+# inspector-functions:
   # define the functions to be used in the event inspector in the format:
   # func1:
   #   src: "dtpr.utils.inspector_functions.digi_inspector"

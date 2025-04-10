@@ -12,36 +12,37 @@ digi patterns in a DT chamber, you can configure the following in your configura
 
 .. code-block:: yaml
 
-    mplhep-style: 'CMS'         # Style to use for the plots
-
-    figure-configs:
-        # Any valid matplotlib figure rc parameters can be used here
-
     dt_plots_configs:
-        dt-cell-info:
-            particle_type: 'digis'      # Particle type to use
-            cmap_var: 'time'            # Variable to use for the colormap
+        mplhep-style: 'CMS'         # Style to use for the plots
 
-        cmap-configs:
-            cmap: 'viridis'             # Colormap to use
-            cmap_under: 'none'          # Color for values under vmin
-            norm:
-                class: 'matplotlib.colors.Normalize'  # Normalization class
-                vmin: 299                             # Minimum value for normalization
-                vmax: 1000                            # Maximum value for normalization
+        figure-configs:
+            # Any valid matplotlib figure rc parameters can be used here
 
-        # DT bounds and cells are matplotlib.patches.Rectangle objects, so other rc parameters can be used
-        bounds-kwargs:
-            facecolor: ["lightgray", "lightyellow", "lightpink", "lightblue"]   # Color of the rectangle [MB, SL1, SL3, SL2]
-            edgecolor: "k"                                                      # Color of the edge
-            alpha: 0.3                                                          # Transparency of the rectangle
-            linewidth: 0.5                                                      # Width of the edge
-            # ...
+        dt_plots_configs:
+            dt-cell-info:
+                particle_type: 'digis'      # Particle type to use
+                cmap_var: 'time'            # Variable to use for the colormap
 
-        cells-kwargs:
-            edgecolor: "k"              # Color of the edge
-            linewidth: 0.025              # Width of the edge
-            #...
+            cmap-configs:
+                cmap: 'viridis'             # Colormap to use
+                cmap_under: 'none'          # Color for values under vmin
+                norm:
+                    class: 'matplotlib.colors.Normalize'  # Normalization class
+                    vmin: 299                             # Minimum value for normalization
+                    vmax: 1000                            # Maximum value for normalization
+
+            # DT bounds and cells are matplotlib.patches.Rectangle objects, so other rc parameters can be used
+            bounds-kwargs:
+                facecolor: ["lightgray", "lightyellow", "lightpink", "lightblue"]   # Color of the rectangle [MB, SL1, SL3, SL2]
+                edgecolor: "k"                                                      # Color of the edge
+                alpha: 0.3                                                          # Transparency of the rectangle
+                linewidth: 0.5                                                      # Width of the edge
+                # ...
+
+            cells-kwargs:
+                edgecolor: "k"              # Color of the edge
+                linewidth: 0.025              # Width of the edge
+                #...
 
 And then, by running the command:
 

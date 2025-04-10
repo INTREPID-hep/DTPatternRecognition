@@ -18,22 +18,23 @@ a `YAML` configuration file under the ``particle_types`` map:
 
 .. code-block:: yaml
 
-    # ...
-    digis:
-        amount: 'digi_nDigis'
-        branches:
-            wh: 'digi_wheel'
-            sc: 'digi_sector'
-            st: 'digi_station'
-            sl: 'digi_superLayer'
-            w: 'digi_wire'
-            l: 'digi_layer'
-            time: 'digi_time'
-        attributes:
-            BX:
-                expr: 'time // 25 if time is not None else None'
-        sorter:
-            by: 'p.BX'
+    particle_types:
+        # ...
+        digis:
+            amount: 'digi_nDigis'
+            branches:
+                wh: 'digi_wheel'
+                sc: 'digi_sector'
+                st: 'digi_station'
+                sl: 'digi_superLayer'
+                w: 'digi_wire'
+                l: 'digi_layer'
+                time: 'digi_time'
+            attributes:
+                BX:
+                    expr: 'time // 25 if time is not None else None'
+            sorter:
+                by: 'p.BX'
     # ...
 
 The ``Event`` class creates **n** instances of the ``Particle`` class, where **n** is determined by the ``amount`` key. 
@@ -45,10 +46,8 @@ instance attribute to any computation.
 Additionally, the ``particle_types`` map can manage also the following keys:
 
 - ``class``: Specifies the class path to be used for the particle. If not specified, it defaults to the ``Particle`` class.
-- ``filter``: Allows to filter particles based on boolean conditions. These conditions can use the particle
-    instance (referred to as ``p``) and the root event entry (referred to as ``ev``).
-- ``sorter``: Sorts particles using Python's ``sorted()``. The ``by`` key specifies the sorting expression
-    (which can also use ``p`` and ``ev``), and ``reverse`` key (default: ``False``) can reverse the order.
+- ``filter``: Allows to filter particles based on boolean conditions. These conditions can use the particle instance (referred to as ``p``) and the root event entry (referred to as ``ev``).
+- ``sorter``: Sorts particles using Python's ``sorted()``. The ``by`` key specifies the sorting expression (which can also use ``p`` and ``ev``), and ``reverse`` key (default: ``False``) can reverse the order.
 
 For example, to iterate over a TTree and create event instances with particles specified in the 
 :download:`configuration file <../../_static/run_config.yaml>`, you can use the following code:

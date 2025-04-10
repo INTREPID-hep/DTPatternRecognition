@@ -98,22 +98,23 @@ of particles and how to build them, allowing for flexible and customizable event
 the TTree event’s entries when an event is instantiated. This requires specifying the following in
 a <cite>YAML</cite> configuration file under the <code class="docutils literal notranslate"><span class="pre">particle_types</span></code> map:</p>
 <p class="rubric">run_config.yaml</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
-<span class="nt">digis</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">amount</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_nDigis&#39;</span>
-<span class="w">    </span><span class="nt">branches</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">wh</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_wheel&#39;</span>
-<span class="w">        </span><span class="nt">sc</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_sector&#39;</span>
-<span class="w">        </span><span class="nt">st</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_station&#39;</span>
-<span class="w">        </span><span class="nt">sl</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_superLayer&#39;</span>
-<span class="w">        </span><span class="nt">w</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_wire&#39;</span>
-<span class="w">        </span><span class="nt">l</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_layer&#39;</span>
-<span class="w">        </span><span class="nt">time</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_time&#39;</span>
-<span class="w">    </span><span class="nt">attributes</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">BX</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;time</span><span class="nv"> </span><span class="s">//</span><span class="nv"> </span><span class="s">25</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">time</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">None</span><span class="nv"> </span><span class="s">else</span><span class="nv"> </span><span class="s">None&#39;</span>
-<span class="w">    </span><span class="nt">sorter</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">by</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;p.BX&#39;</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">particle_types</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># ...</span>
+<span class="w">    </span><span class="nt">digis</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">amount</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_nDigis&#39;</span>
+<span class="w">        </span><span class="nt">branches</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">wh</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_wheel&#39;</span>
+<span class="w">            </span><span class="nt">sc</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_sector&#39;</span>
+<span class="w">            </span><span class="nt">st</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_station&#39;</span>
+<span class="w">            </span><span class="nt">sl</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_superLayer&#39;</span>
+<span class="w">            </span><span class="nt">w</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_wire&#39;</span>
+<span class="w">            </span><span class="nt">l</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_layer&#39;</span>
+<span class="w">            </span><span class="nt">time</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_time&#39;</span>
+<span class="w">        </span><span class="nt">attributes</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">BX</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;time</span><span class="nv"> </span><span class="s">//</span><span class="nv"> </span><span class="s">25</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">time</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">None</span><span class="nv"> </span><span class="s">else</span><span class="nv"> </span><span class="s">None&#39;</span>
+<span class="w">        </span><span class="nt">sorter</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">by</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;p.BX&#39;</span>
 <span class="c1"># ...</span>
 </pre></div>
 </div>
@@ -125,16 +126,8 @@ instance attribute to any computation.</p>
 <p>Additionally, the <code class="docutils literal notranslate"><span class="pre">particle_types</span></code> map can manage also the following keys:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">class</span></code>: Specifies the class path to be used for the particle. If not specified, it defaults to the <code class="docutils literal notranslate"><span class="pre">Particle</span></code> class.</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">filter</span></code>: Allows to filter particles based on boolean conditions. These conditions can use the particle</dt><dd><p>instance (referred to as <code class="docutils literal notranslate"><span class="pre">p</span></code>) and the root event entry (referred to as <code class="docutils literal notranslate"><span class="pre">ev</span></code>).</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">sorter</span></code>: Sorts particles using Python’s <code class="docutils literal notranslate"><span class="pre">sorted()</span></code>. The <code class="docutils literal notranslate"><span class="pre">by</span></code> key specifies the sorting expression</dt><dd><p>(which can also use <code class="docutils literal notranslate"><span class="pre">p</span></code> and <code class="docutils literal notranslate"><span class="pre">ev</span></code>), and <code class="docutils literal notranslate"><span class="pre">reverse</span></code> key (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>) can reverse the order.</p>
-</dd>
-</dl>
-</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filter</span></code>: Allows to filter particles based on boolean conditions. These conditions can use the particle instance (referred to as <code class="docutils literal notranslate"><span class="pre">p</span></code>) and the root event entry (referred to as <code class="docutils literal notranslate"><span class="pre">ev</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sorter</span></code>: Sorts particles using Python’s <code class="docutils literal notranslate"><span class="pre">sorted()</span></code>. The <code class="docutils literal notranslate"><span class="pre">by</span></code> key specifies the sorting expression (which can also use <code class="docutils literal notranslate"><span class="pre">p</span></code> and <code class="docutils literal notranslate"><span class="pre">ev</span></code>), and <code class="docutils literal notranslate"><span class="pre">reverse</span></code> key (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>) can reverse the order.</p></li>
 </ul>
 <p>For example, to iterate over a TTree and create event instances with particles specified in the
 <a class="reference download internal" download="" href="../../_downloads/f5460224d6fd97fc70da64df3fa38483/run_config.yaml"><code class="xref download docutils literal notranslate"><span class="pre">configuration</span> <span class="pre">file</span></code></a>, you can use the following code:</p>

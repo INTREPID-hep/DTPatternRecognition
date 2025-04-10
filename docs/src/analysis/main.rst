@@ -26,19 +26,16 @@ be explored using the ``-h/--help`` flag. Key optional arguments include: ``-i/-
     As explained in the :doc:`../base/main` section, the framework is aimeded to be as generic as possible. 
     So, parameters such as the particle classes to construct in an Event or the preprocessors and selector 
     functions to apply, are defined in a ``YAML`` configuration file. Therefore, analyses also utilize this configuration 
-    file to define parameters like which histograms to fill or which matplotlib styles to apply. By default, analyses look 
-    for a file named ``run_config.yaml`` in the ``--outpath`` directory. If not found, the default configuration 
-    is used (``dtpr/utils/yamls/run_config.yaml``).
+    file to define parameters like which histograms to fill or which matplotlib styles to apply.
 
 
 .. toctree::
     :maxdepth: 1
     :caption: Analyses:
 
-    inspect-event
     fill-histos
     plot-dts
     event-visualizer
-    digis-fpga-dumper
+    inspect-event
 
 

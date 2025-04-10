@@ -1,5 +1,5 @@
 import math
-from dtpr.particles import Particle
+from dtpr.base import Particle
 
 class Segment(Particle):
     """
@@ -31,7 +31,7 @@ class Segment(Particle):
         The list of trigger primitives matched to the segment.
     """
 
-    def __init__(self, index, ev=None, **kwargs):
+    def __init__(self, index, ev=None, branches=None, **kwargs):
         """
         Initialize a Segment instance.
 
@@ -40,8 +40,10 @@ class Segment(Particle):
         :param index: The index of the segment.
         :type index: int
         :param ev: The TTree event entry containing event data.
+        :param branches: The branches to be used for initialization.
         :param kwargs: Additional attributes to set explicitly.
         """
+        # set explicit attributes to guarantee that they are set
         self.wh = kwargs.pop("wh", None)
         self.sc = kwargs.pop("sc", None)
         self.st = kwargs.pop("st", None)
@@ -53,24 +55,7 @@ class Segment(Particle):
         self.pos_locx_sl1 = kwargs.pop("pos_locx_sl1", None)
         self.pos_locx_sl3 = kwargs.pop("pos_locx_sl3", None)
         self.matches = []
-
-        super().__init__(index, ev, **kwargs)
-
-    def _init_from_ev(self, ev):
-        """
-        Properties taken from TBranches: {seg_wheel, seg_sector, seg_station, seg_posGlb_phi, 
-        seg_posGlb_eta, seg_phi_nHits, seg_z_nHits, seg_phi_t0, seg_posLoc_x_SL1, seg_posLoc_x_SL3}
-        """
-        self.wh = ev.seg_wheel[self.index]
-        self.sc = ev.seg_sector[self.index]
-        self.st = ev.seg_station[self.index]
-        self.phi = ev.seg_posGlb_phi[self.index]
-        self.eta = ev.seg_posGlb_eta[self.index]
-        self.nHits_phi = ev.seg_phi_nHits[self.index]
-        self.nHits_z = ev.seg_z_nHits[self.index]
-        self.t0_phi = ev.seg_phi_t0[self.index]
-        self.pos_locx_sl1 = ev.seg_posLoc_x_SL1[self.index]
-        self.pos_locx_sl3 = ev.seg_posLoc_x_SL3[self.index]
+        super().__init__(index, ev, branches=branches, **kwargs)
 
     def _add_match(self, tp):
         """

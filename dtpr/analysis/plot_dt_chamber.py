@@ -6,23 +6,29 @@ from pandas import DataFrame
 from mplhep import style
 from copy import deepcopy
 
-from dtpr.base import Event
-from dtpr.utils.functions import color_msg, init_ntuple_from_config, save_mpl_canvas
+from dtpr.base import Event, NTuple
+from dtpr.utils.functions import color_msg, save_mpl_canvas
 from mpldts.geometry.station import Station as DT
 from mpldts.patches.dt_patch import DTPatch
 from dtpr.utils.config import RUN_CONFIG
 
 def embed_dt2axes(station, faceview, ax=None, bounds_kwargs=None, cells_kwargs=None):
     """
-    Create the axes for the specified faceview of the station.
+    Add a DT patch to the axes for the specified faceview of the station.
 
-    Parameters:
-    station (Station): The station containing DT data.
-    faceview (str): The faceview to plot ('phi' or 'eta').
-    ax (matplotlib.axes._subplots.AxesSubplot): The axes to plot on. Default is None.
+    :param station: The mpldts.geometry.Station object containing DT chamber data
+    :type station: Station.
+    :param faceview: The faceview to plot ('phi' or 'eta').
+    :type faceview: str
+    :param ax: The axes to plot on. Default is None, which creates a new figure.
+    :type ax: matplotlib.axes._subplots.AxesSubplot
+    :param bounds_kwargs: Additional keyword arguments for the bounds of the patch.
+    :type bounds_kwargs: dict
+    :param cells_kwargs: Additional keyword arguments for the cells of the patch.
+    :type cells_kwargs: dict
 
-    Returns:
-    matplotlib.axes._subplots.AxesSubplot: The axes for the specified faceview.
+    :return: The axes for the specified Station and faceview, and the resulting DTPatch instance.
+    :return type:  tuple
     """
     if not ax:
         _, ax = plt.subplots(figsize=(8, 6))
@@ -53,31 +59,29 @@ def embed_dt2axes(station, faceview, ax=None, bounds_kwargs=None, cells_kwargs=N
 
     return ax, patch
 
-def _make_dt_plot(
-        ev: Event,
-        wh,
-        sc,
-        st,
-        name="test_dt_plot",
-        path="./results",
-        save=False):
+def make_dt_plot(ev: Event, wh, sc, st, name="test_dt_plot", path=".", save=False):
     """
     Create and display a DT plot for the specified wheel, sector, and station in the given event.
 
-    Parameters:
-    ev (Event): The event containing DT data.
-    wh (int): The wheel number.
-    sc (int): The sector number.
-    st (int): The station number.
-    name (str): The name of the plot. Default is "test_dt_plot".
-    path (str): The path to save the plot. Default is "./results".
-    save (bool): Whether to save the plot to disk. Default is False.
+    :param ev: The event containing DT data.
+    :type ev: Event
+    :param wh: The wheel number.
+    :type wh: int
+    :param sc: The sector number.
+    :type sc: int
+    :param st: The station number.
+    :type st: int
+    :param name: The name of the plot. Default is "test_dt_plot".
+    :type name: str
+    :param path: The path to save the plot. Default is ".".
+    :type path: str
+    :param save: Whether to save the plot to disk. Default is False.
+    :type save: bool
     """
     # use RUN_CONFIG to determine which evetn info to use as dt_info
     particle_type, cmap_var = RUN_CONFIG.dt_plots_configs["dt-cell-info"].values()
     dt_info = DataFrame([particle.__dict__ for particle in ev.filter_particles(particle_type, wh=wh, sc=sc, st=st)])
 
-    print(dt_info)
     if dt_info.empty:
         color_msg(f"No {particle_type} found for the chamber {wh}/{sc}/{st} in the event {ev.index}", "red")
         dt_info = None
@@ -132,35 +136,43 @@ def plot_dt_chamber(
         save: bool,
     ):
     """
-    Produce a single DT chamber plot.
+    Produce a single DT chamber plot based on DTNTuples.
 
-    Parameters:
-    inpath (str): The input directory containing DTNTuples.
-    outfolder (str): The output directory where the plots will be saved.
-    tag (str): A tag to append to the plot filenames.
-    maxfiles (int): The maximum number of files to process.
-    event_number (int): The event number to plot.
-    wheel (int): The wheel number.
-    sector (int): The sector number.
-    station (int): The station number.
-    save (bool): Whether to save the plots to disk.
+    
+    :param inpath: The input directory containing DTNTuples.
+    :type inpath: str
+    :param outfolder: The output directory where the plots will be saved.
+    :type outfolder: str
+    :param tag: A tag to append to the plot filenames.
+    :type tag: str
+    :param maxfiles: The maximum number of files to process.
+    :type maxfiles: int
+    :param event_number: The event number to plot.
+    :type event_number: int
+    :param wheel: The wheel number.
+    :type wheel: int
+    :param sector: The sector number.
+    :type sector: int
+    :param station: The station number.
+    :type station: int
+    :param save: Whether to save the plots to disk.
+    :type save: bool
     """
 
     # Start of the analysis 
     color_msg(f"Running program to produce a DT plot based on DTNTuples", "green")
 
     # Create the Ntuple object
-    ntuple = init_ntuple_from_config(
+    ntuple = NTuple(
         inputFolder=inpath,
         maxfiles=maxfiles,
-        config=RUN_CONFIG
     )
 
     color_msg(f"Making plot...", color="purple", indentLevel=1)
 
     ev = ntuple.events[event_number]
     if not ev:
-        color_msg(f"Event not pass filter: {ev}", color="red")
+        color_msg(f"Event did not pass filter: {ev}", color="red")
         return
     with plt.style.context(getattr(style, RUN_CONFIG.dt_plots_configs["mplhep-style"])):
         plt.rcParams.update(RUN_CONFIG.dt_plots_configs["figure-configs"]) 

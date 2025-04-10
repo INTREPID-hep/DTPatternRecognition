@@ -10,8 +10,8 @@
 import os
 import importlib
 import warnings
-from dtpr.base import Event
-from dtpr.utils.functions import color_msg, create_outfolder, init_ntuple_from_config
+from dtpr.base import Event, NTuple
+from dtpr.utils.functions import color_msg, create_outfolder
 from dtpr.utils.config import RUN_CONFIG
 from tqdm import tqdm
 
@@ -44,10 +44,9 @@ def {name}(
     color_msg(f"Running program...", "green")
 
     # Create the Ntuple object
-    ntuple = init_ntuple_from_config(
+    ntuple = NTuple(
         inputFolder=inpath,
         maxfiles=maxfiles,
-        config=RUN_CONFIG,
     )
 
     for ev in tqdm(

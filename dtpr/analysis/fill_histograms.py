@@ -3,12 +3,12 @@ import importlib
 import warnings
 import ROOT as r
 from tqdm import tqdm
+from dtpr.base import NTuple
 from dtpr.utils.functions import (
     color_msg,
     error_handler,
     create_outfolder,
     flatten,
-    init_ntuple_from_config,
 )
 from dtpr.utils.config import RUN_CONFIG
 
@@ -39,11 +39,21 @@ def set_histograms_dict():
 
 def fill_histograms(ev, histos_to_fill):
     """
-    Apply selections and fill histograms.
+    Fill predefined histograms with event data.
 
-    Args:
-        ev (Event): The event object containing data to fill histograms.
-        histos_to_fill (dict, optional): The histograms to fill. Default is None.
+    This function processes an event and fills histograms based on the provided dictionary. 
+    Histograms can represent distributions, efficiencies, or multi-dimensional distributions.
+
+    
+    :param ev: The event object containing data to fill histograms. It should be an instance of ``dtpr.base.Event``.
+    :type ev: Event
+    :param histos_to_fill: A dictionary defining the histograms to fill. Each entry in the 
+        dictionary specifies the histogram type, the ROOT histogram object, and the function 
+        to compute the values to fill.
+    :type histos_to_fill: dict
+
+    :raises Exception: If the function for computing histogram values fails, an error is logged, 
+        and the histogram filling for that entry is skipped.
     """
     for histo_key, histoinfo in histos_to_fill.items():
         hType = histoinfo["type"]
@@ -118,10 +128,12 @@ def save_histograms(outfolder, tag, histos_to_save):
     """
     Stores histograms in a rootfile.
 
-    Args:
-        outfolder (str): The output folder to save the rootfile.
-        tag (str): The tag to append to the rootfile name.
-        histograms_to_save (dict): The histograms to save.
+    :param outfolder: The output folder to save the rootfile.
+    :type outfolder: (str)
+    :param tag: The tag to append to the rootfile name.
+    :type tag: (str)
+    :param histograms_to_save: The histograms to save.
+    :type histograms_to_save: (dict)
     """
     outname = os.path.join(outfolder, "histograms%s.root" % (tag))
     with r.TFile.Open(os.path.abspath(outname), "RECREATE") as f:
@@ -140,24 +152,27 @@ def save_histograms(outfolder, tag, histos_to_save):
 
 def fill_histos(inpath, outfolder, tag, maxfiles, maxevents):
     """
-    Fill histograms based on DtNTuples information.
+    Fill histograms based on NTuples information.
 
-    Parameters:
-    inpath (str): Path to the input folder containing the ntuples.
-    outfolder (str): Path to the output folder where histograms will be saved.
-    tag (str): Tag to identify the output histograms.
-    maxfiles (int): Maximum number of files to process.
-    maxevents (int): Maximum number of events to process.
+    :param inpath: Path to the input folder containing the ntuples.
+    :type inpath: (str)
+    :param outfolder: Path to the output folder where histograms will be saved.
+    :type outfolder: (str)
+    :param tag: Tag to identify the output histograms.
+    :type tag: (str)
+    :param maxfiles: Maximum number of files to process.
+    :type maxfiles: (int)
+    :param maxevents: Maximum number of events to process.
+    :type maxevents: (int)
     """
 
     # Start of the analysis
-    color_msg(f"Running program to fill histogrmas...", "green")
+    color_msg(f"Running program to fill histograms...", "green")
 
     # Create the Ntuple object
-    ntuple = init_ntuple_from_config(
+    ntuple = NTuple(
         inputFolder=inpath,
-        maxfiles=maxfiles,
-        config=RUN_CONFIG,
+        maxfiles=maxfiles
     )
 
     # set maxevents
@@ -194,13 +209,15 @@ def fill_histos(inpath, outfolder, tag, maxfiles, maxevents):
         ascii=True,
         unit=" event",
     ) as pbar:
+        each_print = _maxevents // 10 if _maxevents > 10 else 1
         for ev in ntuple.events:
             if not ev:
                 continue
-            if ev.index % (_maxevents // 10) == 0:
-                pbar.update(_maxevents // 10)
+            if ev.index % each_print == 0:
+                pbar.update(each_print)
             if ev.index >= _maxevents:
                 break
+
             fill_histograms(ev, histograms_to_fill)
 
     color_msg(f"Saving histograms...", color="purple", indentLevel=1)

@@ -1,17 +1,5 @@
 """ Functions to filter events """
 
-def no_filter(reader):
-    """
-    No filter: No filter is applied.
-
-    Args:
-        reader (object): The reader object containing generator muons.
-
-    Returns:
-        bool: Always returns True.
-    """
-    return True
-
 def baseline(reader):
     """
     Baseline filter: There must be a generator muon that matches with an offline segment.

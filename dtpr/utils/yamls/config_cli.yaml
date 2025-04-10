@@ -5,6 +5,7 @@ pos_args:
         help: "Fill predefined ROOT histograms based on event-by-event information from DT NTuple files."
         func: "dtpr.analysis.fill_histograms.fill_histos"
         opt_args: [
+            "config-path",
             "input-path",
             "output-path",
             "tag",
@@ -16,6 +17,7 @@ pos_args:
         help: "Produce CMS DT chamber plots (global view) based on event-by-event digis information from DT NTuple files."
         func: "dtpr.analysis.plot_dt_chambers.plot_dt_chambers"
         opt_args: [
+            "config-path",
             "input-path",
             "output-path",
             "tag",
@@ -28,6 +30,7 @@ pos_args:
         help: "Produce CMS DT chamber plot (local view) for a specific event digis information from a DT NTuple files."
         func: "dtpr.analysis.plot_dt_chamber.plot_dt_chamber"
         opt_args: [
+            "config-path",
             "input-path",
             "output-path",
             "tag",
@@ -43,31 +46,19 @@ pos_args:
         help: "Inspect a specific event from DT NTuple files."
         func: "dtpr.analysis.inspect_event.inspect_event"
         opt_args: [
+            "config-path",
             "input-path",
-            "output-path",
             "max-files",
             "event-number",
-            "debug"
         ]
     event-visualizer:
         name: "event-visualizer"
         help: "Launch the event visualizer for DT NTuple files."
         func: "dtpr.analysis.events_visualizer.launch_visualizer"
         opt_args: [
+            "config-path",
             "input-path",
-            "output-path",
             "max-files"
-        ]
-    digis-fpga-dumper:
-        name: "fpga-dumper"
-        help: "Dump digis information from DT NTuple files to a FPGA readable format (Considering OBDT restrictions)."
-        func: "dtpr.analysis.digis_fpga_dumper.dump_digis"
-        opt_args: [
-            "input-path",
-            "output-path",
-            "tag",
-            "max-files",
-            "max-events"
         ]
     # -------------------------------- posible create-templates ---------------------------------- #
     create-particle:
@@ -105,6 +96,11 @@ pos_args:
 # ---------------------------------- posible optional arguments ---------------------------------- #
 
 opt_args:
+    config-path:
+        flags: ["-cf", "--config-file"]
+        dest: "config_file"
+        type: str
+        help: "Path to the configuration file."
     input-path:  
         flags: ["-i", "--inputpath"]
         dest: "inpath"
@@ -138,7 +134,7 @@ opt_args:
     event-number:
         flags: ["-evn", "--event-number"]
         dest: "event_number"
-        type: "lambda arg: int(arg) if arg.isdigit() else arg"
+        type: "lambda arg: int(arg) if arg.lstrip('-').isdigit() else arg"
         default: 0
         help: "Event number to be analyzed. Default is 0."
     wheel:

@@ -1,0 +1,38 @@
+# ------------------------------- configuration for Event -------------------------------------#
+particle_types:
+  tps:  
+    amount: 'ph2TpgPhiEmuAm_nTrigs'
+    branches:
+      wh: 'ph2TpgPhiEmuAm_wheel'
+      sc: 'ph2TpgPhiEmuAm_sector'
+      st: 'ph2TpgPhiEmuAm_station'
+      phi: 'ph2TpgPhiEmuAm_phi'
+      phiB: 'ph2TpgPhiEmuAm_phiB'
+      BX: 'ph2TpgPhiEmuAm_BX'
+      quality: 'ph2TpgPhiEmuAm_quality'
+      rpcFlag: 'ph2TpgPhiEmuAm_rpcFlag'
+    attributes:
+      BX:
+        expr: 'BX - 20' # Correct to center BX at 0
+      phires_conv:
+        expr: '65536.0 / 0.5'
+      matches: []
+      matches_with_segment: False
+
+# -------------------------------- configuration for NTuple --------------------------------------#
+ntuple_tree_name: '/dtNtupleProducer/DTTREE'
+
+# -------------------------------- configuration for histograms -----------------------------------#
+histo_sources:
+  - dtpr.utils.histograms.am_histos
+
+histo_names:
+  # # ============== rates =============== #
+  - AM_rate_allBX_MB1
+  - AM_rate_allBX_MB2
+  - AM_rate_allBX_MB3
+  - AM_rate_allBX_MB4
+  - AM_rate_goodBX_MB1
+  - AM_rate_goodBX_MB2
+  - AM_rate_goodBX_MB3
+  - AM_rate_goodBX_MB4

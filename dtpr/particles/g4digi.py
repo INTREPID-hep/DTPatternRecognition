@@ -1,6 +1,6 @@
 
 import numpy as np
-from dtpr.particles import Particle
+from dtpr.base import Particle
 
 np.random.seed(1935)
 
@@ -29,7 +29,7 @@ class G4Digi(Particle):
     BX : int
         The bunch crossing number of the digi.
     """
-    def __init__(self, index, ev=None, **kwargs):
+    def __init__(self, index, ev=None, branches=None, **kwargs):
         """
         Initialize a G4Digi instance.
 
@@ -40,32 +40,18 @@ class G4Digi(Particle):
         :param ev: The TTree event entry containing event data.
         :param kwargs: Additional attributes to set explicitly.
         """
+        # set explicit attributes to guarantee that they are set
         self.wh = kwargs.pop("wh", -2)
         self.sc = kwargs.pop("sc", 1)
         self.st = kwargs.pop("st", 1)
         self.sl = kwargs.pop("sl", None)
-        self.w = kwargs.pop("w", None)
         self.l = kwargs.pop("l", None)
+        self.w = kwargs.pop("w", None)
         self.time = kwargs.pop("time", None)
         self.particle_type = kwargs.pop("particle_type", None)
+        self.BX = kwargs.pop("BX", None)
 
-        super().__init__(index, ev, **kwargs)
-
-        if self.time is not None:
-            self.BX = self.time // 25
-
-    def _init_from_ev(self, ev):
-        """
-        Properties taken from TBranches: {SLHit_SL, SLHit_Cell, SLHit_Layer, SLHit_Time, SLHit_PDG}
-
-        :param ev: The TTree event entry containing event data.
-        """
-        self.sl = int(ev.SLHit_SL[self.index])
-        self.w = int(ev.SLHit_Cell[self.index])
-        self.l = int(ev.SLHit_Layer[self.index])
-        self.time = ev.SLHit_Time[self.index]
-        self._correct_time()
-        self.particle_type = int(ev.SLHit_PDG[self.index])
+        super().__init__(index, ev, branches, **kwargs)
 
     def _correct_time(self):
         """

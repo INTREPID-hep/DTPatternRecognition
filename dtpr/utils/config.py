@@ -43,12 +43,12 @@ class Config:
                 delattr(self, attr)
 
     def change_config_file(
-        self, config_path=".workspace/event_config.yaml"
+        self, config_path="./run_config.yaml"
     ):
         """
         Changes the configuration file to a new path.
 
-        :param config_path: The relative path to the new config file. Default is ".workspace/event_config.yaml".
+        :param config_path: The relative path to the new config file. Default is "./run_config.yaml".
         :type config_path: str
         """
         try:

@@ -4,16 +4,14 @@
 # Version:
 #     0.0
 #
-# This class is a template for a generic particle class. It is used to create a particle object with 
-# various attributes. It inherits from dtpr.particles.Particle which provides needed methods such as 
-#'__str__' since they are used in the dtpr.base.Event class. If you want to make this class able to 
-# be built on the fly when an instance of Event is created, your _init_from_ev method should be able 
-# to handle a root event entry as an input argument called "ev".
+# This class is a template for a generic particle class. It inherits from dtpr.base.Particle which 
+# provides needed methods such as '__str__' '_init_from_ev' and '_init_from_dict'. Implement other
+# class methods as needed.
 
-from dtpr.particles import Particle
+from dtpr.base import Particle
 
 class {name}(Particle):
-    def __init__(self, index, ev=None, **kwargs):
+    def __init__(self, index, ev=None, branches=None, **kwargs):
         """
         Initialize a {name} instance.
 
@@ -21,30 +19,11 @@ class {name}(Particle):
 
         :param index: The index of the {name}.
         :type index: int
-        :param ev: The TTree event entry containing event data.
-        :param kwargs: Additional attributes to set explicitly.
         .
         . (add more parameters here if needed)
         .
         """
-        # Initialize the attributes of the instance with the input arguments
-        # self.attr1 = kwargs.pop("attr1", None)
-        # .
-        # (add more attrributes here if needed)
-        # .
-        # .
-
-        super().__init__(index, ev, **kwargs)
-
-
-    def _init_from_ev(self, ev):
-        # constructor with root event entry info
-        # Extract the need attributes from the root event entry
-        # and assign them to the corresponding attributes of the instance
-        try:
-            pass 
-        except (AttributeError, IndexError):
-            raise ValueError("The provided event does not contain information.")
+        super().__init__(index, ev, branches, **kwargs)
 
 
 if __name__ == '__main__':

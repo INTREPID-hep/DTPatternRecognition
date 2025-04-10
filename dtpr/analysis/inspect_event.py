@@ -1,35 +1,54 @@
-from dtpr.utils.functions import init_ntuple_from_config, color_msg
+from functools import partial
+from dtpr.base import NTuple
+from dtpr.utils.functions import color_msg, get_callable_from_src
 from dtpr.utils.config import RUN_CONFIG
 from tqdm import tqdm
 
-def inspect_event(
-        inpath: str,
-        maxfiles: int,
-        event_number: int,
-        debug: bool
-    ):
+
+def inspect_event(inpath: str, maxfiles: int, event_number: int):
     """
     Inspect a specific event from NTuples.
 
-    Parameters:
-    inpath (str): Path to the input folder containing the ntuples.
-    outfolder (str): Path to the output folder where debug information will be saved.
-    filter_type (str): Type of event filter to apply.
-    maxfiles (int): Maximum number of files to process.
-    event_number (int or str): The event number to inspect or a slice string indicating the slice, e.g. 1:10:2. Default is 0.
-    debug (bool): If True, enables debug mode. Default is False.
+    :param inpath: Path to the input folder containing the ntuples.
+    :type inpath: (str)
+    :param outfolder: Path to the output folder where debug information will be saved.    
+    :type outfolder: (str)
+    :param filter_type: Type of event filter to apply.
+    :type filter_type: (str)
+    :param maxfiles: Maximum number of files to process.
+    :type maxfiles: (int)
+    :param event_number: The event number to inspect or a slice string indicating the slice, e.g. 1:10:2. Default is 0.
+    :type event_number: (int or str)
+    :param debug: If True, enables debug mode. Default is False.
+    :type debug: (bool)
     """
     # Start of the analysis 
     color_msg(f"Inpecting event {event_number} from NTuples", "green")
 
     # Create the Ntuple object
-    ntuple = init_ntuple_from_config(
+    ntuple = NTuple(
         inputFolder=inpath,
         maxfiles=maxfiles,
-        config=RUN_CONFIG,
     )
 
-        # setting up which histograms will be fill
+    # getting the method to inspect the events
+    inspector_functions = []
+    for insp, insp_info in getattr(RUN_CONFIG, "inspector-functions", {}).items():
+        src = insp_info.get("src", None)
+        inspector = get_callable_from_src(src)
+        if inspector is None:
+            raise ValueError(f"Inspector function {insp} not found in {src}")
+        kwargs = insp_info.get("kwargs", {})
+        if kwargs:
+            inspector_functions.append(partial(inspector, **kwargs))
+        else:
+            inspector_functions.append(inspector)
+
+    if not inspector_functions:
+        inspector_functions = [lambda ev: tqdm.write(ev.__str__())]
+
+    print(type(event_number))
+
     if isinstance(event_number, str):
         event_indices = eval(f"slice({event_number.replace(':', ',')})")
         events = ntuple.events[event_indices]
@@ -40,9 +59,12 @@ def inspect_event(
             total = int(end[0]) - int(beg)
         print(f"Total events: {total}")
     else:
-        events = [ntuple.events[event_number]]
-        total = 1
-    from time import sleep
+        if event_number == -1:
+            events = ntuple.events
+            total = len(ntuple.events)
+        else:
+            events = [ntuple.events[event_number]]
+            total = 1
 
     with tqdm(
         total=total,
@@ -57,13 +79,15 @@ def inspect_event(
             if not ev:
                 tqdm.write(color_msg(f"Event not pass filter: {ev}", color="red", return_str=True))
                 continue
-            if ev.index % (total // 10) == 0:
+            if total < 10:
+                pbar.update(1)
+            elif ev.index % (total // 10) == 0:
                 pbar.update(total // 10)
             if ev.index >= total:
                 break
 
-            if any([shower.shower_type == 4 for shower in ev.realshowers]):
-                tqdm.write(ev.__str__(indentLevel=1))
-                # continue_ = input()
+            for inspector in inspector_functions:
+                inspector(ev)
+
 
     color_msg(f"Done!", color="green")

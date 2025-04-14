@@ -1,0 +1,183 @@
+# -------------------------------- configuration for NTuples --------------------------------------#
+ntuple_selectors:
+  # define the selectors to be used in the ntuple, always use at least no_filter
+  # comment/uncomment/add as needed...
+  # ================= available selectors - dtntuple ================= #
+  - "dtpr.utils.filters.base_filters.baseline"
+  # - "dtpr.utils.filters.base_filters.removeShower"
+  # - "dtpr.utils.filters.base_filters.baseline_plus_hitsc"
+  # ================= available selectors - g4ntuple ================= #
+  # - ...
+
+ntuple_preprocessors:
+  # define the event preprocessors to be used in the ntuple
+  genmuon_matcher:
+    src: "dtpr.utils.genmuon_functions.analyze_genmuon_matches"
+  genmuon_showerer:
+    src: "dtpr.utils.genmuon_functions.analyze_genmuon_showers"
+    kwargs:
+      method: 2
+  real_shower_builder:
+    src: "dtpr.utils.shower_functions.build_real_showers"
+    kwargs:
+      debug: False
+  # fw_shower_builder:
+  #   src: "dtpr.utils.shower_functions.build_fwshowers"
+  #   kwargs:
+  # fw_shower_analyzer:
+  #   src: "dtpr.utils.shower_functions.analyze_fwshowers"
+
+# ------------------------------- configuration for particles -------------------------------------#
+
+particle_types:
+  digis:
+    amount: 'digi_nDigis'
+    branches:
+      wh: 'digi_wheel'
+      sc: 'digi_sector'
+      st: 'digi_station'
+      sl: 'digi_superLayer'
+      w: 'digi_wire'
+      l: 'digi_layer'
+      time: 'digi_time'
+    attributes:
+      BX:
+        expr: 'time // 25 if time is not None else None'
+    sorter:
+      by: 'p.BX'
+  segments:
+    class: 'dtpr.particles.Segment'
+    amount: 'seg_nSegments'
+    branches:
+      wh: 'seg_wheel'
+      sc: 'seg_sector'
+      st: 'seg_station'
+      phi: 'seg_posGlb_phi'
+      eta: 'seg_posGlb_eta'
+      nHits_phi: 'seg_phi_nHits'
+      nHits_z: 'seg_z_nHits'
+      t0_phi: 'seg_phi_t0'
+      pos_locx_sl1: 'seg_posLoc_x_SL1'
+      pos_locx_sl3: 'seg_posLoc_x_SL3'
+  tps:  
+    amount: 'ph2TpgPhiEmuAm_nTrigs'
+    branches:
+      wh: 'ph2TpgPhiEmuAm_wheel'
+      sc: 'ph2TpgPhiEmuAm_sector'
+      st: 'ph2TpgPhiEmuAm_station'
+      phi: 'ph2TpgPhiEmuAm_phi'
+      phiB: 'ph2TpgPhiEmuAm_phiB'
+      BX: 'ph2TpgPhiEmuAm_BX'
+      quality: 'ph2TpgPhiEmuAm_quality'
+      rpcFlag: 'ph2TpgPhiEmuAm_rpcFlag'
+    attributes:
+      BX:
+        expr: 'BX - 20' # Correct to center BX at 0
+      phires_conv:
+        expr: '65536.0 / 0.5'
+      matches: []
+      matches_with_segment: False
+  genmuons:
+    class: 'dtpr.particles.GenMuon'
+    amount: 'gen_nGenParts'
+    branches:
+      pt: 'gen_pt'
+      eta: 'gen_eta'
+      phi: 'gen_phi'
+      charge: 'gen_charge'
+    attributes:
+      matches: []
+      matched_segments_stations: []
+      showered: False
+    conditioner: 
+      property: 'gen_pdgId'
+      condition: "==13"
+    sorter:
+      by: 'pt'
+      reverse: True
+  fwshowers:
+    amount: 'ph2Shower_station'
+    branches:
+      wh: 'ph2Shower_wheel'
+      sc : 'ph2Shower_sector'
+      st: 'ph2Shower_station'
+      sl: 'ph2Shower_superlayer'
+      nDigis: 'ph2Shower_ndigis'
+      BX: 'ph2Shower_BX'
+      min_wire: 'ph2Shower_min_wire'
+      max_wire: 'ph2Shower_max_wire'
+      avg_pos: 'ph2Shower_avg_pos'
+      avg_time: 'ph2Shower_avg_time'
+      wires_profile: 'ph2Shower_wires_profile'
+  simhits:
+    amount: 'simHit_nSimHits'
+    branches:
+      wh: 'simHit_wheel'
+      sc: 'simHit_sector'
+      st: 'simHit_station'
+      sl: 'simHit_superLayer'
+      l: 'simHit_layer'
+      w: 'simHit_wire'
+      process_type: 'simHit_processType'
+      particle_type: 'simHit_particleType'
+
+# -------------------------------- configuration for histograms -----------------------------------#
+histo_sources:
+  # define the source modules of the histograms
+  - dtpr.utils.histograms.shower_histos
+
+histo_names:
+  # Histogram to fill - Uncomment or add histograms as needed. 
+  # They should exist in any of the source modules
+  # # ============ efficiencies ============ #
+  - fwshower_eff_MB1
+  - fwshower_eff_MB2
+  - fwshower_eff_MB3
+  - fwshower_eff_MB4
+  # # ------ conf maps------
+  - shower_tpfptnfn_MB1
+  - shower_tpfptnfn_MB2
+  - shower_tpfptnfn_MB3
+  - shower_tpfptnfn_MB4
+  - shower_tpfptnfn_g4
+
+  # real showers
+  - realshower_type_dist_MB1
+  - realshower_type_dist_MB2
+  - realshower_type_dist_MB3
+  - realshower_type_dist_MB4
+
+# ------------------------------- configuration for dt plots  -------------------------------------#
+dt_plots_configs:
+  mplhep-style: 'CMS'         # Style to use for the plots
+
+  figure-configs: 
+    figure.dpi: 200             # Dots per inch (resolution)
+    axes.titlesize: 'small'     # Axes title size
+    axes.labelsize: 'x-small'    # Axes label size
+    xtick.labelsize: 'x-small'    # X-axis tick label size
+    ytick.labelsize: 'x-small'    # Y-axis tick label size
+    legend.fontsize: 'small'   # Legend font size
+
+  dt-cell-info:
+    particle_type: 'digis'      # Particle type to use
+    cmap_var: 'time'            # Variable to use for the colormap
+
+  cmap-configs:
+    cmap: 'viridis'             # Colormap to use
+    cmap_under: 'none'          # Color for values under vmin
+    norm:
+      class: 'matplotlib.colors.Normalize'  # Normalization class
+      vmin: 299                             # Minimum value for normalization
+      vmax: 1000                            # Maximum value for normalization
+
+  # DT bounds and cells are matplotlib.patches.Rectangle objects
+  bounds-kwargs:
+    facecolor: ["lightgray", "lightyellow", "lightpink", "lightblue"]   # Color of the rectangle [MB, SL1, SL3, SL2]
+    edgecolor: "k"                                                      # Color of the edge
+    alpha: 0.3                                                          # Transparency of the rectangle
+    linewidth: 0.1                                                     # Line width of the edge
+
+  cells-kwargs:
+    edgecolor: "k"              # Color of the edge
+    linewidth: 0.05            # Line width of the edge

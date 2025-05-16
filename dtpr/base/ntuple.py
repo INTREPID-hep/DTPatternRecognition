@@ -5,6 +5,7 @@ from dtpr.base import Event, EventList
 from dtpr.utils.functions import color_msg, get_callable_from_src
 from dtpr.utils.config import RUN_CONFIG
 from natsort import natsorted
+import warnings
 
 
 class NTuple(object):
@@ -42,7 +43,7 @@ class NTuple(object):
         
         _tree_name = getattr(RUN_CONFIG, 'ntuple_tree_name', None)
         if _tree_name is None:
-            Warning.warn(f"No tree name provided in RUN_CONFIG. Defaulting to '/TTREE'.")
+            warnings.warn(f"No tree name provided in RUN_CONFIG. Defaulting to '/TTREE'.")
             self._tree_name = "/TTREE"
         else:
             self._tree_name = _tree_name

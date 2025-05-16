@@ -71,6 +71,7 @@ particle_types:
         expr: '65536.0 / 0.5'
       matches: []
       matches_with_segment: False
+    filter: 'p.quality >= 0'
   genmuons:
     class: 'dtpr.particles.GenMuon'
     amount: 'gen_nGenParts'

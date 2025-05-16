@@ -209,11 +209,12 @@ def fill_histos(inpath, outfolder, tag, maxfiles, maxevents):
         ascii=True,
         unit=" event",
     ) as pbar:
+        each_print = _maxevents // 10 if _maxevents > 10 else 1
         for ev in ntuple.events:
             if not ev:
                 continue
-            if ev.index % (_maxevents // 10) == 0:
-                pbar.update(_maxevents // 10)
+            if ev.index % each_print == 0:
+                pbar.update(each_print)
             if ev.index >= _maxevents:
                 break
 

@@ -149,7 +149,7 @@ class EventsVisualizer(QMainWindow):
         layout.addWidget(plot_widget_eta)
 
         ax1 = plot_widget_phi.canvas.axes
-        # ax2 = plot_widget_eta.canvas.axes
+        ax2 = plot_widget_eta.canvas.axes
 
         ax1, patch1 = embed_dt2axes(station, "phi", ax1, bounds_kwargs=self.bounds_kwargs, cells_kwargs=self.cells_kwargs)
         ax2, patch2 = embed_dt2axes(station, "eta", ax2, bounds_kwargs=self.bounds_kwargs, cells_kwargs=self.cells_kwargs)
@@ -195,7 +195,7 @@ class EventsVisualizer(QMainWindow):
         window.show()
         QApplication.restoreOverrideCursor()
 
-def launch_visualizer(inpath, maxfiles=-1, outfolder=None):
+def launch_visualizer(inpath, maxfiles=-1):
     mplhep_style = RUN_CONFIG.dt_plots_configs.get("mplhep-style", None)
     if mplhep_style and hasattr(style, mplhep_style):
         with plt.style.context(getattr(style, mplhep_style)):

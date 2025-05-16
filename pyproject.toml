@@ -17,7 +17,7 @@ argparse = "*"
 pyqt5 = "*"
 tqdm = ">=4.6"
 natsort = ">=8.4"
-mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", branch = "main" }
+mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", rev = "v1.0.0" }
 
 [tool.poetry.group.dev]
 optional = true

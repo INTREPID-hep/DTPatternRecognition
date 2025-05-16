@@ -104,6 +104,12 @@ def main():
         else:
             color_msg(f"No configuration file provided or found in the output path. Using default configuration file: {RUN_CONFIG.path}", "yellow")
 
+    # Add the directory of config_file and outfolder to sys.path
+    if hasattr(args, "config_file") and args.config_file:
+        sys.path.append(os.path.dirname(args.config_file))
+    if hasattr(args, "outfolder") and args.outfolder:
+        sys.path.append(args.outfolder)
+
     # Run the function
     args.func(args)
 

@@ -8,8 +8,8 @@ from copy import deepcopy
 
 from dtpr.base import Event, NTuple
 from dtpr.utils.functions import color_msg, save_mpl_canvas
-from mpldts.geometry.station import Station as DT
-from mpldts.patches.dt_patch import DTPatch
+from mpldts.geometry import Station as DT
+from mpldts.patches import DTStationPatch
 from dtpr.utils.config import RUN_CONFIG
 
 def embed_dt2axes(station, faceview, ax=None, bounds_kwargs=None, cells_kwargs=None):
@@ -33,7 +33,7 @@ def embed_dt2axes(station, faceview, ax=None, bounds_kwargs=None, cells_kwargs=N
     if not ax:
         _, ax = plt.subplots(figsize=(8, 6))
 
-    patch = DTPatch(
+    patch = DTStationPatch(
         station=station,
         axes=ax,
         local=True,
@@ -176,7 +176,7 @@ def plot_dt_chamber(
         return
     with plt.style.context(getattr(style, RUN_CONFIG.dt_plots_configs["mplhep-style"])):
         plt.rcParams.update(RUN_CONFIG.dt_plots_configs["figure-configs"]) 
-        _make_dt_plot(ev, wh=wheel, sc=sector, st=station, name=f"dt_plot{tag}_ev{ev.index}", path=os.path.join(outfolder, "dt_plots"), save=save)
+        make_dt_plot(ev, wh=wheel, sc=sector, st=station, name=f"dt_plot{tag}_ev{ev.index}", path=os.path.join(outfolder, "dt_plots"), save=save)
 
     color_msg(f"Done!", color="green")
 

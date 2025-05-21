@@ -8,8 +8,8 @@ from copy import deepcopy
 
 from dtpr.base import Event, NTuple
 from dtpr.utils.functions import color_msg, save_mpl_canvas
-from mpldts.geometry.station import Station as DT
-from mpldts.patches.dt_patch import DTPatch
+from mpldts.geometry import Station as DT
+from mpldts.patches import DTStationPatch
 from dtpr.utils.config import RUN_CONFIG
 
 def embed_dtwheel2axes(ev, wheel, ax=None, bounds_kwargs=None, cells_kwargs=None):
@@ -65,7 +65,7 @@ def embed_dtwheel2axes(ev, wheel, ax=None, bounds_kwargs=None, cells_kwargs=None
         for (wh, sc, st), dt_info in infoDts:
             _dt_chamber = DT(wheel=wh, sector=sc, station=st, dt_info=dt_info[["sl", "l", "w", cmap_var]])
 
-            DTPatch(
+            DTStationPatch(
                 station=_dt_chamber,
                 axes=ax,
                 local=False,
@@ -158,7 +158,7 @@ def plot_dt_chambers(
         return
     with plt.style.context(getattr(style,RUN_CONFIG.dt_plots_configs["mplhep-style"])):
         plt.rcParams.update(RUN_CONFIG.dt_plots_configs["figure-configs"]) 
-        _make_dt_plots(ev, name=f"dt_plots{tag}_ev{ev.index}", path=os.path.join(outfolder, "dt_plots"), save=save)
+        make_dt_plots(ev, name=f"dt_plots{tag}_ev{ev.index}", path=os.path.join(outfolder, "dt_plots"), save=save)
 
     color_msg(f"Done!", color="green")
 

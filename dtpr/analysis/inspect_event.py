@@ -47,8 +47,6 @@ def inspect_event(inpath: str, maxfiles: int, event_number: int):
     if not inspector_functions:
         inspector_functions = [lambda ev: tqdm.write(ev.__str__())]
 
-    print(type(event_number))
-
     if isinstance(event_number, str):
         event_indices = eval(f"slice({event_number.replace(':', ',')})")
         events = ntuple.events[event_indices]
@@ -83,8 +81,6 @@ def inspect_event(inpath: str, maxfiles: int, event_number: int):
                 pbar.update(1)
             elif ev.index % (total // 10) == 0:
                 pbar.update(total // 10)
-            if ev.index >= total:
-                break
 
             for inspector in inspector_functions:
                 inspector(ev)

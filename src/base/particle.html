@@ -92,7 +92,8 @@ It offers a flexible approach to initializing particle attributes directly from 
 from keyword arguments (kwargs) that provide values, evaluable expressions, or paths to callable methods for determining the attributes.
 If specific class methods are required, you can always create a new class that inherits from this base class and invoke its constructor.</p>
 <p>The following example demonstrates two different ways to create a particle instance:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># case 1 : Directly set attributes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">)</span>
+<span class="c1"># case 1 : Directly set attributes</span>
 <span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wh</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detector_side</span><span class="o">=</span><span class="p">{</span> <span class="s2">&quot;expr&quot;</span><span class="p">:</span> <span class="s2">&quot;&#39;+z&#39; if wh &gt; 0 else &#39;-z&#39;&quot;</span><span class="p">})</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
 <span class="c1"># case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here</span>
@@ -111,7 +112,6 @@ If specific class methods are required, you can always create a new class that i
         <span class="c1"># so, set index 0 or 1 allows to take properties of the first or second genmuon</span>
         <span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ev</span><span class="o">=</span><span class="n">ev</span><span class="p">,</span> <span class="n">branches</span><span class="o">=</span><span class="n">branches</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;GenMuon&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
-        <span class="k">break</span> <span class="c1"># just to test the first event</span>
 </pre></div>
 </div>
 <p class="rubric">Output</p>

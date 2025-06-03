@@ -1,5 +1,6 @@
 from dtpr.utils.functions import color_msg, get_callable_from_src
 from numbers import Number
+from copy import deepcopy
 import warnings
 
 class Particle():
@@ -39,7 +40,7 @@ class Particle():
             if isinstance(value, dict):
                 self._init_from_dict(key, value)
             else:
-                setattr(self, key, value)
+                setattr(self, key, deepcopy(value)) 
 
     def _init_from_ev(self, ev, branches):
         """

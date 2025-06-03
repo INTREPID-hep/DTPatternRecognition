@@ -70,8 +70,8 @@ class EventList:
         :raises: ValueError: If no event with the specified number is found.
         """
         for iev, ev in enumerate(self._tree):
-            event = Event(ev, iev, use_config=True)
-            if event.number == number:
+            if  getattr(ev, "event_eventNumber", None) == number:
+                event = Event(ev, iev, use_config=True)
                 return self._processor(event)
         raise ValueError(f"No event found with number: {number}")
 

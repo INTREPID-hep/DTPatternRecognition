@@ -26,7 +26,7 @@ def am_eff_func(reader, station):
     return [seg.wh for seg in get_best_matches( reader, station = station )]
 
 def am_eff_numdef(reader, station):
-    return [len(seg.matches) > 0 for seg in get_best_matches( reader, station = station )]
+    return [len(getattr(seg, 'matched_tps', [])) > 0 for seg in get_best_matches( reader, station = station )]
 
 # AM Efficiencies per station
 for st in stations:

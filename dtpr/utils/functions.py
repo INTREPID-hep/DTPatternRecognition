@@ -3,6 +3,7 @@ import os
 import math
 from types import LambdaType
 from importlib import import_module
+import numpy as np
 
 # Make Iterators for when we want to iterate over different subdetectors
 wheels = range(-2, 3)
@@ -146,7 +147,7 @@ def error_handler(exc_type, exc_value, exc_traceback):
                     ),
                     return_str=True,
                     indentLevel=-1,
-                ),  # [-2:]
+                ),
             ]
         )
     )
@@ -228,6 +229,22 @@ def save_mpl_canvas(fig, name, path = "./results", dpi=500):
     fig.savefig(path + "/" + name+".svg", dpi=dpi)
     return
 
+def append_to_matched_list(obj, matched_list_name, item):
+    """
+    Append an item to a matched list attribute of an object if it doesn't already exist.
+
+    :param obj: The object containing the matched list.
+    :type obj: Any
+    :param matched_list_name: The name of the matched list attribute.
+    :type matched_list_name: str
+    :param item: The item to append.
+    :type item: Any
+    """
+    if not hasattr(obj, matched_list_name):
+        setattr(obj, matched_list_name, [])
+    if item not in getattr(obj, matched_list_name):
+        getattr(obj, matched_list_name).append(item)
+
 def get_unique_locs(particles, loc_ids=["wh", "sc", "st"]):
     """
     Returns the unique locations of the specified particle types.
@@ -273,7 +290,7 @@ def get_best_matches(reader, station=1):
     for igm, gm in enumerate(genmuons):
         # color_msg(f"[FUNCTIONS::GET_BEST_MATCHES] igm {igm}", indentLevel = 1)
         # gm.summarize(indentLevel = 2)
-        for bestMatch in gm.matches:
+        for bestMatch in getattr(gm, 'matched_segments', []):
             if bestMatch.st == station:
                 bestMatches[igm] = bestMatch
 
@@ -326,3 +343,15 @@ def phiConv(phi):
     :rtype: float
     """
     return 0.5 * phi / 65536.0
+
+def correct_g4digi_time(g4digi):
+    """
+    Correct the time of the digi by simulating the drift time.
+    """
+    # ----- mimic the Javi's Code ----
+    # simulate drift time
+
+    mean, stddev = 175, 75
+    time_offset = 400
+    delay = np.random.normal(loc=mean, scale=stddev)
+    g4digi.time += abs(delay) + time_offset # why abs ?

@@ -102,15 +102,15 @@ class Event:
             ]
             if ptype == "genmuons":
                 summary.extend(
-                    gm.__str__(indentLevel=indent + 1, color="green", exclude=["matches"])
+                    gm.__str__(indentLevel=indent + 1, color="green")
                     for gm in particles
                 )
             elif ptype == "segments":
-                matches_segments = [seg for seg in particles if seg.matches]
+                matches_segments = [seg for seg in particles if seg.matched_tps]
                 if matches_segments:
                     summary.append(
                         color_msg(
-                            "AM-Seg matches:", color="purple", indentLevel=indent + 1, return_str=True
+                            "Segs which match an AM-TP:", color="purple", indentLevel=indent + 1, return_str=True
                         )
                     )
                     summary.extend(

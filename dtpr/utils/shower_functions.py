@@ -180,7 +180,7 @@ def build_real_showers(ev: Event, threshold=None, debug=False):
             spread = simhits_sdf["w"].std()**2 > 1
             # are duplicated mathced segments
             try:
-                segments_locs = [(_wh, _sc, _st) for gm in ev.genmuons for _st, _sc, _wh in gm.matched_segments_stations if _st == st and _sc == sc and _wh == wh]
+                segments_locs = [(_wh, _sc, _st) for gm in ev.genmuons for _st, _sc, _wh in getattr(gm, 'matched_segments', []) if _st == st and _sc == sc and _wh == wh]
                 are_duplicated_segments = len(segments_locs) > len(set(segments_locs))
             except:
                 are_duplicated_segments = False # -- for G4 DTNtuples there are no segments

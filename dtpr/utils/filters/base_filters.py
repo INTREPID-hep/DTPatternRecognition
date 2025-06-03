@@ -10,12 +10,12 @@ def baseline(reader):
     Returns:
         bool: True if the filter condition is met, False otherwise.
     """
-    genMuons = getattr(reader, "genmuons")
+    genMuons = getattr(reader, "genmuons", [])
     AtLeastOneMuon = len(genMuons) > 0
     
     matches_segment = False
     for gm in genMuons:
-        matches_segment = matches_segment or len(gm.matches) > 0
+        matches_segment = matches_segment or len(getattr(gm, 'matched_segments', [])) > 0
     return AtLeastOneMuon and matches_segment
 
 def removeShower(reader):
@@ -28,15 +28,15 @@ def removeShower(reader):
     Returns:
         bool: Always returns True.
     """
-    genMuons = getattr(reader, "genmuons")
+    genMuons = getattr(reader, "genmuons", [])
     # Remove TPs that match to segments of a muon that showered
     for igm, gm in enumerate(genMuons):
-        matched_segments = gm.matches
-        muon_shower = gm.did_shower()
+        matched_segments = getattr(gm, 'matched_segments', [])
+        muon_shower = gm.showered
         
         for seg in matched_segments:
             if muon_shower:
-                seg.matches = []
+                seg.matched_tps = []
     return True
 
 def baseline_plus_hitsc(reader):
@@ -56,13 +56,13 @@ def baseline_plus_hitsc(reader):
     shower_locs = [(shower.wh, shower.sc, shower.st) for shower in emushowers]
     # Remove TPs that match to segments of a muon that showered
     for igm, gm in enumerate(genMuons):
-        matched_segments = gm.matches
-        muon_shower = gm.did_shower()
+        matched_segments = getattr(gm, 'matched_segments', [])
+        muon_shower = gm.showered
         
         for seg in matched_segments:
             loc = (seg.wh, seg.sc, seg.st)
             if loc in shower_locs:
                 continue
             elif muon_shower:
-                seg.matches = []
+                seg.matched_tps = []
     return True

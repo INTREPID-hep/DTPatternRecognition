@@ -40,7 +40,6 @@ particle_types:
     sorter:
       by: 'p.BX'
   segments:
-    class: 'dtpr.particles.Segment'
     amount: 'seg_nSegments'
     branches:
       wh: 'seg_wheel'
@@ -53,6 +52,9 @@ particle_types:
       t0_phi: 'seg_phi_t0'
       pos_locx_sl1: 'seg_posLoc_x_SL1'
       pos_locx_sl3: 'seg_posLoc_x_SL3'
+    attributes:
+      matched_genmuons: []
+      matched_tps: []
   tps:  
     amount: 'ph2TpgPhiEmuAm_nTrigs'
     branches:
@@ -65,15 +67,14 @@ particle_types:
       quality: 'ph2TpgPhiEmuAm_quality'
       rpcFlag: 'ph2TpgPhiEmuAm_rpcFlag'
     attributes:
+      matched_segments: []
+      matched_genmuons: []
       BX:
         expr: 'BX - 20' # Correct to center BX at 0
       phires_conv:
         expr: '65536.0 / 0.5'
-      matches: []
-      matches_with_segment: False
     filter: 'p.quality >= 0'
   genmuons:
-    class: 'dtpr.particles.GenMuon'
     amount: 'gen_nGenParts'
     branches:
       pt: 'gen_pt'
@@ -81,8 +82,8 @@ particle_types:
       phi: 'gen_phi'
       charge: 'gen_charge'
     attributes:
-      matches: []
-      matched_segments_stations: []
+      matched_segments: []
+      matched_tps: []
       showered: False
     filter: 'abs(ev.gen_pdgId[p.index]) == 13'
     sorter:
@@ -124,6 +125,8 @@ particle_types:
   #     time : 'SLHit_Time'
   #     particle_type : 'SLHit_PDG'
   #   attributes:
+  #       time:
+  #         src: 'dtpr.utils.functions.correct_g4digi_time' # this simply apply a correction to the time
   #       BX:
   #         expr: 'time // 25 if time is not None else None'
   #   sorter:
@@ -138,6 +141,8 @@ particle_types:
   #     time : 'SLHit_Time'
   #     particle_type : 'SLHit_PDG'
   #   attributes:
+  #       time:
+  #         src: 'dtpr.utils.functions.correct_g4digi_time'
   #       BX:
   #         expr: 'time // 25 if time is not None else None'
   #   sorter:
@@ -171,8 +176,8 @@ ntuple_preprocessors:
   #   src: "dtpr.utils.shower_functions.build_fwshowers"
   #   kwargs:
   #     threshold: 6
-  # fw_shower_analyzer:
-  #   src: "dtpr.utils.shower_functions.analyze_fwshowers"
+  fw_shower_analyzer:
+    src: "dtpr.utils.shower_functions.analyze_fwshowers"
 # ================= available selectors - dtntuple ================= #
 # define the selectors to be used in the ntuple, follow the format:
 # selector_name: Any name, not relevant to the codes

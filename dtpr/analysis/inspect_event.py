@@ -82,8 +82,10 @@ def inspect_event(inpath: str, maxfiles: int, event_number: int):
             elif ev.index % (total // 10) == 0:
                 pbar.update(total // 10)
 
-            for inspector in inspector_functions:
-                inspector(ev)
-
+            if inspector_functions:
+                for inspector in inspector_functions:
+                    inspector(ev)
+            else:
+                tqdm.write(ev.__str__())
 
     color_msg(f"Done!", color="green")

@@ -136,13 +136,23 @@ class NTuple(object):
         :type inpath: str
         """
 
+        def get_root_files(directory):
+            """Helper function to recursively collect .root files using os.scandir."""
+            root_files = []
+            for entry in os.scandir(directory):
+                if entry.is_dir():
+                    root_files.extend(get_root_files(entry.path))
+                elif entry.is_file() and entry.name.endswith(".root"):
+                    root_files.append(entry.path)
+            return root_files
+
         if "root" in inpath:
             color_msg(f"Opening input file {inpath}", "blue", 1)
             self.tree.Add(inpath + self._tree_name)
             self._maxfiles = 1
         else:
             color_msg(f"Opening input files from {inpath}", "blue", 1)
-            allFiles = natsorted(os.listdir(inpath))
+            allFiles = natsorted(get_root_files(inpath))
             nFiles = (
                 len(allFiles)
                 if self._maxfiles == -1
@@ -151,10 +161,8 @@ class NTuple(object):
             self._maxfiles = nFiles
 
             for iF in range(nFiles):
-                if "root" not in allFiles[iF]:
-                    continue
-                color_msg(f"File {allFiles[iF]} added", indentLevel=2)
-                self.tree.Add(os.path.join(inpath, allFiles[iF]) + self._tree_name)
+                color_msg(f"File {allFiles[iF].split('/')[-1]} added", indentLevel=2)
+                self.tree.Add(allFiles[iF] + self._tree_name)
 
 if __name__ == "__main__":
     input_file = os.path.abspath(

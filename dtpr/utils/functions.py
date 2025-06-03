@@ -354,4 +354,45 @@ def correct_g4digi_time(g4digi):
     mean, stddev = 175, 75
     time_offset = 400
     delay = np.random.normal(loc=mean, scale=stddev)
-    g4digi.time += abs(delay) + time_offset # why abs ?
+    return g4digi._time + abs(delay) + time_offset # why abs ?
+
+
+def format_event_attribute_str(key, value, indent):
+    return (
+        color_msg(f"{key.capitalize()}:", color="green", indentLevel=indent, return_str=True)
+        + color_msg(f"{value}", color="none", indentLevel=-1, return_str=True)
+    )
+
+def format_event_particles_str(ptype, particles, indent):
+    summary = [
+        color_msg(f"{ptype.capitalize()}", color="green", indentLevel=indent, return_str=True),
+        color_msg(
+            f"Number of {ptype}: {len(particles)}", color="purple", indentLevel=indent + 1,
+            return_str=True
+        ),
+    ]
+
+    if ptype == "genmuons":
+        for gm in particles:
+            summary.append(
+                gm.__str__(indentLevel=indent + 1, color="cyan", exclude=["matched_tps", "matched_segments"]) + "\n"
+                + color_msg(
+                    f"Matched offline - segments: {len(gm.matched_segments)}", color="none", indentLevel=indent + 2, return_str=True
+                ) + "\n"
+                + color_msg(
+                    f"Matched AM TPs: {len(gm.matched_tps)}", color="none", indentLevel=indent + 2, return_str=True
+                )
+            )
+
+    elif ptype == "segments":
+        matches_segments = [seg for seg in particles if seg.matched_tps]
+        if matches_segments:
+            summary.append(color_msg("Segs which match an AM-TP:", color="cyan", indentLevel=indent + 1, return_str=True))
+            summary.extend(
+                seg.__str__(indentLevel=indent + 2, color="cyan", include=["wh", "sc", "st", "phi", "eta"])
+                for seg in matches_segments[:2]
+            )
+            if len(matches_segments) > 2:
+                summary.append(color_msg("...", color="cyan", indentLevel=indent + 2, return_str=True))
+
+    return summary

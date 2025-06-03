@@ -2,15 +2,21 @@
 particle_types:
   digis:
     amount: 'digi_nDigis'
-    branches:
-      wh: 'digi_wheel'
-      sc: 'digi_sector'
-      st: 'digi_station'
-      sl: 'digi_superLayer'
-      w: 'digi_wire'
-      l: 'digi_layer'
-      time: 'digi_time'
     attributes:
+      wh: 
+        branch: 'digi_wheel'
+      sc: 
+        branch: 'digi_sector'
+      st: 
+        branch: 'digi_station'
+      sl: 
+        branch: 'digi_superLayer'
+      w: 
+        branch: 'digi_wire'
+      l: 
+        branch: 'digi_layer'
+      time: 
+        branch: 'digi_time'
       BX:
         expr: 'time // 25 if time is not None else None'
     sorter:

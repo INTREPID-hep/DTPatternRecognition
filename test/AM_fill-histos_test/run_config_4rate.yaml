@@ -2,16 +2,23 @@
 particle_types:
   tps:  
     amount: 'ph2TpgPhiEmuAm_nTrigs'
-    branches:
-      wh: 'ph2TpgPhiEmuAm_wheel'
-      sc: 'ph2TpgPhiEmuAm_sector'
-      st: 'ph2TpgPhiEmuAm_station'
-      phi: 'ph2TpgPhiEmuAm_phi'
-      phiB: 'ph2TpgPhiEmuAm_phiB'
-      BX: 'ph2TpgPhiEmuAm_BX'
-      quality: 'ph2TpgPhiEmuAm_quality'
-      rpcFlag: 'ph2TpgPhiEmuAm_rpcFlag'
     attributes:
+      wh: 
+        branch: 'ph2TpgPhiEmuAm_wheel'
+      sc: 
+        branch: 'ph2TpgPhiEmuAm_sector'
+      st: 
+        branch: 'ph2TpgPhiEmuAm_station'
+      phi: 
+        branch: 'ph2TpgPhiEmuAm_phi'
+      phiB: 
+        branch: 'ph2TpgPhiEmuAm_phiB'
+      BX: 
+        branch: 'ph2TpgPhiEmuAm_BX'
+      quality: 
+        branch: 'ph2TpgPhiEmuAm_quality'
+      rpcFlag: 
+        branch: 'ph2TpgPhiEmuAm_rpcFlag'
       BX:
         expr: 'BX - 20' # Correct to center BX at 0
       phires_conv:

@@ -3,7 +3,7 @@ import warnings
 from dtpr.utils.config import RUN_CONFIG
 from dtpr.utils.functions import color_msg
 from dtpr.base.particle import Particle  # Import the base Particle class
-from dtpr.utils.functions import get_callable_from_src
+from dtpr.utils.functions import get_callable_from_src, format_event_attribute_str, format_event_particles_str
 
 class Event:
     """
@@ -86,67 +86,17 @@ class Event:
         :param indentLevel: The indentation level for the summary.
         :return: The event summary.
         """
-        def format_attribute(key, value, indent):
-            return (
-                color_msg(f"{key.capitalize()}:", color="green", indentLevel=indent, return_str=True)
-                + color_msg(f"{value}", color="none", indentLevel=-1, return_str=True)
-            )
-
-        def format_particles(ptype, particles, indent):
-            summary = [
-                color_msg(f"{ptype.capitalize()}", color="green", indentLevel=indent, return_str=True),
-                color_msg(
-                    f"Number of {ptype}: {len(particles)}", color="purple", indentLevel=indent + 1,
-                    return_str=True
-                ),
-            ]
-            if ptype == "genmuons":
-                summary.extend(
-                    gm.__str__(indentLevel=indent + 1, color="green")
-                    for gm in particles
-                )
-            elif ptype == "segments":
-                matches_segments = [seg for seg in particles if seg.matched_tps]
-                if matches_segments:
-                    summary.append(
-                        color_msg(
-                            "Segs which match an AM-TP:", color="purple", indentLevel=indent + 1, return_str=True
-                        )
-                    )
-                    summary.extend(
-                        seg.__str__(
-                            indentLevel=indent + 2, color="purple", include=["wh", "sc", "st", "phi", "eta"]
-                        )
-                        for seg in matches_segments[:5]
-                    )
-            return summary
-
         summary = [
-            color_msg(
-                f"------ Event {self.number} info ------", color="yellow", indentLevel=indentLevel,
-                return_str=True
-            )
+            color_msg(f"------ Event {self.number} info ------", color="yellow", indentLevel=indentLevel, return_str=True)
         ]
-        for attrkey, attrval in {
-            key: val for key, val in self.__dict__.items() if key not in ["_particles", "number"]
-        }.items():
-            summary.append(format_attribute(attrkey, attrval, indentLevel + 1))
-
+        summary.extend(
+            format_event_attribute_str(key, val, indentLevel + 1)
+            for key, val in self.__dict__.items()
+            if key not in ["_particles", "number"]
+        )
         for ptype, particles in self._particles.items():
-            summary.extend(format_particles(ptype, particles, indentLevel + 1))
-
+            summary.extend(format_event_particles_str(ptype, particles, indentLevel + 1))
         return "\n".join(summary)
-
-    def to_dict(self):
-        """
-        Generate a dictionary representation of the event. Useful to serialize it to, for example,
-        awkward arrays.
-        """
-        dict_out = {key: val for key, val in self.__dict__.items() if key != "_particles"}
-        for ptype, particles in self._particles.items():
-            dict_out[ptype] = [p.__dict__ for p in particles]
-        return dict_out
-
 
     def _build_particles(self, ev, ptype, pinfo):
         """
@@ -192,7 +142,6 @@ class Event:
             _particle = ParticleClass(
                 index=i,
                 ev=ev,
-                branches=pinfo.get("branches", None),
                 **pinfo.get("attributes", {}),
             )
             if _particle.name == "Particle":
@@ -234,6 +183,16 @@ class Event:
             )
 
         setattr(self, ptype, _particles)  # Add the particles to the Event instance
+
+    def to_dict(self):
+        """
+        Generate a dictionary representation of the event. Useful to serialize it to, for example,
+        awkward arrays.
+        """
+        dict_out = {key: val for key, val in self.__dict__.items() if key != "_particles"}
+        for ptype, particles in self._particles.items():
+            dict_out[ptype] = [p.__dict__ for p in particles]
+        return dict_out
 
     def filter_particles(self, particle_type, **kwargs):
         """

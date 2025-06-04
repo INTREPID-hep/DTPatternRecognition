@@ -92,26 +92,26 @@ It offers a flexible approach to initializing particle attributes directly from 
 from keyword arguments (kwargs) that provide values, evaluable expressions, or paths to callable methods for determining the attributes.
 If specific class methods are required, you can always create a new class that inherits from this base class and invoke its constructor.</p>
 <p>The following example demonstrates two different ways to create a particle instance:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>                <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">}</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-    <span class="c1"># Example usage</span>
-    <span class="n">input_file</span><span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
-            <span class="s2">&quot;../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-    <span class="c1"># case 1 : Directly set attributes</span>
-    <span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wh</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detector_side</span><span class="o">=</span><span class="p">{</span> <span class="s2">&quot;expr&quot;</span><span class="p">:</span> <span class="s2">&quot;&#39;+z&#39; if wh &gt; 0 else &#39;-z&#39;&quot;</span><span class="p">})</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
-    <span class="c1"># case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">ROOT</span><span class="w"> </span><span class="kn">import</span> <span class="n">TFile</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># case 1 : Directly set attributes</span>
+<span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wh</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detector_side</span><span class="o">=</span><span class="p">{</span> <span class="s2">&quot;expr&quot;</span><span class="p">:</span> <span class="s2">&quot;&#39;+z&#39; if wh &gt; 0 else &#39;-z&#39;&quot;</span><span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
+<span class="c1"># case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ROOT</span><span class="w"> </span><span class="kn">import</span> <span class="n">TFile</span>
+<span class="c1"># first, create a TFile object to read the dt ntuple (this is not necessary by using NTuple Class)</span>
+<span class="n">branches</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;pt&#39;</span><span class="p">:</span> <span class="s1">&#39;gen_pt&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;eta&#39;</span><span class="p">:</span> <span class="s1">&#39;gen_eta&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;phi&#39;</span><span class="p">:</span> <span class="s1">&#39;gen_phi&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="s1">&#39;gen_charge&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="k">with</span> <span class="n">TFile</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s2">&quot;read&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ntuple</span><span class="p">:</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ntuple</span><span class="p">[</span><span class="s2">&quot;dtNtupleProducer/DTTREE;1&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">iev</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+        <span class="c1"># in events of this ntuple, each event contains more o less 2 genmuons,</span>
+        <span class="c1"># so, set index 0 or 1 allows to take properties of the first or second genmuon</span>
+        <span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ev</span><span class="o">=</span><span class="n">ev</span><span class="p">,</span> <span class="n">branches</span><span class="o">=</span><span class="n">branches</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;GenMuon&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
+        <span class="k">break</span> <span class="c1"># just to test the first event</span>
 </pre></div>
 </div>
 <p class="rubric">Output</p>

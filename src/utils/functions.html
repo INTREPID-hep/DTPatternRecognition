@@ -52,12 +52,16 @@
 <li class="toctree-l1"><a class="reference internal" href="../particles/main.html">particles</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="main.html">utils</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.append_to_matched_list"><code class="docutils literal notranslate"><span class="pre">append_to_matched_list()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.color_msg"><code class="docutils literal notranslate"><span class="pre">color_msg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.correct_g4digi_time"><code class="docutils literal notranslate"><span class="pre">correct_g4digi_time()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.create_outfolder"><code class="docutils literal notranslate"><span class="pre">create_outfolder()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.deltaPhi"><code class="docutils literal notranslate"><span class="pre">deltaPhi()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.deltaR"><code class="docutils literal notranslate"><span class="pre">deltaR()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.error_handler"><code class="docutils literal notranslate"><span class="pre">error_handler()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.flatten"><code class="docutils literal notranslate"><span class="pre">flatten()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.format_event_attribute_str"><code class="docutils literal notranslate"><span class="pre">format_event_attribute_str()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.format_event_particles_str"><code class="docutils literal notranslate"><span class="pre">format_event_particles_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.get_best_matches"><code class="docutils literal notranslate"><span class="pre">get_best_matches()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.get_callable_from_src"><code class="docutils literal notranslate"><span class="pre">get_callable_from_src()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.get_unique_locs"><code class="docutils literal notranslate"><span class="pre">get_unique_locs()</span></code></a></li>
@@ -102,6 +106,21 @@
 <span id="functions"></span><h1>functions<a class="headerlink" href="#module-dtpr.utils.functions" title="Link to this heading"></a></h1>
 <p>Miscelaneous</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="dtpr.utils.functions.append_to_matched_list">
+<span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">append_to_matched_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matched_list_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#append_to_matched_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.append_to_matched_list" title="Link to this definition"></a></dt>
+<dd><p>Append an item to a matched list attribute of an object if it doesn’t already exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> (<em>Any</em>) – The object containing the matched list.</p></li>
+<li><p><strong>matched_list_name</strong> (<em>str</em>) – The name of the matched list attribute.</p></li>
+<li><p><strong>item</strong> (<em>Any</em>) – The item to append.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dtpr.utils.functions.color_msg">
 <span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">color_msg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indentLevel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">underline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bkg_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#color_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.color_msg" title="Link to this definition"></a></dt>
 <dd><p>Prints a message with ANSI coding so it can be printed with colors.</p>
@@ -124,6 +143,12 @@
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dtpr.utils.functions.correct_g4digi_time">
+<span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">correct_g4digi_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g4digi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#correct_g4digi_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.correct_g4digi_time" title="Link to this definition"></a></dt>
+<dd><p>Correct the time of the digi by simulating the drift time.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -208,6 +233,16 @@
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dtpr.utils.functions.format_event_attribute_str">
+<span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">format_event_attribute_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#format_event_attribute_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.format_event_attribute_str" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dtpr.utils.functions.format_event_particles_str">
+<span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">format_event_particles_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ptype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#format_event_particles_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.format_event_particles_str" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dtpr.utils.functions.get_best_matches">

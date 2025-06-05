@@ -80,6 +80,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">LambdaType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_module</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="c1"># Make Iterators for when we want to iterate over different subdetectors</span>
 <span class="n">wheels</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -231,7 +232,7 @@
                     <span class="p">),</span>
                     <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-                <span class="p">),</span>  <span class="c1"># [-2:]</span>
+                <span class="p">),</span>
             <span class="p">]</span>
         <span class="p">)</span>
     <span class="p">)</span></div>
@@ -329,6 +330,25 @@
     <span class="k">return</span></div>
 
 
+<div class="viewcode-block" id="append_to_matched_list">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.append_to_matched_list">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">append_to_matched_list</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">matched_list_name</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Append an item to a matched list attribute of an object if it doesn&#39;t already exist.</span>
+
+<span class="sd">    :param obj: The object containing the matched list.</span>
+<span class="sd">    :type obj: Any</span>
+<span class="sd">    :param matched_list_name: The name of the matched list attribute.</span>
+<span class="sd">    :type matched_list_name: str</span>
+<span class="sd">    :param item: The item to append.</span>
+<span class="sd">    :type item: Any</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">matched_list_name</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">matched_list_name</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="n">item</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">matched_list_name</span><span class="p">):</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">matched_list_name</span><span class="p">)</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="get_unique_locs">
 <a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.get_unique_locs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_unique_locs</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">loc_ids</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;wh&quot;</span><span class="p">,</span> <span class="s2">&quot;sc&quot;</span><span class="p">,</span> <span class="s2">&quot;st&quot;</span><span class="p">]):</span>
@@ -379,7 +399,7 @@
     <span class="k">for</span> <span class="n">igm</span><span class="p">,</span> <span class="n">gm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">genmuons</span><span class="p">):</span>
         <span class="c1"># color_msg(f&quot;[FUNCTIONS::GET_BEST_MATCHES] igm {igm}&quot;, indentLevel = 1)</span>
         <span class="c1"># gm.summarize(indentLevel = 2)</span>
-        <span class="k">for</span> <span class="n">bestMatch</span> <span class="ow">in</span> <span class="n">gm</span><span class="o">.</span><span class="n">matches</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">bestMatch</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">gm</span><span class="p">,</span> <span class="s1">&#39;matched_segments&#39;</span><span class="p">,</span> <span class="p">[]):</span>
             <span class="k">if</span> <span class="n">bestMatch</span><span class="o">.</span><span class="n">st</span> <span class="o">==</span> <span class="n">station</span><span class="p">:</span>
                 <span class="n">bestMatches</span><span class="p">[</span><span class="n">igm</span><span class="p">]</span> <span class="o">=</span> <span class="n">bestMatch</span>
 
@@ -441,6 +461,68 @@
 <span class="sd">    :rtype: float</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">phi</span> <span class="o">/</span> <span class="mf">65536.0</span></div>
+
+
+<div class="viewcode-block" id="correct_g4digi_time">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.correct_g4digi_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">correct_g4digi_time</span><span class="p">(</span><span class="n">g4digi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Correct the time of the digi by simulating the drift time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># ----- mimic the Javi&#39;s Code ----</span>
+    <span class="c1"># simulate drift time</span>
+
+    <span class="n">mean</span><span class="p">,</span> <span class="n">stddev</span> <span class="o">=</span> <span class="mi">175</span><span class="p">,</span> <span class="mi">75</span>
+    <span class="n">time_offset</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">stddev</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">g4digi</span><span class="o">.</span><span class="n">_time</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span> <span class="o">+</span> <span class="n">time_offset</span> <span class="c1"># why abs ?</span></div>
+
+
+
+<div class="viewcode-block" id="format_event_attribute_str">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.format_event_attribute_str">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_event_attribute_str</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">indent</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">color_msg</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">color_msg</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="format_event_particles_str">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.format_event_particles_str">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_event_particles_str</span><span class="p">(</span><span class="n">ptype</span><span class="p">,</span> <span class="n">particles</span><span class="p">,</span> <span class="n">indent</span><span class="p">):</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">color_msg</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ptype</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">color_msg</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Number of </span><span class="si">{</span><span class="n">ptype</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s2">&quot;genmuons&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">gm</span> <span class="ow">in</span> <span class="n">particles</span><span class="p">:</span>
+            <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">gm</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;cyan&quot;</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;matched_tps&quot;</span><span class="p">,</span> <span class="s2">&quot;matched_segments&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="n">color_msg</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Matched offline - segments: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">matched_segments</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="n">color_msg</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Matched AM TPs: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">matched_tps</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s2">&quot;segments&quot;</span><span class="p">:</span>
+        <span class="n">matches_segments</span> <span class="o">=</span> <span class="p">[</span><span class="n">seg</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">particles</span> <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">matched_tps</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">matches_segments</span><span class="p">:</span>
+            <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">color_msg</span><span class="p">(</span><span class="s2">&quot;Segs which match an AM-TP:&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;cyan&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">summary</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="n">seg</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;cyan&quot;</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;wh&quot;</span><span class="p">,</span> <span class="s2">&quot;sc&quot;</span><span class="p">,</span> <span class="s2">&quot;st&quot;</span><span class="p">,</span> <span class="s2">&quot;phi&quot;</span><span class="p">,</span> <span class="s2">&quot;eta&quot;</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">matches_segments</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches_segments</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">color_msg</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;cyan&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">summary</span></div>
 
 </pre></div>
 

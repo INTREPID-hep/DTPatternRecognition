@@ -208,103 +208,30 @@ ntuple_selectors:
   # - ...
 # -------------------------------- configuration for histograms -----------------------------------#
 histo_sources:
-  # define the source modules of the histograms
-  # - dtpr.utils.histograms.baseHistos
-  - dtpr.utils.histograms.am_histos
-  # - dtpr.utils.histograms.digi_histos
-  # - dtpr.utils.histograms.shower_histos
-
+  - dtpr.utils.histograms.baseHistos
+  
 histo_names:
-  # Histogram to fill - Uncomment or add histograms as needed. 
-  # They should exist in any of the source modules
-  # # ============ efficiencies ============ #
-  - seg_eff_MB1
-  - seg_eff_MB2
-  - seg_eff_MB3
-  - seg_eff_MB4
-  # - fwshower_eff_MB1
-  # - fwshower_eff_MB2
-  # - fwshower_eff_MB3
-  # - fwshower_eff_MB4
-  # # ------ conf maps------
-  # - shower_tpfptnfn_MB1
-  # - shower_tpfptnfn_MB2
-  # - shower_tpfptnfn_MB3
-  # - shower_tpfptnfn_MB4
-  # - shower_tpfptnfn_g4
-  # # ============== rates =============== #
-  # - AM_rate_allBX_MB1
-  # - AM_rate_allBX_MB2
-  # - AM_rate_allBX_MB3
-  # - AM_rate_allBX_MB4
-  # - AM_rate_goodBX_MB1
-  # - AM_rate_goodBX_MB2
-  # - AM_rate_goodBX_MB3
-  # - AM_rate_goodBX_MB4
-  # - fwshower_rate_goodBX_MB1
-  # - fwshower_rate_goodBX_MB2
-  # - fwshower_rate_goodBX_MB3
-  # - fwshower_rate_goodBX_MB4
-  # - fwshower_rate_allBX_MB1
-  # - fwshower_rate_allBX_MB2
-  # - fwshower_rate_allBX_MB3
-  # - fwshower_rate_allBX_MB4
-  # # ============ leading_mu ============ #
-  # - LeadingMuon_pt
-  # - LeadingMuon_eta
-  # - LeadingMuon_maxDPhi
-  # - LeadingMuon_maxDEta
-  # # =========== subleading_mu ========== #
-  # - SubLeadingMuon_pt
-  # - SubLeadingMuon_eta
-  # - SubLeadingMuon_maxDPhi
-  # - SubLeadingMuon_maxDEta
-  # # ============= other_vars =========== #
-  # - shower_eff_muon_pt
-  # - shower_eff_muon_eta
-  # - muon_DR
-  # - nGenMuons
-  # - dphimax_seg_showering_muon
-  # - dphimax_seg_non_showering_muon
-  # - dphimax_tp_showering_muon
-  # - dphimax_tp_non_showering_muon
-  # - dphi_seg_showering_muon
-  # - dphi_seg_non_showering_muon
-  # - dphi_tp_showering_muon
-  # - dphi_tp_non_showering_muon
-  # # =========== digis =========== #
-  # - digi_w_gmts_MB1
-  # - digi_w_gmts_MB2
-  # - digi_w_gmts_MB3
-  # - digi_w_gmts_MB4
-  # - digi_w_gmtns_MB1
-  # - digi_w_gmtns_MB2
-  # - digi_w_gmtns_MB3
-  # - digi_w_gmtns_MB4
-  # - digi_wd_gmts_MB1
-  # - digi_wd_gmts_MB2
-  # - digi_wd_gmts_MB3
-  # - digi_wd_gmts_MB4
-  # - digi_wd_gmtns_MB1
-  # - digi_wd_gmtns_MB2
-  # - digi_wd_gmtns_MB3
-  # - digi_wd_gmtns_MB4
-  # - digi_wl_gmts_MB1
-  # - digi_wl_gmts_MB2
-  # - digi_wl_gmts_MB3
-  # - digi_wl_gmts_MB4
-  # - digi_wl3d_gmts_MB1
-  # - digi_wl3d_gmts_MB2
-  # - digi_wl3d_gmts_MB3
-  # - digi_wl3d_gmts_MB4
-  # - digi_wl_gmtns_MB1
-  # - digi_wl_gmtns_MB2
-  # - digi_wl_gmtns_MB3
-  # - digi_wl_gmtns_MB4
-  # - digi_wl3d_gmtns_MB1
-  # - digi_wl3d_gmtns_MB2
-  # - digi_wl3d_gmtns_MB3
-  # - digi_wl3d_gmtns_MB4
+  # ============ leading_mu ============ #
+  - LeadingMuon_pt
+  - LeadingMuon_eta
+  - LeadingMuon_maxDPhi
+  - LeadingMuon_maxDEta
+  # =========== subleading_mu ========== #
+  - SubLeadingMuon_pt
+  - SubLeadingMuon_eta
+  - SubLeadingMuon_maxDPhi
+  - SubLeadingMuon_maxDEta
+  # ============= other_vars =========== #
+  - muon_DR
+  - nGenMuons
+  - dphimax_seg_showering_muon
+  - dphimax_seg_non_showering_muon
+  - dphimax_tp_showering_muon
+  - dphimax_tp_non_showering_muon
+  - dphi_seg_showering_muon
+  - dphi_seg_non_showering_muon
+  - dphi_tp_showering_muon
+  - dphi_tp_non_showering_muon
 
 # ----------------------------- configuration for event inspector ---------------------------------#
 # inspector-functions:

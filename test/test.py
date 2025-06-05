@@ -11,8 +11,10 @@ def main():
     ntuple = NTuple(input_file_path)
 
     for index, event in enumerate(ntuple.events):
+        if event is None:
+            continue
         print(event)
-        if index == 3:
+        if index >= 3:
             break
 
 if __name__ == "__main__":

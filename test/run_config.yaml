@@ -132,7 +132,7 @@ particle_types:
       process_type: 
         branch: 'simHit_processType'
       particle_type: 
-      branch: 'simHit_particleType'
+        branch: 'simHit_particleType'
 
 # -------------------------------- configuration for NTuple --------------------------------------#
 ntuple_tree_name: '/dtNtupleProducer/DTTREE'
@@ -174,8 +174,6 @@ histo_names:
   - SubLeadingMuon_maxDPhi
   - SubLeadingMuon_maxDEta
   # ============= other_vars =========== #
-  - shower_eff_muon_pt
-  - shower_eff_muon_eta
   - muon_DR
   - nGenMuons
   - dphimax_seg_showering_muon

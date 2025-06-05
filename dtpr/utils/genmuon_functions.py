@@ -106,7 +106,7 @@ def get_dphimax_matched_segments(gm: Particle): # it was genmuon.get_max_dphi
     :return: The maximum dPhi.
     :rtype: float
     """
-    return max( get_dphi_matched_segments(gm) ) if getattr(gm, 'matched_segments', []) else -99
+    return max( get_dphi_matched_segments(gm), default=-99 ) if getattr(gm, 'matched_segments', []) else -99
 
 def get_dphi_b2_matched_segments(gm: Particle):
     """
@@ -120,7 +120,7 @@ def get_dphi_b2_matched_segments(gm: Particle):
 
     return [
         abs(math.acos(math.cos(seg1.phi - seg2.phi)))
-        for seg1, seg2 in combinations(getattr(gm, 'matched_segments', []), repeat=2)
+        for seg1, seg2 in combinations(getattr(gm, 'matched_segments', []), 2)
     ]
 
 def get_dphimax_b2_matched_segments(gm: Particle):
@@ -130,7 +130,7 @@ def get_dphimax_b2_matched_segments(gm: Particle):
     :return: The maximum dPhi.
     :rtype: float
     """
-    return max(get_dphi_b2_matched_segments(gm)) if getattr(gm, 'matched_segments', []) else -99
+    return max(get_dphi_b2_matched_segments(gm), default=-99) if getattr(gm, 'matched_segments', []) else -99
 
 def get_dphi_b2_matched_tp(gm: Particle):
     """
@@ -146,7 +146,7 @@ def get_dphi_b2_matched_tp(gm: Particle):
 
     return [
         abs(math.acos(math.cos(phiConv(tp1.phi) - phiConv(tp2.phi))))
-        for tp1, tp2 in combinations(gm.matched_tps, repeat=2)
+        for tp1, tp2 in combinations(gm.matched_tps, 2)
     ]
 
 def get_dphimax_b2_matched_tp(gm: Particle):
@@ -158,7 +158,7 @@ def get_dphimax_b2_matched_tp(gm: Particle):
     :return: The maximum dPhi.
     :rtype: float
     """
-    return max(get_dphi_b2_matched_tp(gm)) if gm.matched_tps else -99
+    return max(get_dphi_b2_matched_tp(gm), default=-99) if gm.matched_tps else -99
 
 def get_max_deta(gm: Particle):
     """
@@ -171,4 +171,4 @@ def get_max_deta(gm: Particle):
     """
     if not getattr(gm, 'matched_segments', []):
         return -99
-    return max([abs(gm.eta - seg.eta) for seg in getattr(gm, 'matched_segments', [])])
+    return max([abs(gm.eta - seg.eta) for seg in getattr(gm, 'matched_segments', [])], default=-99)

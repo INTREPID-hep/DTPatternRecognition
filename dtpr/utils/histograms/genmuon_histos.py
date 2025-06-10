@@ -31,22 +31,6 @@ dummyVal = -9999
 histos = {}
 
 histos.update({
-  "shower_eff_muon_pt" :  {  
-      "type" : "eff",
-      "histoDen" : r.TH1D("Shower_eff_muon_pt_total", r';Wheel; Events', 20, 0 , 1000),
-      "histoNum" : r.TH1D("Shower_eff_muon_pt_num", r';Wheel; Events', 20, 0 , 1000),
-      "func"     : lambda reader: [gm.pt for gm in reader.genmuons if gm.showered], 
-      "numdef"   : lambda reader: [ len(reader.showers) > 0 ] 
-  },
-  "shower_eff_muon_eta" :  {  
-      "type" : "eff",
-      "histoDen" : r.TH1D("Shower_eff_muon_eta_total", r';Wheel; Events', 20, -1 , 1),
-      "histoNum" : r.TH1D("Shower_eff_muon_eta_num", r';Wheel; Events', 20, -1 , 1),
-      "func"     : lambda reader: [gm.eta for gm in reader.genmuons if gm.showered], 
-      "numdef"   : lambda reader: [ len(reader.showers) > 0 ] 
-  }
-})
-histos.update({
   # --- Leading muon properties
   "LeadingMuon_pt" : {
     "type" : "distribution",

@@ -268,7 +268,8 @@ def plot_graphs(
         effgr.SetLineColor(color)
         effgr.SetMarkerSize(1.5)
         effgr.SetMarkerStyle(marker_style)
-        legend.AddEntry(effgr, legendName, "p")
+        if legendName != "":
+            legend.AddEntry(effgr, legendName, "p")
 
         marker_style += 2
         if (igr + 1) % repit_color_each == 0:

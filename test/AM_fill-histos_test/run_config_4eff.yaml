@@ -128,8 +128,6 @@ ntuple_preprocessors:
 ntuple_selectors:
   baseline:
     src: "dtpr.utils.filters.base_filters.baseline"
-  # remove_shower:
-  #   src: "dtpr.utils.filters.base_filters.removeShower"
 
 # -------------------------------- configuration for histograms -----------------------------------#
 histo_sources:
@@ -142,8 +140,3 @@ histo_names:
   - seg_eff_MB2
   - seg_eff_MB3
   - seg_eff_MB4
-  # # ============ leading_mu ============ #
-  - LeadingMuon_pt
-  - LeadingMuon_eta
-  - LeadingMuon_maxDPhi
-  - LeadingMuon_maxDEta

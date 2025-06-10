@@ -145,13 +145,6 @@ ntuple_preprocessors:
     src: "dtpr.utils.genmuon_functions.analyze_genmuon_showers"
     kwargs:
       method: 2
-  real_shower_builder:
-    src: "dtpr.utils.shower_functions.build_real_showers"
-    kwargs:
-      threshold: 8
-      debug: False
-  fw_shower_analyzer:
-    src: "dtpr.utils.shower_functions.analyze_fwshowers"
 
 ntuple_selectors:
 # comment/uncomment/add as needed...
@@ -160,8 +153,8 @@ ntuple_selectors:
 
 # -------------------------------- configuration for histograms -----------------------------------#
 histo_sources:
-  - dtpr.utils.histograms.baseHistos
-  
+  - dtpr.utils.histograms.genmuon_histos
+
 histo_names:
   # ============ leading_mu ============ #
   - LeadingMuon_pt

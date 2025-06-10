@@ -178,12 +178,13 @@ def build_real_showers(ev: Event, threshold=None, debug=False):
             are_electron_hits = len(simhits_sdf.loc[simhits_sdf["particle_type"].abs() == 11]) > 0
             # hits are spread out in the chamber
             spread = simhits_sdf["w"].std()**2 > 1
-            # are duplicated mathced segments
-            try:
-                segments_locs = [(_wh, _sc, _st) for gm in ev.genmuons for _st, _sc, _wh in getattr(gm, 'matched_segments', []) if _st == st and _sc == sc and _wh == wh]
-                are_duplicated_segments = len(segments_locs) > len(set(segments_locs))
-            except:
+            # are duplicated matched segments
+            matched_segments = [seg for gm in ev.genmuons for seg in getattr(gm, 'matched_segments', [])]
+            if matched_segments:
+                are_duplicated_segments = len(matched_segments) > len(get_unique_locs(matched_segments, loc_ids=["wh", "sc", "st"]))
+            else:
                 are_duplicated_segments = False # -- for G4 DTNtuples there are no segments
+
             if pass_thr:
                 if debug: color_msg(f'spread: {spread} --> {simhits_sdf["w"].std()**2}', "purple", indentLevel=2)
                 if are_muons_hits and are_electron_hits and spread:
@@ -221,8 +222,6 @@ def build_real_showers(ev: Event, threshold=None, debug=False):
                     "green",
                     indentLevel=2,
                 )
-
-
 
 def analyze_fwshowers(ev: Event):
     """

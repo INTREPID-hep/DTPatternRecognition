@@ -65,7 +65,7 @@ def analyze_genmuon_matches(ev: Event):
             for tp in ev.tps:
                 match_offline_AMtp(_seg, tp, max_dPhi=0.1)
 
-def analyze_genmuon_showers(ev: Event, method=1):
+def analyze_genmuon_showers(ev: Event, method=1, simhits_threshold=8):
     """
     Analyze if the generator muon showered based on matched segments.
     """
@@ -84,9 +84,17 @@ def analyze_genmuon_showers(ev: Event, method=1):
             locs = get_unique_locs(getattr(gm, 'matched_segments', []), ("wh", "sc", "st"))
             for wh, sc, st in locs:
                 simhits = ev.filter_particles("simhits", wh=wh, sc=sc, st=st)
-                if len([simhit for simhit in simhits if abs(simhit.particle_type) == 11]) >= 8:
+                if len([simhit for simhit in simhits if abs(simhit.particle_type) == 11]) >= simhits_threshold:
                     gm.showered = True
                     break
+
+    if method == 3:
+        if not hasattr(ev, 'realshowers'):
+            raise ValueError("Event does not have 'realshowers' they are required for method 3")
+        for gm in ev.genmuons:
+            locs = get_unique_locs(getattr(gm, 'matched_segments', []), ("wh", "sc", "st"))
+            gm.showered = any(loc in locs for loc in get_unique_locs(ev.realshowers, loc_ids=["wh", "sc", "st"]))
+
 
 def get_dphi_matched_segments(gm: Particle):
     """

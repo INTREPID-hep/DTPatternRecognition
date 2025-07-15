@@ -54,10 +54,16 @@ particle_types:
         branch: 'ph2TpgPhiEmuAm_sector'
       st: 
         branch: 'ph2TpgPhiEmuAm_station'
+      sl:
+        branch: 'ph2TpgPhiEmuAm_superLayer'
       phi: 
         branch: 'ph2TpgPhiEmuAm_phi'
       phiB: 
         branch: 'ph2TpgPhiEmuAm_phiB'
+      posLoc_x:
+        branch: 'ph2TpgPhiEmuAm_posLoc_x'
+      dirLoc_phi:
+        branch: 'ph2TpgPhiEmuAm_dirLoc_phi'
       quality: 
         branch: 'ph2TpgPhiEmuAm_quality'
       rpcFlag: 
@@ -70,6 +76,7 @@ particle_types:
         expr: '65536.0 / 0.5'
       matched_segments: []
       matched_genmuons: []
+      matched_showers: []
     filter: 'p.quality >= 0'
   genmuons:
     amount: 'gen_nGenParts'
@@ -114,6 +121,7 @@ particle_types:
         branch: 'ph2Shower_avg_time'
       wires_profile: 
         branch: 'ph2Shower_wires_profile'
+      matched_tps: []
   simhits:
     amount: 'simHit_nSimHits'
     attributes:
@@ -177,3 +185,39 @@ histo_names:
   - dphi_seg_non_showering_muon
   - dphi_tp_showering_muon
   - dphi_tp_non_showering_muon
+
+
+# ------------------------------- configuration for dt plots  -------------------------------------#
+dt_plots_configs:
+  mplhep-style: 'CMS'         # Style to use for the plots
+
+  figure-configs: 
+    figure.dpi: 100             # Dots per inch (resolution)
+    axes.titlesize: 'small'     # Axes title size
+    axes.labelsize: 'x-small'    # Axes label size
+    xtick.labelsize: 'x-small'    # X-axis tick label size
+    ytick.labelsize: 'x-small'    # Y-axis tick label size
+    legend.fontsize: 'small'   # Legend font size
+
+  dt-cell-info:
+    particle_type: 'digis'      # Particle type to use
+    cmap_var: 'time'            # Variable to use for the colormap
+
+  cmap-configs:
+    cmap: 'viridis'             # Colormap to use
+    cmap_under: 'none'          # Color for values under vmin
+    norm:
+      class: 'matplotlib.colors.Normalize'  # Normalization class
+      vmin: 299                             # Minimum value for normalization
+      vmax: 1000                            # Maximum value for normalization
+
+  # DT bounds and cells are matplotlib.patches.Rectangle objects
+  bounds-kwargs:
+    facecolor: ["lightgray", "lightyellow", "lightpink", "lightblue"]   # Color of the rectangle [MB, SL1, SL3, SL2]
+    edgecolor: "k"                                                      # Color of the edge
+    alpha: 0.3                                                          # Transparency of the rectangle
+    linewidth: 0.5                                                      # Width of the edge
+
+  cells-kwargs:
+    edgecolor: "k"              # Color of the edge
+    linewidth: 0.025              # Width of the edge

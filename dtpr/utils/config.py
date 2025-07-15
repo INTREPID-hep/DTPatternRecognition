@@ -28,9 +28,7 @@ class Config:
             if key == "opt_args":
                 for subkey in self.opt_args.keys():
                     try:
-                        self.opt_args[subkey]["type"] = eval(
-                            self.opt_args[subkey]["type"]
-                        )
+                        self.opt_args[subkey]["type"] = eval(self.opt_args[subkey]["type"])
                     except KeyError:
                         continue
 

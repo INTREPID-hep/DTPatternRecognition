@@ -1,27 +1,30 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget, QMainWindow, QHeaderView, QLineEdit
+from PyQt5.QtWidgets import (
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+    QHeaderView
+)
 from PyQt5.QtCore import Qt
+from dtpr.utils.functions import parse_filter_text_4gui
 
-class EventInspector(QWidget):
+class EventTreeInspector(QWidget):
     def __init__(self, parent=None):
-        super(EventInspector, self).__init__(parent)
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-
-        self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Search by property, e.g, wh=-2; st=1...")
-        self.search_bar.textChanged.connect(self.filter_tree)
-        self.layout.addWidget(self.search_bar)
-
+        super(EventTreeInspector, self).__init__(parent)
+        self.vertical_layout = QVBoxLayout()
+        self.vertical_layout.setContentsMargins(0, 0, 0, 0)
         self.tree_widget = QTreeWidget()
+        self.vertical_layout.addWidget(self.tree_widget)
+        self.setLayout(self.vertical_layout)
+
         self.tree_widget.setHeaderLabels(["Property", "Value"])
         self.tree_widget.header().setDefaultAlignment(Qt.AlignLeft)
         self.tree_widget.header().setStretchLastSection(False)
         self.tree_widget.header().setSectionResizeMode(1, QHeaderView.Stretch)
         self.tree_widget.setStyleSheet("QTreeWidget::item { border-bottom: 1px solid #dcdcdc; border-right: 1px solid #dcdcdc; }")
-        self.layout.addWidget(self.tree_widget)
 
     def add_event_to_tree(self, event, filter_text=""):
-        filter_kwargs = self.parse_filter_text(filter_text)
+        filter_kwargs = parse_filter_text_4gui(filter_text)
         if not filter_kwargs and filter_text:
             return
         self.tree_widget.clear()  # Clear the tree before adding a new event
@@ -85,42 +88,3 @@ class EventInspector(QWidget):
                     # Continue recursion with increased depth
                     self.add_properties_to_tree(item_item, item, depth + 1, max_depth)
 
-    def filter_tree(self):
-        filter_text = self.search_bar.text()
-        self.add_event_to_tree(self.current_event, filter_text)
-
-    def parse_filter_text(self, filter_text):
-        filter_kwargs = {}
-        if filter_text:
-            try:
-                for part in filter_text.split(";"):
-                    if not part:
-                        continue
-                    key, value = part.split("=")
-                    filter_kwargs[key.strip()] = eval(value.strip())
-            except:
-                pass
-        return filter_kwargs
-
-if __name__ == "__main__":
-    import sys
-    import os
-    from PyQt5.QtWidgets import QApplication
-    from dtpr.base import NTuple
-    from dtpr.utils.config import RUN_CONFIG
-
-    RUN_CONFIG.change_config_file(os.path.abspath("../../../test/run_config.yaml"))
-
-    ntuple = NTuple(
-        inputFolder=os.path.abspath("../../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"),
-    )
-
-    event = ntuple.events[2]
-
-    app = QApplication(sys.argv)
-    ui = QMainWindow()
-    inspector = EventInspector()
-    inspector.add_event_to_tree(event)
-    ui.setCentralWidget(inspector)
-    ui.show()
-    sys.exit(app.exec_())

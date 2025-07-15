@@ -87,11 +87,14 @@ class EventsVisualizer(QMainWindow):
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled & ~Qt.ItemFlag.ItemIsSelectable)
             else:
                 item = QListWidgetItem(f"event {event.index}")
-                event_showered = bool(event.filter_particles("genmuons", showered=True) and True)
-                if event_showered:
-                    item.setForeground(Qt.GlobalColor.green)
-                else:
-                    item.setForeground(Qt.GlobalColor.red)
+                try:
+                    event_showered = bool(event.filter_particles("genmuons", showered=True) and True)
+                    if event_showered:
+                        item.setForeground(Qt.GlobalColor.green)
+                    else:
+                        item.setForeground(Qt.GlobalColor.red)
+                except:
+                    pass
             self.event_list.addItem(item)
         if len(self.ntuple.events) > self.events_loaded:
             self.event_list.addItem("More...")

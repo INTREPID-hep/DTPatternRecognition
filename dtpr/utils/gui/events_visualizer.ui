@@ -6,139 +6,438 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>857</width>
-    <height>568</height>
+    <width>985</width>
+    <height>569</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Events Visualizer</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QProgressBar {
+                border: 1px solid #bbb;
+                border-radius: 3px;
+                text-align: center;
+                font-size: 10px;
+                color: #555;
+                background-color: #f5f5f5;
+}
+QProgressBar::chunk {
+                background-color: #d0d0d0;
+                border-radius: 2px;
+}</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
+   <layout class="QGridLayout" name="gridLayout_6">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>10</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>5</number>
+    </property>
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
-     <layout class="QVBoxLayout" name="main_layout">
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <layout class="QHBoxLayout" name="horizontal_layout" stretch="0,2">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
         <property name="spacing">
-         <number>2</number>
+         <number>15</number>
         </property>
         <property name="leftMargin">
-         <number>0</number>
+         <number>5</number>
         </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>5</number>
+        </property>
+        <property name="bottomMargin">
+         <number>5</number>
         </property>
         <item>
-         <layout class="QVBoxLayout" name="event_list_layout">
+         <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLineEdit" name="search_bar">
-            <property name="placeholderText">
-             <string>&quot;Search event by number...&quot;</string>
+           <widget class="QLabel" name="wheel_label">
+            <property name="minimumSize">
+             <size>
+              <width>36</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Wheel</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="event_list">
+           <widget class="QSpinBox" name="wheel_selector">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>120</width>
-              <height>0</height>
+              <width>36</width>
+              <height>20</height>
              </size>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>16777215</height>
-             </size>
+            <property name="minimum">
+             <number>-2</number>
+            </property>
+            <property name="maximum">
+             <number>2</number>
+            </property>
+            <property name="value">
+             <number>-2</number>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="plot_layout" stretch="0,2">
-          <property name="spacing">
-           <number>0</number>
-          </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <layout class="QHBoxLayout" name="wheel_layout" stretch="0,0,0">
-            <property name="sizeConstraint">
-             <enum>QLayout::SetDefaultConstraint</enum>
+           <widget class="QLabel" name="label">
+            <property name="minimumSize">
+             <size>
+              <width>37</width>
+              <height>20</height>
+             </size>
             </property>
-            <item>
-             <widget class="QLabel" name="wheel_label">
-              <property name="text">
-               <string>Wheel</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="wheel_selector">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>50</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="minimum">
-               <number>-2</number>
-              </property>
-              <property name="maximum">
-               <number>2</number>
-              </property>
-              <property name="value">
-               <number>-2</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
+            <property name="text">
+             <string>Sector</string>
+            </property>
+           </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,1">
-            <property name="spacing">
-             <number>2</number>
+           <widget class="QSpinBox" name="sector_selector">
+            <property name="minimumSize">
+             <size>
+              <width>38</width>
+              <height>20</height>
+             </size>
             </property>
-            <item>
-             <widget class="PlotWidget" name="plot_widget" native="true"/>
-            </item>
-            <item>
-             <widget class="EventInspector" name="event_inspector" native="true"/>
-            </item>
-           </layout>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>14</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
+        <item>
+         <layout class="QHBoxLayout" name="additional_artists_layout">
+          <property name="spacing">
+           <number>15</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+         </layout>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="tab_xy">
+         <attribute name="title">
+          <string>XY</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="PlotWidget" name="plot_widget_phi" native="true"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_zr">
+         <attribute name="title">
+          <string>Zr</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="PlotWidget" name="plot_widget_eta" native="true"/>
+          </item>
+         </layout>
+        </widget>
+       </widget>
       </item>
      </layout>
     </item>
    </layout>
   </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>15</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>12</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="sizeGripEnabled">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QDockWidget" name="eventsBox_dockWidget">
+   <property name="minimumSize">
+    <size>
+     <width>150</width>
+     <height>242</height>
+    </size>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Events box</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
+      <number>5</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <layout class="QVBoxLayout" name="event_list_layout">
+       <item>
+        <widget class="QLineEdit" name="eventslist_search_bar">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>8</pointsize>
+          </font>
+         </property>
+         <property name="placeholderText">
+          <string>Filter by property, e.g, index=1; number=1234...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="events_list">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="event_inspector_dockWidget">
+   <property name="minimumSize">
+    <size>
+     <width>150</width>
+     <height>89</height>
+    </size>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Event inspector</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QGridLayout" name="gridLayout_4">
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
+      <number>5</number>
+     </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item row="0" column="0">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLineEdit" name="eventtree_search_bar">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="placeholderText">
+          <string>Search by property, e.g, wh=-2; st=1...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="EventTreeInspector" name="event_inspector" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>80</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>985</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionEvents_Box"/>
+    <addaction name="actionEvent_inspector"/>
+   </widget>
+   <addaction name="menuView"/>
+  </widget>
+  <action name="actionEvents_Box">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Events box</string>
+   </property>
+  </action>
+  <action name="actionEvent_inspector">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Event inspector</string>
+   </property>
+  </action>
+  <action name="action_InputPath">
+   <property name="text">
+    <string>Change InputPath</string>
+   </property>
+  </action>
+  <action name="action_config_file">
+   <property name="text">
+    <string>Change config_file</string>
+   </property>
+  </action>
+  <action name="actionexit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -148,9 +447,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>EventInspector</class>
+   <class>EventTreeInspector</class>
    <extends>QWidget</extends>
-   <header location="global">dtpr.utils.gui.event_inspector</header>
+   <header>dtpr.utils.gui.event_tree_inspector</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

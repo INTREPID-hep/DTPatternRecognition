@@ -1,9 +1,16 @@
 """ Miscelaneous """
+from functools import partial
+import importlib
 import os
 import math
+import matplotlib.pyplot as plt
+from copy import deepcopy
 from types import LambdaType
 from importlib import import_module
 import numpy as np
+from mpldts.geometry import Station
+from mpldts.patches import DTStationPatch
+from dtpr.utils.config import RUN_CONFIG
 
 # Make Iterators for when we want to iterate over different subdetectors
 wheels = range(-2, 3)
@@ -161,15 +168,14 @@ def get_callable_from_src(src_str: str):
     :return: The callable object.
     """
     callable = None
-    if src_str:
-        try:
-            _module_name, _callable_name = src_str.rsplit(".", 1)
-            _module = import_module(_module_name)
-            callable = getattr(_module, _callable_name)
-        except AttributeError as e:
-            raise AttributeError(f"{_callable_name} callable not found: {e}")
-        except ImportError as e:
-            raise ImportError(f"Error importing {src_str}: {e}")
+    try:
+        _module_name, _callable_name = src_str.rsplit(".", 1)
+        _module = import_module(_module_name)
+        callable = getattr(_module, _callable_name)
+    except AttributeError as e:
+        raise AttributeError(f"{_callable_name} callable not found: {e}")
+    except ImportError as e:
+        raise ImportError(f"Error importing {src_str}: {e}")
 
     return callable
 
@@ -396,3 +402,156 @@ def format_event_particles_str(ptype, particles, indent):
                 summary.append(color_msg("...", color="cyan", indentLevel=indent + 2, return_str=True))
 
     return summary
+
+_stations_cached = {}
+
+def get_cached_station(wh, sc, st, dt_info=None):
+    """
+    Returns a DT station object for the given wheel, sector, and station.
+
+    :param wh: The wheel number.
+    :type wh: int
+    :param sc: The sector number.
+    :type sc: int
+    :param st: The station number.
+    :type st: int
+    :param dt_info: Optional DataFrame containing DT info. Default is None.
+    :type dt_info: pandas.DataFrame, optional
+    :return: The DT station object.
+    :rtype: DT
+    """
+    key = (wh, sc, st)
+    
+    if key not in _stations_cached:
+        try:
+            _stations_cached[key] = Station(wheel=wh, sector=sc, station=st, dt_info=dt_info)
+        except ValueError:
+            # If the station cannot be created, we return None
+            _stations_cached[key] = None
+            return None
+    else:
+        # If the station is already cached, we can return it directly
+        # This avoids unnecessary re-creation of the Station object
+        if dt_info is not None:
+            _stations_cached[key].set_cell_attrs(dt_info)
+
+    return _stations_cached[key]
+
+def cast_cmaps(kargs_list):
+    if not isinstance(kargs_list, dict) or not all(isinstance(v, dict) for v in kargs_list.values()):
+        return
+    from matplotlib import colors
+    from matplotlib.pyplot import get_cmap
+    for kargs in kargs_list.values():
+        if 'cmap' in kargs:
+            cmap = kargs['cmap']
+            if isinstance(cmap, colors.ListedColormap):
+                pass # Nothing to do
+            elif isinstance(cmap, str):
+                cmap=get_cmap(cmap)
+            elif isinstance(cmap, dict):
+                cmap=get_cmap(cmap['name'], cmap.get('N'))
+            elif isinstance(cmap, list):
+                cmap=colors.ListedColormap(cmap)
+            else:
+                raise ValueError(f"Unsupported colormap format: {cmap}")
+            cmap.set_under('None')
+            kargs.update(cmap=cmap)
+        if 'norm' in kargs:
+            norm = kargs['norm']
+            if isinstance(norm, dict):
+                class_name = norm.pop('class', 'Normalize')
+                kargs.update(norm=getattr(colors, class_name)(**norm))
+
+def parse_plot_configs():
+    """
+    Parse DT plot configurations from RUN_CONFIG.
+    
+    :return: A tuple containing (mplhep_style, figure_configs, dt_cell_info, bounds_kwargs, cells_kwargs)
+    :rtype: tuple
+    """
+    if not hasattr(RUN_CONFIG, "plot_configs"):
+        raise ValueError("RUN_CONFIG does not contain 'plot_configs'.")
+
+    plot_configs = deepcopy(RUN_CONFIG.plot_configs)
+
+    mplhep_style = plot_configs.get("mplhep-style", None)
+    figure_configs = plot_configs.get("figure-configs", {})
+    artist = {}
+
+    for artist_name, artist_configs in plot_configs.get("artists", {}).items():
+        src = artist_configs.pop("src", None)
+        if not src:
+            raise ValueError(f"Artist '{artist_name}' does not have a 'src' defined in RUN_CONFIG.")
+        artist_builder = get_callable_from_src(src)
+        rep_info = artist_configs.pop("rep-info", {})
+        cast_cmaps(artist_configs)
+        artist[artist_name] = partial(artist_builder, **rep_info, **artist_configs)
+
+    return {
+        "mplhep_style": mplhep_style,
+        "figure_configs": figure_configs,
+        "artist": artist
+    }
+
+
+def parse_dt_plot_configs():
+    """
+    Parse DT plot configurations from RUN_CONFIG.
+    
+    :return: A tuple containing (mplhep_style, figure_configs, dt_cell_info, bounds_kwargs, cells_kwargs)
+    :rtype: tuple
+    """
+    mplhep_style = None
+    figure_configs = {}
+    dt_cell_info = None
+    bounds_kwargs = None
+    cells_kwargs = None
+
+    # use RUN_CONFIG to:
+    # - Determine which event info to use as dt_info
+    # - Get the style and configurations for the plots
+
+    if hasattr(RUN_CONFIG, "dt_plots_configs"):
+        mplhep_style = RUN_CONFIG.dt_plots_configs.get("mplhep-style", None)
+        figure_configs = RUN_CONFIG.dt_plots_configs.get("figure-configs", {})
+        dt_cell_info = RUN_CONFIG.dt_plots_configs.get("dt-cell-info", None)
+        bounds_kwargs = deepcopy(RUN_CONFIG.dt_plots_configs.get("bounds-kwargs", None))
+        cells_kwargs = deepcopy(RUN_CONFIG.dt_plots_configs.get("cells-kwargs", None))
+
+        cmap_configs = deepcopy(RUN_CONFIG.dt_plots_configs.get("cmap-configs", None))
+        if cmap_configs is not None:
+            _cmap = cmap_configs.get("cmap", "viridis")
+            if isinstance(_cmap, str):
+                cmap = plt.get_cmap(_cmap).copy()
+            else:
+                cmap = plt.get_cmap(**_cmap).copy()
+
+            cmap.set_under(cmap_configs.get("cmap_under", None))
+
+            norm_module, norm_name = cmap_configs["norm"].pop("class").rsplit('.', 1)
+            module = importlib.import_module(norm_module)
+            norm = getattr(module, norm_name)(**cmap_configs["norm"])
+            cells_kwargs = cells_kwargs or {}
+            cells_kwargs.update({"cmap": cmap, "norm": norm})
+
+    return {
+        "mplhep_style": mplhep_style,
+        "figure_configs": figure_configs,
+        "dt_cell_info": dt_cell_info,
+        "bounds_kwargs": bounds_kwargs,
+        "cells_kwargs": cells_kwargs,
+    }
+
+def parse_filter_text_4gui(filter_text):
+    filter_kwargs = {}
+    if filter_text:
+        try:
+            for part in filter_text.split(";"):
+                if not part:
+                    continue
+                key, value = part.split("=")
+                filter_kwargs[key.strip()] = eval(value.strip())
+        except:
+            pass
+    return filter_kwargs

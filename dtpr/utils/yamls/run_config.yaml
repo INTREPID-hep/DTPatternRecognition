@@ -79,10 +79,16 @@ particle_types:
         branch: 'ph2TpgPhiEmuAm_sector'
       st: 
         branch: 'ph2TpgPhiEmuAm_station'
+      sl:
+        branch: 'ph2TpgPhiEmuAm_superLayer'
       phi: 
         branch: 'ph2TpgPhiEmuAm_phi'
       phiB: 
         branch: 'ph2TpgPhiEmuAm_phiB'
+      posLoc_x:
+        branch: 'ph2TpgPhiEmuAm_posLoc_x'
+      dirLoc_phi:
+        branch: 'ph2TpgPhiEmuAm_dirLoc_phi'
       quality: 
         branch: 'ph2TpgPhiEmuAm_quality'
       rpcFlag: 
@@ -95,6 +101,7 @@ particle_types:
         expr: '65536.0 / 0.5'
       matched_segments: []
       matched_genmuons: []
+      matched_showers: []
     filter: 'p.quality >= 0'
   genmuons:
     amount: 'gen_nGenParts'
@@ -114,7 +121,7 @@ particle_types:
     sorter:
       by: 'p.pt'
       reverse: True
-  emushowers:
+  fwshowers:
     amount: 'ph2Shower_station'
     attributes:
       wh: 
@@ -139,6 +146,7 @@ particle_types:
         branch: 'ph2Shower_avg_time'
       wires_profile: 
         branch: 'ph2Shower_wires_profile'
+      matched_tps: []
   simhits:
     amount: 'simHit_nSimHits'
     attributes:
@@ -244,7 +252,7 @@ histo_names:
   #   ...
 
 # ------------------------------- configuration for dt plots  -------------------------------------#
-dt_plots_configs:
+plot_configs:
   mplhep-style: 'CMS'         # Style to use for the plots
 
   figure-configs: 
@@ -277,3 +285,91 @@ dt_plots_configs:
   cells-kwargs:
     edgecolor: "k"              # Color of the edge
     linewidth: 0.025              # Width of the edge
+  
+  artists:
+    # artists to be used in the DT plots
+    dt-station-global: &dt-station-global 
+      src: "dtpr.utils.dt_plot_functions.embed_dts2axes"  # Source of the artist
+      rep-info:
+        particle_type: 'digis'      # Particle type to use
+        cmap_var: 'time'            # Variable to use for the colormap
+
+      # DT bounds and cells are matplotlib.patches.Rectangle objects
+      bounds_kwargs:
+        facecolor: ["lightgray", "lightyellow", "lightpink", "lightblue"]   # Color of the rectangle [MB, SL1, SL3, SL2]
+        edgecolor: "k"                                                      # Color of the edge
+        alpha: 0.3                                                          # Transparency of the rectangle
+        linewidth: 0.5                                                      # Width of the edge
+
+      cells_kwargs:
+        edgecolor: "k"              # Color of the edge
+        linewidth: 0.025              # Width of the edge
+        cmap: 'viridis'             # Colormap to use, list of colors or {name, N} dict
+        norm: # from matplotlib.colors
+          class: 'Normalize'  # Normalization class
+          vmin: 299                             # Minimum value for normalization
+          vmax: 1000                            # Maximum value for normalization
+
+    dt-station-local:
+      <<: *dt-station-global
+      src: "dtpr.utils.dt_plot_functions.embed_dt2axes"
+
+    dt-segment-global: &dt-segment-global
+      src: "dtpr.utils.dt_plot_functions.test_builder"  # Source of
+      rep-info:
+        particle_type: 'segments'  # Particle type to use
+        cmap_var: 'matched_genmuons'  # Variable to use for the colormap
+      segs_kwargs:
+        linewidth: 0.8
+        cmap: ["k", 'r']             # Colormap to use
+        norm:
+          class: 'BoundaryNorm'  # Normalization class
+          boundaries: [0, 1, 2]      # Boundaries for the col
+          ncolors: 2                 # Number of colors in the colormap
+
+    dt-segment-local:
+      <<: *dt-segment-global
+
+    dt-am-tps-global: &dt-am-tps-global
+      src: "dtpr.utils.dt_plot_functions.embed_segs2axes_glob"  # Source of the artist
+      rep-info:
+        particle_type: 'tps'  # Particle type to use
+        cmap_var: 'quality'   # Variable to use for the colormap
+      segs_kwargs:
+        linewidth: 0.8
+        cmap:                 # Colormap to use
+          name: 'viridis'
+          N: 9
+        norm:
+          class: 'BoundaryNorm'  # Normalization class
+          boundaries: [0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9]      # Boundaries for the colormap
+          ncolors: 9                 # Number of colors in the colormap
+          clip: True  # Clip values outside the boundaries
+
+    dt-am-tps-local:
+      <<: *dt-am-tps-global
+      src: "dtpr.utils.dt_plot_functions.embed_segs2axes_loc"  # Source of the artist
+
+    dt-simhits-local:
+      src: "dtpr.utils.dt_plot_functions.embed_simhits2axes_loc"  # Source of the artist
+      rep-info:
+        particle_type: 'simhits'  # Particle type to use
+
+    dt-showers-global: &dt-shower-global
+      src: "dtpr.utils.dt_plot_functions.embed_shower2axes_glob"  # Source of the artist
+      rep-info:
+        particle_type: 'fwshowers'  # Particle type to use
+      color: 'red'
+      linewidth: 3
+
+    dt-showers-local:
+      <<: *dt-shower-global
+      src: "dtpr.utils.dt_plot_functions.embed_shower2axes_loc"  # Source of the artist
+
+    cms-shadow-global:
+      src: "dtpr.utils.dt_plot_functions.embed_cms_global_shadow"  # Source of the artist
+      edgecolor: 'black'
+      facecolor: "gray"
+      alpha: 0.1
+      linewidth: 0.5
+ 

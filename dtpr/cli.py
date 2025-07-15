@@ -6,7 +6,7 @@ import warnings
 import importlib
 import inspect
 from copy import deepcopy
-from dtpr.utils.functions import color_msg, warning_handler, error_handler
+from dtpr.utils.functions import color_msg, warning_handler, error_handler, get_callable_from_src
 from dtpr.utils.config import RUN_CONFIG, CLI_CONFIG
 
 warnings.filterwarnings(action="once", category=UserWarning)
@@ -16,20 +16,17 @@ warnings.showwarning = warning_handler
 sys.excepthook = error_handler
 
 
-def add_arguments(parser: argparse.ArgumentParser, args: list) -> None:
+def add_arguments(parser: argparse.ArgumentParser, args: dict) -> None:
     """Add common arguments to the parser."""
-    for arg in args:
-        _items = deepcopy(CLI_CONFIG.opt_args[arg])
-        parser.add_argument(
-            *_items.pop("flags"),
-            **_items,
-        )
-
-def import_function(func_path: str) -> callable:
-    """Dynamically import a function from a given module path."""
-    module_name, func_name = func_path.rsplit(".", 1)
-    module = importlib.import_module(module_name)
-    return getattr(module, func_name)
+    for arg_name, args_items in args.items():
+        try:
+            _items = deepcopy(args_items)
+            parser.add_argument(
+                *_items.pop("flags"),
+                **_items,
+            )
+        except:
+            raise ValueError(f"Failed to add argument: {arg_name} with items: {args_items}")
 
 def create_wrapper(func: callable) -> callable:
     """Create a wrapper function to map parsed arguments to the function's parameters."""
@@ -53,7 +50,7 @@ def add_subcommands(subparser: argparse._SubParsersAction, subcommands: list) ->
 
         # Function to import
         func_path = _subcommand_info["func"]
-        func = import_function(func_path)
+        func = get_callable_from_src(func_path)
         _subcommand_parser.set_defaults(func=create_wrapper(func))
 
 
@@ -75,7 +72,7 @@ def main():
             "plot-dts",
             "plot-dt",
             "inspect-event",
-            "event-visualizer",
+            # "event-visualizer",
             # ---- config commands ----
             "create-particle",
             "create-config",

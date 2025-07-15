@@ -8,3 +8,4 @@
 *.vscode*
 *filters_v2.py*
 *_build
+*pkl

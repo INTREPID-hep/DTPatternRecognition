@@ -63,8 +63,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.format_event_attribute_str"><code class="docutils literal notranslate"><span class="pre">format_event_attribute_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.format_event_particles_str"><code class="docutils literal notranslate"><span class="pre">format_event_particles_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.get_best_matches"><code class="docutils literal notranslate"><span class="pre">get_best_matches()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.get_cached_station"><code class="docutils literal notranslate"><span class="pre">get_cached_station()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.get_callable_from_src"><code class="docutils literal notranslate"><span class="pre">get_callable_from_src()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.get_unique_locs"><code class="docutils literal notranslate"><span class="pre">get_unique_locs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.parse_dt_plot_configs"><code class="docutils literal notranslate"><span class="pre">parse_dt_plot_configs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.phiConv"><code class="docutils literal notranslate"><span class="pre">phiConv()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.save_mpl_canvas"><code class="docutils literal notranslate"><span class="pre">save_mpl_canvas()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.warning_handler"><code class="docutils literal notranslate"><span class="pre">warning_handler()</span></code></a></li>
@@ -265,6 +267,28 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dtpr.utils.functions.get_cached_station">
+<span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">get_cached_station</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">st</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#get_cached_station"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.get_cached_station" title="Link to this definition"></a></dt>
+<dd><p>Returns a DT station object for the given wheel, sector, and station.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wh</strong> (<em>int</em>) – The wheel number.</p></li>
+<li><p><strong>sc</strong> (<em>int</em>) – The sector number.</p></li>
+<li><p><strong>st</strong> (<em>int</em>) – The station number.</p></li>
+<li><p><strong>dt_info</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – Optional DataFrame containing DT info. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The DT station object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DT</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dtpr.utils.functions.get_callable_from_src">
 <span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">get_callable_from_src</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#get_callable_from_src"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.get_callable_from_src" title="Link to this definition"></a></dt>
 <dd><p>Returns the callable object from the given source string.</p>
@@ -294,6 +318,20 @@
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dtpr.utils.functions.parse_dt_plot_configs">
+<span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">parse_dt_plot_configs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#parse_dt_plot_configs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.parse_dt_plot_configs" title="Link to this definition"></a></dt>
+<dd><p>Parse DT plot configurations from RUN_CONFIG.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tuple containing (mplhep_style, figure_configs, dt_cell_info, bounds_kwargs, cells_kwargs)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>

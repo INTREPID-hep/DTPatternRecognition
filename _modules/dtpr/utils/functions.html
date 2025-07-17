@@ -76,11 +76,17 @@
              
   <h1>Source code for dtpr.utils.functions</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot; Miscelaneous &quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">LambdaType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_module</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpldts.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Station</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpldts.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">DTStationPatch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.utils.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RUN_CONFIG</span>
 
 <span class="c1"># Make Iterators for when we want to iterate over different subdetectors</span>
 <span class="n">wheels</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -523,6 +529,84 @@
                 <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">color_msg</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;cyan&quot;</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">summary</span></div>
+
+
+<span class="n">_stations_cached</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="get_cached_station">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.get_cached_station">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_cached_station</span><span class="p">(</span><span class="n">wh</span><span class="p">,</span> <span class="n">sc</span><span class="p">,</span> <span class="n">st</span><span class="p">,</span> <span class="n">dt_info</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a DT station object for the given wheel, sector, and station.</span>
+
+<span class="sd">    :param wh: The wheel number.</span>
+<span class="sd">    :type wh: int</span>
+<span class="sd">    :param sc: The sector number.</span>
+<span class="sd">    :type sc: int</span>
+<span class="sd">    :param st: The station number.</span>
+<span class="sd">    :type st: int</span>
+<span class="sd">    :param dt_info: Optional DataFrame containing DT info. Default is None.</span>
+<span class="sd">    :type dt_info: pandas.DataFrame, optional</span>
+<span class="sd">    :return: The DT station object.</span>
+<span class="sd">    :rtype: DT</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">wh</span><span class="p">,</span> <span class="n">sc</span><span class="p">,</span> <span class="n">st</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_stations_cached</span><span class="p">:</span>
+        <span class="n">_stations_cached</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Station</span><span class="p">(</span><span class="n">wheel</span><span class="o">=</span><span class="n">wh</span><span class="p">,</span> <span class="n">sector</span><span class="o">=</span><span class="n">sc</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">st</span><span class="p">,</span> <span class="n">dt_info</span><span class="o">=</span><span class="n">dt_info</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If the station is already cached, we can return it directly</span>
+        <span class="c1"># This avoids unnecessary re-creation of the Station object</span>
+        <span class="k">if</span> <span class="n">dt_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_stations_cached</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">set_cell_attrs</span><span class="p">(</span><span class="n">dt_info</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_stations_cached</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="parse_dt_plot_configs">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.parse_dt_plot_configs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_dt_plot_configs</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse DT plot configurations from RUN_CONFIG.</span>
+<span class="sd">    </span>
+<span class="sd">    :return: A tuple containing (mplhep_style, figure_configs, dt_cell_info, bounds_kwargs, cells_kwargs)</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mplhep_style</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">figure_configs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">dt_cell_info</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">bounds_kwargs</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cells_kwargs</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># use RUN_CONFIG to:</span>
+    <span class="c1"># - Determine which event info to use as dt_info</span>
+    <span class="c1"># - Get the style and configurations for the plots</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">RUN_CONFIG</span><span class="p">,</span> <span class="s2">&quot;dt_plots_configs&quot;</span><span class="p">):</span>
+        <span class="n">mplhep_style</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mplhep-style&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">figure_configs</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;figure-configs&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">dt_cell_info</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dt-cell-info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">bounds_kwargs</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bounds-kwargs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">cells_kwargs</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cells-kwargs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+        <span class="n">cmap_configs</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmap-configs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cmap_configs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_cmap</span> <span class="o">=</span> <span class="n">cmap_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmap&quot;</span><span class="p">,</span> <span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_cmap</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">_cmap</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="o">**</span><span class="n">_cmap</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="n">cmap</span><span class="o">.</span><span class="n">set_under</span><span class="p">(</span><span class="n">cmap_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmap_under&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+            <span class="n">norm_module</span><span class="p">,</span> <span class="n">norm_name</span> <span class="o">=</span> <span class="n">cmap_configs</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;class&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">norm_module</span><span class="p">)</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">norm_name</span><span class="p">)(</span><span class="o">**</span><span class="n">cmap_configs</span><span class="p">[</span><span class="s2">&quot;norm&quot;</span><span class="p">])</span>
+            <span class="n">cells_kwargs</span> <span class="o">=</span> <span class="n">cells_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="n">cells_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;cmap&quot;</span><span class="p">:</span> <span class="n">cmap</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span> <span class="n">norm</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">mplhep_style</span><span class="p">,</span> <span class="n">figure_configs</span><span class="p">,</span> <span class="n">dt_cell_info</span><span class="p">,</span> <span class="n">bounds_kwargs</span><span class="p">,</span> <span class="n">cells_kwargs</span></div>
 
 </pre></div>
 

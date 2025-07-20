@@ -76,6 +76,7 @@
              
   <h1>Source code for dtpr.utils.functions</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot; Miscelaneous &quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
@@ -255,15 +256,14 @@
 <span class="sd">    :return: The callable object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">callable</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">src_str</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">_module_name</span><span class="p">,</span> <span class="n">_callable_name</span> <span class="o">=</span> <span class="n">src_str</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">_module</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">_module_name</span><span class="p">)</span>
-            <span class="nb">callable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_module</span><span class="p">,</span> <span class="n">_callable_name</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_callable_name</span><span class="si">}</span><span class="s2"> callable not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error importing </span><span class="si">{</span><span class="n">src_str</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_module_name</span><span class="p">,</span> <span class="n">_callable_name</span> <span class="o">=</span> <span class="n">src_str</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">_module</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">_module_name</span><span class="p">)</span>
+        <span class="nb">callable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_module</span><span class="p">,</span> <span class="n">_callable_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_callable_name</span><span class="si">}</span><span class="s2"> callable not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error importing </span><span class="si">{</span><span class="n">src_str</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="nb">callable</span></div>
 
@@ -553,7 +553,12 @@
     <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">wh</span><span class="p">,</span> <span class="n">sc</span><span class="p">,</span> <span class="n">st</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_stations_cached</span><span class="p">:</span>
-        <span class="n">_stations_cached</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Station</span><span class="p">(</span><span class="n">wheel</span><span class="o">=</span><span class="n">wh</span><span class="p">,</span> <span class="n">sector</span><span class="o">=</span><span class="n">sc</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">st</span><span class="p">,</span> <span class="n">dt_info</span><span class="o">=</span><span class="n">dt_info</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_stations_cached</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Station</span><span class="p">(</span><span class="n">wheel</span><span class="o">=</span><span class="n">wh</span><span class="p">,</span> <span class="n">sector</span><span class="o">=</span><span class="n">sc</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">st</span><span class="p">,</span> <span class="n">dt_info</span><span class="o">=</span><span class="n">dt_info</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="c1"># If the station cannot be created, we return None</span>
+            <span class="n">_stations_cached</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># If the station is already cached, we can return it directly</span>
         <span class="c1"># This avoids unnecessary re-creation of the Station object</span>
@@ -561,6 +566,69 @@
             <span class="n">_stations_cached</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">set_cell_attrs</span><span class="p">(</span><span class="n">dt_info</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_stations_cached</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="cast_cmaps">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.cast_cmaps">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cast_cmaps</span><span class="p">(</span><span class="n">kargs_list</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kargs_list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kargs_list</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+        <span class="k">return</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">colors</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cmap</span>
+    <span class="k">for</span> <span class="n">kargs</span> <span class="ow">in</span> <span class="n">kargs_list</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;cmap&#39;</span> <span class="ow">in</span> <span class="n">kargs</span><span class="p">:</span>
+            <span class="n">cmap</span> <span class="o">=</span> <span class="n">kargs</span><span class="p">[</span><span class="s1">&#39;cmap&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="n">colors</span><span class="o">.</span><span class="n">ListedColormap</span><span class="p">):</span>
+                <span class="k">pass</span> <span class="c1"># Nothing to do</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">cmap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="n">colors</span><span class="o">.</span><span class="n">ListedColormap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported colormap format: </span><span class="si">{</span><span class="n">cmap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">cmap</span><span class="o">.</span><span class="n">set_under</span><span class="p">(</span><span class="s1">&#39;None&#39;</span><span class="p">)</span>
+            <span class="n">kargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;norm&#39;</span> <span class="ow">in</span> <span class="n">kargs</span><span class="p">:</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="n">kargs</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">class_name</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;class&#39;</span><span class="p">,</span> <span class="s1">&#39;Normalize&#39;</span><span class="p">)</span>
+                <span class="n">kargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">norm</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">colors</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)(</span><span class="o">**</span><span class="n">norm</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="parse_plot_configs">
+<a class="viewcode-back" href="../../../src/utils/functions.html#dtpr.utils.functions.parse_plot_configs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_plot_configs</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse DT plot configurations from RUN_CONFIG.</span>
+<span class="sd">    </span>
+<span class="sd">    :return: A tuple containing (mplhep_style, figure_configs, dt_cell_info, bounds_kwargs, cells_kwargs)</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">RUN_CONFIG</span><span class="p">,</span> <span class="s2">&quot;plot_configs&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;RUN_CONFIG does not contain &#39;plot_configs&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="n">plot_configs</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">)</span>
+
+    <span class="n">mplhep_style</span> <span class="o">=</span> <span class="n">plot_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mplhep-style&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">figure_configs</span> <span class="o">=</span> <span class="n">plot_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;figure-configs&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">artist</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">artist_name</span><span class="p">,</span> <span class="n">artist_configs</span> <span class="ow">in</span> <span class="n">plot_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;artists&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">artist_configs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;src&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">src</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Artist &#39;</span><span class="si">{</span><span class="n">artist_name</span><span class="si">}</span><span class="s2">&#39; does not have a &#39;src&#39; defined in RUN_CONFIG.&quot;</span><span class="p">)</span>
+        <span class="n">artist_builder</span> <span class="o">=</span> <span class="n">get_callable_from_src</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="n">rep_info</span> <span class="o">=</span> <span class="n">artist_configs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;rep-info&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">cast_cmaps</span><span class="p">(</span><span class="n">artist_configs</span><span class="p">)</span>
+        <span class="n">artist</span><span class="p">[</span><span class="n">artist_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">artist_builder</span><span class="p">,</span> <span class="o">**</span><span class="n">rep_info</span><span class="p">,</span> <span class="o">**</span><span class="n">artist_configs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;mplhep_style&quot;</span><span class="p">:</span> <span class="n">mplhep_style</span><span class="p">,</span>
+        <span class="s2">&quot;figure_configs&quot;</span><span class="p">:</span> <span class="n">figure_configs</span><span class="p">,</span>
+        <span class="s2">&quot;artist&quot;</span><span class="p">:</span> <span class="n">artist</span>
+    <span class="p">}</span></div>
 
 
 
@@ -590,7 +658,7 @@
         <span class="n">bounds_kwargs</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bounds-kwargs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
         <span class="n">cells_kwargs</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cells-kwargs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
 
-        <span class="n">cmap_configs</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmap-configs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">cmap_configs</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">dt_plots_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmap-configs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">cmap_configs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_cmap</span> <span class="o">=</span> <span class="n">cmap_configs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmap&quot;</span><span class="p">,</span> <span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_cmap</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -606,7 +674,13 @@
             <span class="n">cells_kwargs</span> <span class="o">=</span> <span class="n">cells_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
             <span class="n">cells_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;cmap&quot;</span><span class="p">:</span> <span class="n">cmap</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span> <span class="n">norm</span><span class="p">})</span>
 
-    <span class="k">return</span> <span class="n">mplhep_style</span><span class="p">,</span> <span class="n">figure_configs</span><span class="p">,</span> <span class="n">dt_cell_info</span><span class="p">,</span> <span class="n">bounds_kwargs</span><span class="p">,</span> <span class="n">cells_kwargs</span></div>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;mplhep_style&quot;</span><span class="p">:</span> <span class="n">mplhep_style</span><span class="p">,</span>
+        <span class="s2">&quot;figure_configs&quot;</span><span class="p">:</span> <span class="n">figure_configs</span><span class="p">,</span>
+        <span class="s2">&quot;dt_cell_info&quot;</span><span class="p">:</span> <span class="n">dt_cell_info</span><span class="p">,</span>
+        <span class="s2">&quot;bounds_kwargs&quot;</span><span class="p">:</span> <span class="n">bounds_kwargs</span><span class="p">,</span>
+        <span class="s2">&quot;cells_kwargs&quot;</span><span class="p">:</span> <span class="n">cells_kwargs</span><span class="p">,</span>
+    <span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="parse_filter_text_4gui">

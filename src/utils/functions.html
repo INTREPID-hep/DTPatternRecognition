@@ -53,6 +53,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="main.html">utils</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">functions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.append_to_matched_list"><code class="docutils literal notranslate"><span class="pre">append_to_matched_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.cast_cmaps"><code class="docutils literal notranslate"><span class="pre">cast_cmaps()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.color_msg"><code class="docutils literal notranslate"><span class="pre">color_msg()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.correct_g4digi_time"><code class="docutils literal notranslate"><span class="pre">correct_g4digi_time()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.create_outfolder"><code class="docutils literal notranslate"><span class="pre">create_outfolder()</span></code></a></li>
@@ -68,6 +69,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.get_unique_locs"><code class="docutils literal notranslate"><span class="pre">get_unique_locs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.parse_dt_plot_configs"><code class="docutils literal notranslate"><span class="pre">parse_dt_plot_configs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.parse_filter_text_4gui"><code class="docutils literal notranslate"><span class="pre">parse_filter_text_4gui()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.parse_plot_configs"><code class="docutils literal notranslate"><span class="pre">parse_plot_configs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.phiConv"><code class="docutils literal notranslate"><span class="pre">phiConv()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.save_mpl_canvas"><code class="docutils literal notranslate"><span class="pre">save_mpl_canvas()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dtpr.utils.functions.warning_handler"><code class="docutils literal notranslate"><span class="pre">warning_handler()</span></code></a></li>
@@ -122,6 +124,11 @@
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dtpr.utils.functions.cast_cmaps">
+<span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">cast_cmaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kargs_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#cast_cmaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.cast_cmaps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dtpr.utils.functions.color_msg">
@@ -341,6 +348,20 @@
 <dt class="sig sig-object py" id="dtpr.utils.functions.parse_filter_text_4gui">
 <span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">parse_filter_text_4gui</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#parse_filter_text_4gui"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.parse_filter_text_4gui" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dtpr.utils.functions.parse_plot_configs">
+<span class="sig-prename descclassname"><span class="pre">dtpr.utils.functions.</span></span><span class="sig-name descname"><span class="pre">parse_plot_configs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/utils/functions.html#parse_plot_configs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.utils.functions.parse_plot_configs" title="Link to this definition"></a></dt>
+<dd><p>Parse DT plot configurations from RUN_CONFIG.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tuple containing (mplhep_style, figure_configs, dt_cell_info, bounds_kwargs, cells_kwargs)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dtpr.utils.functions.phiConv">

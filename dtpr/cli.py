@@ -72,7 +72,7 @@ def main():
             "plot-dts",
             "plot-dt",
             "inspect-event",
-            # "event-visualizer",
+            "events-visualizer",
             # ---- config commands ----
             "create-particle",
             "create-config",

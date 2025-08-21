@@ -135,9 +135,9 @@ pos_args:
             input-path: *input_path
             max-files: *max_files
             event-number: *event_number
-    event-visualizer:
-        name: "event-visualizer"
-        help: "Launch the event visualizer for DT NTuple files."
+    events-visualizer:
+        name: "events-visualizer"
+        help: "Launch the events visualizer for DT NTuple files."
         func: "dtpr.analysis.events_visualizer.launch_visualizer"
         opt_args:
             config-path: *config_path

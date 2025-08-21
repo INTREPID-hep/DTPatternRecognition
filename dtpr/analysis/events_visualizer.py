@@ -1,220 +1,511 @@
 import sys
 import os
-import importlib
+import re
 import matplotlib.pyplot as plt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QListWidgetItem
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QCursor
-from PyQt5.uic import loadUi
-from pandas import DataFrame
-from copy import deepcopy
 from mplhep import style
+from functools import cache
 
-from dtpr.utils.gui.mplwidget import PlotWidget  # Import PlotWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QShortcut, QProgressBar, QCheckBox
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.uic import loadUi
+from PyQt5.QtGui import QCursor, QKeySequence
+
+from dtpr.utils.gui.local_plotter import LocalPlotter
+from dtpr.utils.functions import parse_filter_text_4gui, parse_plot_configs
 from dtpr.base import NTuple
-from dtpr.analysis.plot_dt_chambers import embed_dtwheel2axes
-from dtpr.analysis.plot_dt_chamber import embed_dt2axes
-from dtpr.utils.config import RUN_CONFIG
+from mpldts.patches import DTRelatedPatch
 
 
 class EventsVisualizer(QMainWindow):
     def __init__(self, inpath, maxfiles=-1):
         super().__init__()
+        self.inpath = inpath
+        self.maxfiles = maxfiles
 
-        # Create the Ntuple object
-        self.ntuple = NTuple(
-            inputFolder=inpath,
-            maxfiles=maxfiles,
-        )
+        # Parse plot configurations
+        mplhep_style, figure_configs, self.artist_builders = parse_plot_configs().values()
+        
+        # Set matplotlib style context
+        if mplhep_style:
+            plt.style.use(getattr(style, mplhep_style))
+        if figure_configs:
+            plt.rcParams.update(figure_configs)
+        if not self.artist_builders:
+            raise ValueError("No artist builders found in the configuration file.")
+        if "dt-station-global" not in self.artist_builders:
+            raise ValueError("Required artists 'dt-station-global' not found in the configuration file.")
 
-        # load configs for plotting
-        self.bounds_kwargs = deepcopy(RUN_CONFIG.dt_plots_configs["bounds-kwargs"])
-        self.cells_kwargs = deepcopy(RUN_CONFIG.dt_plots_configs["cells-kwargs"])
-
-        cmap_configs = deepcopy(RUN_CONFIG.dt_plots_configs["cmap-configs"])
-
-        cmap = plt.get_cmap(cmap_configs["cmap"]).copy()
-        cmap.set_under(cmap_configs["cmap_under"])
-
-        norm_module, norm_name = cmap_configs["norm"].pop("class").rsplit('.', 1)
-        module = importlib.import_module(norm_module)
-        norm = getattr(module, norm_name)(**cmap_configs["norm"])
-
-        self.cells_kwargs.update({"cmap": cmap, "norm": norm})
+        self.glob_artistsincluded = {"phi": {}, "eta": {}}
 
         loadUi(os.path.abspath(os.path.join(os.path.dirname(__file__), "../utils/gui/events_visualizer.ui")), self)
         self.initialize_ui_elements()
+        self.reset_ui_context()
         self.connect_signals()
 
+    @cache
+    def _load_event(self, index):
+        # Load the event from the Ntuple
+        event = self.ntuple.events[index]
+        return event
+
     def initialize_ui_elements(self):
-        self.events_loaded = 100
-        self.populate_event_list()
+        # get the axes for the plots
+        self.plot_widgets = {"phi": self.plot_widget_phi, "eta": self.plot_widget_eta}
+        self.axes = {"phi": self.plot_widget_phi.canvas.axes, "eta": self.plot_widget_eta.canvas.axes}
+        # Enable nested docking to prevent blocking issues
+        self.setDockNestingEnabled(True)
+        # Initialize selector states based on current tab
+        self.update_selector_states()
+        # Initialize progress bar in status bar
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)
+        self.progress_bar.setMaximumWidth(200)
+        self.statusBar.addPermanentWidget(self.progress_bar)
+        # Timers for plot updates
+        self._wheel_update_timer = QTimer()
+        self._wheel_update_timer.setSingleShot(True)
+        self._sector_update_timer = QTimer()
+        self._sector_update_timer.setSingleShot(True)
+
+        # Create checkboxes for aditional artists
+        self.additional_artists_checkboxes = {}
+        for name in self.artist_builders.keys():
+            if name in ["dt-station-global", "cms-shadow-global"]:
+                continue
+            pattern = r"^dt-(.+)-global$"
+            match = re.match(pattern, name)
+            if match:
+                checkbox_str = match.group(1).replace('-', ' ').capitalize()
+                checkbox = QCheckBox(f"{checkbox_str}")
+                checkbox.setObjectName(name)
+                checkbox.setChecked(True)  # Default to checked
+                self.additional_artists_layout.addWidget(checkbox)
+                self.additional_artists_checkboxes[name] = checkbox
+
+    def reset_ui_context(self):
+        """Reset the UI context to the initial state."""
+        # init variables
         self.current_event = None
-        self.mpl_connection_id = None
-        self.wheel_changed_timer = QTimer()
-        self.wheel_changed_timer.setSingleShot(True)
+        self.mpl_connection_id = {"phi": None, "eta": None}
+        self._progress_context = None
+        self._eventlist_search_bar_prevtext = ""
+        self._eventtree_search_bar_prevtext = ""
 
-    def connect_signals(self):
-        self.search_bar.textChanged.connect(self.on_search_text_changed)
-        self.wheel_selector.valueChanged.connect(self.on_wheel_changed)
-        self.wheel_changed_timer.timeout.connect(self.plot_event)
-        self.event_list.itemClicked.connect(self.on_event_list_item_clicked)
+        self.axes["phi"].clear()
+        self.axes["eta"].clear()
+        self.event_inspector.tree_widget.clear()
 
-    def on_search_text_changed(self, text):
-        for i in range(self.event_list.count()):
-            item = self.event_list.item(i)
-            if text.lower() in item.text().lower():
-                item.setHidden(False)
-            else:
-                item.setHidden(True)
-
-    def plot_event_aux(self):
-        self.wheel_changed_timer.start(500)
-
-    def on_wheel_changed(self):
-        current_item = self.event_list.currentItem()
-        if (current_item and current_item.text() != "More..."):
-            self.plot_event_aux()
+        # Create the Ntuple object
+        self.ntuple = NTuple(
+            inputFolder=self.inpath,
+            maxfiles=self.maxfiles,
+        )
+        self.populate_event_list()
 
     def populate_event_list(self):
-        current_count = self.event_list.count()
-        for i, event in enumerate(self.ntuple.events[current_count:self.events_loaded]):
-            if event is None:
-                prev_item = self.event_list.item(self.event_list.count() - 1)
-                prev_event_num = int(prev_item.text().split()[1]) if prev_item else 0
-                event_num = prev_event_num + 1
-                item = QListWidgetItem(f"event {event_num}")
-                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled & ~Qt.ItemFlag.ItemIsSelectable)
-            else:
-                item = QListWidgetItem(f"event {event.index}")
-                try:
-                    event_showered = bool(event.filter_particles("genmuons", showered=True) and True)
-                    if event_showered:
-                        item.setForeground(Qt.GlobalColor.green)
-                    else:
-                        item.setForeground(Qt.GlobalColor.red)
-                except:
-                    pass
-            self.event_list.addItem(item)
-        if len(self.ntuple.events) > self.events_loaded:
-            self.event_list.addItem("More...")
+        self.events_list.clear()
+        # Get total number of events for progress tracking
+        total_events = self.ntuple.tree.GetEntries()
+        
+        # Set up progress context for event list population
+        self._set_progress_context('populate_events', 100)
+        self._update_progress(0, f"Loading {total_events} events...")
+        
+        for i, ev in enumerate(self.ntuple.tree):
+            item = QListWidgetItem(f"Event {i}")
+            item.setToolTip(f"{ev.event_eventNumber}")
+            item.setData(Qt.UserRole, (i, ev.event_eventNumber))
+            self.events_list.addItem(item)
+            
+            # Update progress periodically to avoid too many updates
+            if i % max(1, total_events // 20) == 0:
+                progress_percent = int((i + 1) / total_events * 100)
+                self._update_progress(progress_percent - self._progress_context['current_step'], f"Loading events... {i + 1}/{total_events}")
 
-    def on_event_list_item_clicked(self, item):
-        if item.text() == "More...":
-            self.load_more_events()
-        else:
-            if not item.flags() & Qt.ItemFlag.ItemIsEnabled:
+        # Complete the progress and show success message
+        self._update_progress(100, f"Successfully loaded {total_events} events")
+        self.show_status_message(f"Event list populated with {total_events} events", 2000, "success")
+        
+        # Reset progress context after a short delay
+        QTimer.singleShot(1000, self.reset_progress_bar)
+
+    def connect_signals(self):
+        self.eventslist_search_bar.editingFinished.connect(self.filter_event_list)
+        self.eventtree_search_bar.editingFinished.connect(self.filter_event_tree)
+        self.events_list.itemDoubleClicked.connect(self.event_list_item_inspection)
+        self.actionEvents_Box.triggered.connect(lambda checked: self.set_dock_widget_visibility(checked, "ev-box"))
+        self.actionEvent_inspector.triggered.connect(lambda checked: self.set_dock_widget_visibility(checked, "ev-inspector"))
+        
+        # checkboxes for additional artists
+        for name, checkbox in self.additional_artists_checkboxes.items():
+            checkbox.stateChanged.connect(
+                lambda state, name=name: self.checkbox_changed(state, name)
+            )
+
+        # Connect dock widget visibility changes to menu actions
+        self.eventsBox_dockWidget.visibilityChanged.connect(self.actionEvents_Box.setChecked)
+        self.event_inspector_dockWidget.visibilityChanged.connect(self.actionEvent_inspector.setChecked)
+
+        # Connect tab widget changes to update selector states
+        self.tabWidget.currentChanged.connect(self.update_selector_states)
+
+        # Add keyboard shortcut for resetting dock layout if they get stuck
+        reset_shortcut = QShortcut(QKeySequence("Ctrl+R"), self)
+        reset_shortcut.activated.connect(self.reset_dock_layout)
+
+        # Connect selector value changes to plot updates with delay
+        self.wheel_selector.valueChanged.connect(self.wheel_changed)
+        self.sector_selector.valueChanged.connect(self.sector_changed)
+        self._wheel_update_timer.timeout.connect(lambda: self._make_plot("phi"))
+        self._sector_update_timer.timeout.connect(lambda: self._make_plot("eta"))
+
+    def set_dock_widget_visibility(self, checked, dockwidget):
+        """Handle dock widget visibility changes from menu actions"""
+        _dock_widget = {"ev-box": self.eventsBox_dockWidget, "ev-inspector": self.event_inspector_dockWidget}.get(dockwidget, None)
+        if _dock_widget:
+            _dock_widget.setVisible(checked)
+
+    def update_selector_states(self):
+        """Update wheel and sector selector states based on current tab"""
+        current_tab_index = self.tabWidget.currentIndex()
+        
+        # Tab 0 is XY (tab_xy), Tab 1 is Zr (tab_zr)
+        if current_tab_index == 0:  # XY tab
+            # Enable wheel selector, disable sector selector
+            self.wheel_selector.setEnabled(True)
+            self.sector_selector.setEnabled(False)
+        elif current_tab_index == 1:  # Zr tab
+            # Disable wheel selector, enable sector selector
+            self.wheel_selector.setEnabled(False)
+            self.sector_selector.setEnabled(True)
+
+    def filter_event_list(self):
+        filter_text = self.eventslist_search_bar.text()
+        if filter_text == self._eventlist_search_bar_prevtext:
+            return
+        self._eventlist_search_bar_prevtext = filter_text
+        filter_kwargs = parse_filter_text_4gui(self.eventslist_search_bar.text())
+        
+        # If no filter is provided, show all items
+        if not filter_kwargs:
+            for i in range(self.events_list.count()):
+                self.events_list.item(i).setHidden(False)
+            return
+
+        goal_index = filter_kwargs.pop("index", None)
+        goal_number = filter_kwargs.pop("number", None)
+
+        for i in range(self.events_list.count()):
+            item = self.events_list.item(i)
+            index, ev_number = item.data(Qt.UserRole)
+            
+            # Check for specific index filter
+            if goal_index is not None:
+                if goal_index != index:
+                    item.setHidden(True)
+                    continue
+                else:
+                    item.setHidden(False)
+                    continue
+            
+            # Check for specific event number filter
+            if goal_number is not None:
+                if goal_number != ev_number:
+                    item.setHidden(True)
+                    continue
+                else:
+                    item.setHidden(False)
+                    continue
+            
+            # NOT IMPLEMENTED - NOT NEEDED AT THE MOMENT
+            # # Check for other attribute filters
+            # conditions = []
+            # ev = self._load_event(index)
+            # for key, value in filter_kwargs.items():
+            #     attr_value = getattr(ev, key, None)
+            #     if attr_value is not None:
+            #         conditions.append(attr_value == value)
+            #     else:
+            #         conditions.append(True)  # If attribute doesn't exist, condition is ignored
+            # if all(conditions):
+            #     item.setHidden(False)
+            # else:
+            #     item.setHidden(True)
+
+    def filter_event_tree(self):
+        filter_text = self.eventtree_search_bar.text()
+        if filter_text == self._eventtree_search_bar_prevtext:
+            return
+        self._eventtree_search_bar_prevtext = filter_text
+        QTimer.singleShot(0, lambda: self.event_inspector.add_event_to_tree(self.current_event, filter_text))
+
+    def event_list_item_inspection(self, item):
+        ev_index, ev_number = item.data(Qt.UserRole)
+        if ev_index == getattr(self.current_event, "index", -1):  # Check if the event is already loaded
+            self.show_status_message(f"Event {ev_number} is already loaded", 2000, "warning")
+            return
+            
+        # Set up progress context for full event loading (including plotting)
+        self._set_progress_context('event_load', 100)
+        self._update_progress(0, f"Loading event {ev_number}...")
+        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+        
+        try:
+            self.current_event = self._load_event(ev_index)  # Load the event when selected
+            self._update_progress(25, f"Event {ev_number} loaded from cache...")
+            
+            if self.current_event is None:
+                self.show_status_message("This event did not pass the filters", 5000, "warning")
+                QApplication.restoreOverrideCursor()
+                self.reset_progress_bar()
                 return
-            self.current_event = self.ntuple.events[int(item.text().split()[1])]
-            self.event_inspector.add_event_to_tree(self.current_event)
-            self.plot_event_aux()
+                
+            self._update_progress(25, f"Adding event {ev_number} to inspector...")
+            QTimer.singleShot(0, lambda: self.event_inspector.add_event_to_tree(self.current_event))
 
+            # Reserve 40% of progress for plotting (20% each for XY and Zr)
+            self._update_progress(10, "Starting plot generation...")
+            # Plot synchronously for better performance
+            self._make_plot("phi")
+            self._make_plot("eta")
 
-    def load_more_events(self):
-        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
-        self.event_list.takeItem(self.events_loaded)
-        self.events_loaded += 100
-        self.populate_event_list()
-        QApplication.restoreOverrideCursor()
+            self._update_progress(100, f"Event {ev_number} loaded successfully")
+            self.show_status_message(f"Event {ev_number} loaded successfully", 2000, "success")
+            
+        except Exception as e:
+            self.show_status_message(f"Error loading event: {e}", 5000, "error")
+            QApplication.restoreOverrideCursor()
+            self.reset_progress_bar()
+        # Reset progress context after completion
+        self._progress_context = None
+        QTimer.singleShot(1000, self.reset_progress_bar)
 
-    def plot_event(self):
-        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
-        event = self.current_event
-        wheel = self.wheel_selector.value()  # Get the selected wheel value
-        ax = self.plot_widget.canvas.axes
-        ax.clear()  # Clear previous plot
+    def wheel_changed(self):
+        """Handle wheel selector value changes with delay"""
+        if self.current_event is None:
+            return
+        # Stop any pending timer and start a new one with delay
+        self._wheel_update_timer.stop()
+        self._wheel_update_timer.start(500)  # 500ms delay
 
-        ax = embed_dtwheel2axes(event, wheel, ax, bounds_kwargs=self.bounds_kwargs, cells_kwargs=self.cells_kwargs)  # Use create_wheel_axes to plot the wheel
-        self.plot_widget.canvas.draw()  # Redraw the canvas
+    def sector_changed(self):
+        """Handle sector selector value changes with delay"""
+        if self.current_event is None:
+            return
+        # Stop any pending timer and start a new one with delay
+        self._sector_update_timer.stop()
+        self._sector_update_timer.start(500)  # 500ms delay
+
+    def checkbox_changed(self, state, name):
+        """Handle checkbox state changes for additional artists"""
+        if self.current_event is None:
+            return
+        self._set_progress_context('checkbox_change', 100)
+        if QApplication.overrideCursor() is None:
+            QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+
+        if state == Qt.CheckState.Checked:
+            self._update_progress(0, f"Adding {name} artist to plot phi...")
+            self._embed_artists("phi", [name])
+            self._update_progress(45, f"{name} artist added to plot phi")
+            self._update_progress(50, f"Adding {name} artist to plot eta...")
+            self._embed_artists("eta", [name])
+            self._update_progress(100, f"{name} artist added to plot eta")
+
+        else:
+            self._update_progress(0, f"Removing {name} artist from plot...")
+            self._delete_artists("phi", [name])
+            self._delete_artists("eta", [name])
+            self._update_progress(100, f"{name} artist removed from plots")
+
+        if QApplication.overrideCursor() is not None:
+            QApplication.restoreOverrideCursor()
+
+    def _make_plot(self, faceview):
+        if QApplication.overrideCursor() is None:
+            QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+        # Needed to avoid callback using the previous event
+        for mpl_conection_id in self.mpl_connection_id.values():
+            if mpl_conection_id is not None:
+                self.plot_widgets[faceview].canvas.mpl_disconnect(mpl_conection_id)
+
+        self.axes[faceview].clear()
+        self.glob_artistsincluded[faceview] = {}  # Reset artists for new plot
+
+        # Determine progress context - if no context exists, this is an independent call
+        if self._progress_context is None:
+            self._set_progress_context('plot', 100)
+            self._update_progress(0, f"Plotting {faceview} view...")
+            progress_increment = 25
+        else:
+            # Called from event_list_item_inspection, use half the remaining progress
+            progress_increment = 5  # Half of 60% for XY plot
+            self._update_progress(0, f"Plotting {faceview} view...")
+
+        _artist2include = ["cms-shadow-global", "dt-station-global"]
+
+        _artist2include += [name for name, checkbox in self.additional_artists_checkboxes.items() if checkbox.isChecked()]
+
+        self._embed_artists(faceview, _artist2include)
+
+        self._update_progress(progress_increment)
+
+        # Final progress update for this plot
+        self._update_progress(progress_increment)
+        
         # Connect the click event to the callback function
-        if self.mpl_connection_id is not None:
-            self.plot_widget.canvas.mpl_disconnect(self.mpl_connection_id)  # Disconnect previous event
-        self.mpl_connection_id = self.plot_widget.canvas.mpl_connect('pick_event', self.on_pick)  # Connect new event
-        QApplication.restoreOverrideCursor()
+        self.mpl_connection_id[faceview] = self.plot_widgets[faceview].canvas.mpl_connect('pick_event', lambda mpl_event: self.open_local_plotter(mpl_event.artist.station))  # Connect new event
 
-    def on_pick(self, mpl_event):
-        artist = mpl_event.artist
-        station = artist.station
-        self.show_local_plot(station)
+        # If this was an independent call, reset progress context
+        if self._progress_context and self._progress_context['context'] == 'plot':
+            # Reset progress context after completion
+            self._progress_context = None
+            QTimer.singleShot(1000, self.reset_progress_bar)
 
-    def show_local_plot(self, station):
-        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
-        event = self.current_event
-        window = QMainWindow(self)
-        window.setWindowTitle(f"Event {event.index} - Local Plot for {station.name}")
-        central_widget = QWidget(window)
-        window.setCentralWidget(central_widget)
-        layout = QHBoxLayout(central_widget)
+        if QApplication.overrideCursor() is not None:
+            QApplication.restoreOverrideCursor()
 
-        plot_widget_phi = PlotWidget(window)
-        plot_widget_eta = PlotWidget(window)
-        layout.addWidget(plot_widget_phi)
-        layout.addWidget(plot_widget_eta)
+    def _embed_artists(self, faceview, artist2include=[""]):
+        kwargs = {
+            "ev": self.current_event,
+            "wheel": self.wheel_selector.value() if faceview == "phi" else None,
+            "sector": self.sector_selector.value() if faceview == "eta" else None,
+            "ax": self.axes[faceview]
+        }
+        for artist_name in artist2include:
+            artist_builder = self.artist_builders.get(artist_name, None)
+            if artist_builder is None:
+                raise ValueError(f"Artist '{artist_name}' not found in the configuration file.")
+            if artist_name in self.glob_artistsincluded[faceview]:
+                continue  # Skip if already embedded
 
-        ax1 = plot_widget_phi.canvas.axes
-        ax2 = plot_widget_eta.canvas.axes
+            patches = artist_builder(**kwargs)
 
-        ax1, patch1 = embed_dt2axes(station, "phi", ax1, bounds_kwargs=self.bounds_kwargs, cells_kwargs=self.cells_kwargs)
-        ax2, patch2 = embed_dt2axes(station, "eta", ax2, bounds_kwargs=self.bounds_kwargs, cells_kwargs=self.cells_kwargs)
-
-        wh = station.wheel
-        sc = station.sector
-        st = station.number
-
-        for sl in [1, 2, 3]:
-            # circules in simhits
-            simhits_info = DataFrame([simhit.__dict__ for simhit in event.filter_particles("simhits", wh=wh, sc=sc, st=st, sl=sl)], columns=["l", "w", "particle_type"])
-            for row in simhits_info.itertuples():
-                l, w, particle_type = row.l, row.w, abs(row.particle_type)
-                if particle_type == 13:
-                    color = "red"
-                    size = 35
-                    marker = "*"
+            if isinstance(patches, tuple):
+                if all(isinstance(patch, dict) for patch in patches):
+                    self.glob_artistsincluded[faceview][artist_name] = list(val for patch in patches for _, val in patch.items())
                 else:
-                    color = "yellow"
-                    size = 10
-                    marker = "o"
-                center = station.super_layer(sl).layer(l).cell(w).local_center
-                if sl==2:
-                    ax2.scatter(center[0], center[2], color=color, s=size, marker=marker)
+                    self.glob_artistsincluded[faceview][artist_name] = list(patches)
+            else:
+                self.glob_artistsincluded[faceview][artist_name] = patches
+
+        # refresh the axes and canvas
+        self.axes[faceview].autoscale()
+        self.plot_widgets[faceview].canvas.draw()
+
+    def _delete_artists(self, faceview, artist2delete=[""]):
+        """Delete all artists from the specified faceview axes."""
+
+        def _remove_artist(artist):
+            removed = False
+            if isinstance(artist, DTRelatedPatch):
+                for collection in artist._collections:
+                    collection.remove()
+                removed = True
+            elif hasattr(artist, 'remove'):
+                artist.remove()
+                removed = True
+            else:
+                self.show_status_message(f"Artist {artist} does not have a remove method or is not a DTRelatedPatch.", 5000, "warning")
+            return removed
+        for artist_name in artist2delete:
+            if artist_name in self.glob_artistsincluded[faceview]:
+                patches = self.glob_artistsincluded[faceview][artist_name]
+                if patches is None:
+                    continue  # Skip if no patches to remove               
+                if not isinstance(patches, list):
+                    # Ensure we have a list of patches
+                    if isinstance(patches, dict):
+                        patches = list(patch for _, patch in patches.items())
+                    else:
+                        patches = [patches]
+
+                removed_flags = map(_remove_artist, patches)
+                if all(removed_flags):
+                    self.glob_artistsincluded[faceview].pop(artist_name, None)
                 else:
-                    ax1.scatter(center[0], center[2], color=color, s=size, marker=marker)
+                    raise ValueError(f"Failed to remove all artists for '{artist_name}'.")
 
-        segments = [seg for gm in event.genmuons for seg in gm.matches if seg.wh==wh and seg.sc==sc and seg.st==st]
-        other_segments = [seg for seg in event.segments if seg not in segments and seg.wh==wh and seg.sc==sc and seg.st==st]
-        sl1_center = station.super_layer(1).local_center
-        sl3_center = station.super_layer(3).local_center
-        for seg in segments:
-            ax1.axline(xy1=(seg.pos_locx_sl1, sl1_center[2]), xy2=(seg.pos_locx_sl3, sl3_center[2]), color="red", linestyle="-")
-        for seg in other_segments:
-            ax1.axline(xy1=(seg.pos_locx_sl1, sl1_center[2]), xy2=(seg.pos_locx_sl3, sl3_center[2]), color="blue", linestyle="--")
+        # refresh the axes and canvas
+        self.axes[faceview].autoscale()
+        self.plot_widgets[faceview].canvas.draw()
 
-        _, cmap_var = RUN_CONFIG.dt_plots_configs["dt-cell-info"].values()
-        plot_widget_phi.canvas.figure.colorbar(patch1.cells_collection, ax=ax1, label=f"{cmap_var}")
-        plot_widget_eta.canvas.figure.colorbar(patch2.cells_collection, ax=ax2, label=f"{cmap_var}")
+    def open_local_plotter(self, station):
+        local_window = LocalPlotter(parent=self, event=self.current_event, station=station)
+        local_window.show()
 
-        plot_widget_phi.canvas.draw()
-        plot_widget_eta.canvas.draw()
-        window.show()
-        QApplication.restoreOverrideCursor()
+    def _set_progress_context(self, context, total_steps=100):
+        """Set the progress context for better progress bar management"""
+        self._progress_context = {
+            'context': context,
+            'total_steps': total_steps,
+            'current_step': 0
+        }
+
+    def _update_progress(self, step_increment=None, message=None):
+        """Update progress bar based on current context"""
+        if self._progress_context is None:
+            return
+            
+        if step_increment is not None:
+            self._progress_context['current_step'] += step_increment
+            
+        progress_percentage = min(100, self._progress_context['current_step'])
+        self.progress_bar.setValue(progress_percentage)
+        
+        if message:
+            self.show_status_message(message, show_progress=True)
+
+    def show_status_message(self, message, timeout=2000, type=None, show_progress=False):
+        prefix = ""
+        if type == "warning":
+            self.statusBar.setStyleSheet("color: black; background-color: #fff3cd;")  # light yellow
+            prefix = "⚠️ Warning: "
+        elif type == "error":
+            self.statusBar.setStyleSheet("color: red; background-color: #f8d7da;")  # light red
+            prefix = "❗ Error: "
+        elif type == "success":
+            self.statusBar.setStyleSheet("color: green; background-color: #d4edda;")  # light green
+            prefix = "✅ Success: "
+        else:
+            self.statusBar.setStyleSheet("")  # Reset to default
+            
+        self.statusBar.showMessage(f"{prefix}{message}", timeout)
+
+        # Only show progress bar if explicitly requested or if we have an active progress context
+        if (show_progress or self._progress_context is not None) and not self.progress_bar.isVisible():
+            self.progress_bar.setVisible(True)
+            self.progress_bar.setRange(0, 100)
+        
+        QTimer.singleShot(timeout, lambda: self.statusBar.setStyleSheet(""))
+
+    def reset_progress_bar(self):
+        """Reset and hide the progress bar"""
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(False)
+        self._progress_context = None
+
+    def reset_dock_layout(self):
+        """Reset dock widgets to their default positions if they get stuck"""
+        # Simple reset: just set them back to not floating
+        self.eventsBox_dockWidget.setFloating(False)
+        self.event_inspector_dockWidget.setFloating(False)
+        
+        # Ensure they're visible
+        self.eventsBox_dockWidget.setVisible(True)
+        self.event_inspector_dockWidget.setVisible(True)
+        
+        # Update menu actions
+        self.actionEvents_Box.setChecked(True)
+        self.actionEvent_inspector.setChecked(True)
 
 def launch_visualizer(inpath, maxfiles=-1):
-    mplhep_style = RUN_CONFIG.dt_plots_configs.get("mplhep-style", None)
-    if mplhep_style and hasattr(style, mplhep_style):
-        with plt.style.context(getattr(style, mplhep_style)):
-            plt.rcParams.update(RUN_CONFIG.dt_plots_configs["figure-configs"])
-            app = QApplication(sys.argv)
-            ex = EventsVisualizer(inpath, maxfiles)
-            ex.show()
-            sys.exit(app.exec())
-    else:
-        plt.rcParams.update(RUN_CONFIG.dt_plots_configs["figure-configs"])
-        app = QApplication(sys.argv)
-        ex = EventsVisualizer(inpath, maxfiles)
-        ex.show()
-        sys.exit(app.exec())
+    app = QApplication(sys.argv)
+    ex = EventsVisualizer(inpath, maxfiles)
+    ex.show()
+    sys.exit(app.exec_())
 
-if __name__ == '__main__':
-    input_folder = "../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"
+if __name__ == "__main__":
+    input_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"))
     maxfiles = -1
     launch_visualizer(input_folder, maxfiles)

@@ -14,7 +14,7 @@ from mpldts.patches import DTStationPatch, MultiDTSegmentsPatch
 # --------------------------------------- Utility Functions -------------------------------------- #
 
 def test_builder(ev: Event, **kwargs) -> None:
-    pass
+    return None, None
 
 def _validate_axes(ax: Optional[Axes]) -> None:
     """
@@ -28,29 +28,6 @@ def _validate_axes(ax: Optional[Axes]) -> None:
     """
     if ax is not None and not isinstance(ax, Axes):
         raise ValueError(f"'ax' should be an instance of matplotlib.axes._axes.Axes class not {type(ax)}")
-
-def _validate_wheel_sector_args(wheel: Optional[int], sector: Optional[int]) -> Tuple[Dict[str, int], str]:
-    """
-    Validate wheel/sector arguments and determine filter kwargs and faceview.
-    
-    Args:
-        wheel: Wheel identifier
-        sector: Sector identifier
-        
-    Returns:
-        Tuple of (filter_kwargs, faceview)
-        
-    Raises:
-        ValueError: If both or neither wheel and sector are provided.
-    """
-    if (wheel is None) == (sector is None):
-        raise ValueError("Exactly one of 'wheel' or 'sector' must be provided, not both or neither.")
-    
-    if wheel is not None:
-        return {"wh": wheel}, "phi"
-    else:
-        return {"sc": sector}, "eta"
-
 
 def get_dt_info(ev: Event, particle_type: str = "digis", **filter_kwargs) -> DataFrame:
     """
@@ -239,11 +216,12 @@ def embed_dts2axes(
     ev: Event, 
     wheel: Optional[int] = None, 
     sector: Optional[int] = None, 
-    ax: Optional[Axes] = None, 
+    ax_phi: Optional[Axes] = None,
+    ax_eta: Optional[Axes] = None,
     particle_type: Optional[str] = 'digis', 
     cmap_var: Optional[str] = 'time', 
     **kwargs
-) -> Optional[List[DTStationPatch]]:
+) -> Tuple[Optional[List[DTStationPatch]], Optional[List[DTStationPatch]]]:
     """
     Embed DT chambers data into global phi or eta axes.
     
@@ -262,47 +240,63 @@ def embed_dts2axes(
     Raises:
         ValueError: If validation fails.
     """
-    _validate_axes(ax)
-    filter_kwargs, faceview = _validate_wheel_sector_args(wheel, sector)
+    _validate_axes(ax_phi)
+    _validate_axes(ax_eta)
 
-    dt_info = get_dt_info(ev, particle_type=particle_type, **filter_kwargs)
-    
-    if not dt_info.empty and cmap_var not in dt_info.columns:
-        raise ValueError(f"{cmap_var} must be present in {particle_type} data")
+    def _aux_f(ax, faceview, dt_info):
+        if not dt_info.empty and cmap_var not in dt_info.columns:
+            raise ValueError(f"{cmap_var} must be present in {particle_type} data")
 
-    if dt_info.empty:
-        description = f'wheel {wheel}' if faceview == 'phi' else f'sector {sector}'
-        _display_no_data_message(ax, particle_type, description)
-        return None
+        if dt_info.empty:
+            description = f'wheel {wheel}' if faceview == 'phi' else f'sector {sector}'
+            _display_no_data_message(ax, particle_type, description)
+            return None
 
-    patches = []
-    for (wh, sc, st), dt_info in dt_info.groupby(["wh", "sc", "st"]):
-            _dti = dt_info[["sl", "l", "w", cmap_var]]
-            _dt_chamber = get_cached_station(wh, sc, st, dt_info=_dti)
-            if _dt_chamber is None:
-                continue
-            patches.append(
-                DTStationPatch(
-                    station=_dt_chamber,
-                    axes=ax,
-                    local=False,
-                    faceview=faceview,
-                    vmap=cmap_var,
-                    **kwargs
+        patches = []
+        for (wh, sc, st), dt_info in dt_info.groupby(["wh", "sc", "st"]):
+                _dti = dt_info[["sl", "l", "w", cmap_var]]
+                _dt_chamber = get_cached_station(wh, sc, st, dt_info=_dti)
+                if _dt_chamber is None:
+                    continue
+                patches.append(
+                    DTStationPatch(
+                        station=_dt_chamber,
+                        axes=ax,
+                        local=False,
+                        faceview=faceview,
+                        vmap=cmap_var,
+                        **kwargs
+                    )
                 )
-            )
 
-    return patches
+        return patches
+
+    phi_patches, eta_patches = None, None
+
+    if ax_phi is not None:
+        if wheel is None:
+            raise ValueError("Wheel must be specified when using ax_phi.")
+        dt_info = get_dt_info(ev, particle_type=particle_type, wh=wheel)
+        phi_patches = _aux_f(ax_phi, "phi", dt_info)
+
+    if ax_eta is not None:
+        if sector is None:
+            raise ValueError("Sector must be specified when using ax_eta.")
+        dt_info = get_dt_info(ev, particle_type=particle_type, sc=sector)
+        eta_patches = _aux_f(ax_eta, "eta", dt_info)
+
+    return phi_patches, eta_patches
 
 def embed_segs2axes_glob(
     ev : Event, 
     wheel: Optional[int] = None, 
     sector: Optional[int] = None, 
-    ax: Optional[Axes] = None, 
+    ax_phi: Optional[Axes] = None,
+    ax_eta: Optional[Axes] = None,
     particle_type: Optional[str] = 'tps', 
     cmap_var: Optional[str] = 'quality', 
     **kwargs
-) -> Optional[List]:
+) -> Tuple[Optional[Dict], Optional[Dict]]:
     """
     Embed segments patches into global phi or eta axes.
 
@@ -318,28 +312,41 @@ def embed_segs2axes_glob(
     Returns:
         List of segment patches or None if no data
     """
-    _validate_axes(ax)
-    filter_kwargs, faceview = _validate_wheel_sector_args(wheel, sector)
+    _validate_axes(ax_phi)
+    _validate_axes(ax_eta)
 
-    particles = ev.filter_particles(particle_type, **filter_kwargs)
-    if not particles:
-        return None
+    def _aux_f(ax, faceview, particles):
+        if not particles:
+            return None
+        segs_info = [map_seg_attrs(part, particle_type=particle_type) for part in particles]
+        if not segs_info:
+            return None
+        am_segs = AMDTSegments(segs_info)
+        seg_patches = MultiDTSegmentsPatch(
+            segments=am_segs, 
+            axes=ax, 
+            local=False, 
+            faceview=faceview, 
+            vmap=cmap_var, 
+            **kwargs
+        ).patches
 
-    segs_info = [map_seg_attrs(part, particle_type=particle_type) for part in particles]
-    if not segs_info:
-        return None
+        return seg_patches
 
-    am_segs = AMDTSegments(segs_info)
-    seg_patches = MultiDTSegmentsPatch(
-        segments=am_segs, 
-        axes=ax, 
-        local=False, 
-        faceview=faceview, 
-        vmap=cmap_var, 
-        **kwargs
-    ).patches
+    phi_patches, eta_patches = None, None
 
-    return seg_patches
+    if ax_phi is not None:
+        if wheel is None:
+            raise ValueError("Wheel must be specified when using ax_phi.")
+        particles = ev.filter_particles(particle_type, wh=wheel)
+        phi_patches = _aux_f(ax_phi, "phi", particles)
+    if ax_eta is not None:
+        if sector is None:
+            raise ValueError("Sector must be specified when using ax_eta.")
+        particles = ev.filter_particles(particle_type, sc=sector)
+        eta_patches = _aux_f(ax_eta, "eta", particles)
+
+    return phi_patches, eta_patches
 
 def embed_segs2axes_loc(
     ev: Event, 
@@ -351,7 +358,7 @@ def embed_segs2axes_loc(
     particle_type: Optional[str] = 'tps', 
     cmap_var: Optional[str] = 'quality', 
     **kwargs
-) -> Optional[Tuple[Optional[List], Optional[List]]]:
+) -> Tuple[Optional[Dict], Optional[Dict]]:
     """
     Embed segments patches into local phi and/or eta axes.
 
@@ -377,11 +384,11 @@ def embed_segs2axes_loc(
 
     particles = ev.filter_particles(particle_type, wh=wheel, sc=sector, st=station)
     if not particles:
-        return None
+        return None, None
 
     segs_info = [map_seg_attrs(part, particle_type=particle_type) for part in particles]
     if not segs_info:
-        return None
+        return None, None
 
     am_segs = AMDTSegments(segs_info)
     phi_patch, eta_patch = None, None
@@ -417,7 +424,7 @@ def embed_simhits2axes_loc(
     ax_eta: Optional[Axes] = None, 
     particle_type: Optional[str] = 'simhits', 
     **kwargs
-) -> Optional[List]:
+) -> Tuple[Optional[List], Optional[List]]:
     """
     Embed simHits data into local phi and/or eta axes as scatter points.
     
@@ -442,15 +449,17 @@ def embed_simhits2axes_loc(
 
     particles = ev.filter_particles(particle_type, wh=wheel, sc=sector, st=station)
     if not particles:
-        return None
+        return None, None
 
     style_map = {
         13: {"color": "red", "s": 35, "marker": "*"},
-        11: {"color": "yellow", "s": 10, "marker": "o"}
+        11: {"color": "yellow", "s": 10, "marker": "o"},
+        22: {"color": "blue", "s": 20, "marker": "s"},
     }
 
     _parent_station = get_cached_station(wheel, sector, station)
-    patches = []
+
+    patch_phi, patch_eta = None, None
 
     for part in particles:
         if not hasattr(part, "sl") or not hasattr(part, "l") or not hasattr(part, "w"):
@@ -458,11 +467,15 @@ def embed_simhits2axes_loc(
         sl, l, w, particle_type = part.sl, part.l, part.w, abs(part.particle_type)
         center = _parent_station.super_layer(sl).layer(l).cell(w).local_center
         if sl==2:
-            patches.append(ax_eta.scatter(center[0], center[2], **style_map[particle_type], **kwargs))
+            if patch_eta is None:
+                patch_eta = []
+            patch_eta.append(ax_eta.scatter(center[0], center[2], **style_map[particle_type], **kwargs))
         else:
-            patches.append(ax_phi.scatter(center[0], center[2], **style_map[particle_type], **kwargs))
+            if patch_phi is None:
+                patch_phi = []
+            patch_phi.append(ax_phi.scatter(center[0], center[2], **style_map[particle_type], **kwargs))
 
-    return patches
+    return patch_phi, patch_eta
 
 def embed_shower2axes_loc(ev, 
     wheel: int, 
@@ -472,7 +485,7 @@ def embed_shower2axes_loc(ev,
     ax_eta: Optional[Axes] = None, 
     particle_type: Optional[str] = 'fwshowers', 
     **kwargs
-) -> Optional[List]:
+) -> Tuple[Optional[List], Optional[List]]:
     """
     Embed shower patches into local phi and/or eta axes.
     
@@ -496,29 +509,35 @@ def embed_shower2axes_loc(ev,
 
     particles = ev.filter_particles(particle_type, wh=wheel, sc=sector, st=station)
     if not particles:
-        return None
-    patches = []
+        return None, None
+
+    patch_phi, patch_eta = None, None
+
     for part in particles:
         if any([not hasattr(part, attr) for attr in ["sl", "min_wire", "max_wire"]]):
             raise ValueError(f"Particle {particle_type} does not have any (or all) required attributes 'sl', 'min_wire', and 'max_wire'")
         
         segment = get_shower_segment(part, version=2, local=True)
-        
         if ax_phi is not None and part.sl != 2:
-            patches.append(ax_phi.plot(segment[:, 0], segment[:, 2], **kwargs))
+            if patch_phi is None:
+                patch_phi = []
+            patch_phi.extend(ax_phi.plot(segment[:, 0], segment[:, 2], **kwargs))
         if ax_eta is not None and part.sl == 2:
-            patches.append(ax_eta.plot(segment[:, 0], segment[:, 2], **kwargs))
+            if patch_eta is None:
+                patch_eta = []
+            patch_eta.extend(ax_eta.plot(segment[:, 0], segment[:, 2], **kwargs))
 
-    return patches
+    return patch_phi, patch_eta
 
 def embed_shower2axes_glob(
     ev: Event, 
     wheel: Optional[int] = None, 
     sector: Optional[int] = None, 
-    ax: Optional[Axes] = None, 
+    ax_phi: Optional[Axes] = None,
+    ax_eta: Optional[Axes] = None,
     particle_type: str = 'fwshowers', 
     **kwargs
-) -> Optional[List]:
+) -> Tuple[Optional[List], Optional[List]]:
     """
     Embed shower patches into global phi or eta axes.
     
@@ -533,48 +552,65 @@ def embed_shower2axes_glob(
     Returns:
         List of plot objects
     """
-    _validate_axes(ax)
-    filter_kwargs, faceview = _validate_wheel_sector_args(wheel, sector)
+    _validate_axes(ax_phi)
+    _validate_axes(ax_eta)
 
-    particles = ev.filter_particles(particle_type, **filter_kwargs)
-    if not particles:
-        return None
+    def _aux_f(ax, faceview, particles):
+        if not particles:
+            return None
+        patches = []
+        for part in particles:
+            if any([not hasattr(part, attr) for attr in ["sl", "min_wire", "max_wire"]]):
+                raise ValueError(f"Particle {particle_type} does not have any (or all) required attributes 'sl', 'min_wire', and 'max_wire'")
+            segment = get_shower_segment(part, version=2, local=False)
+            if faceview == "phi":
+                patches.extend(ax.plot(segment[:, 0], segment[:, 1], **kwargs))
+            else:
+                patches.extend(ax.plot(segment[:, 2], sqrt(segment[:, 0]**2 + segment[:, 1]**2), **kwargs))
+        return patches
 
-    patches = []
-    for part in particles:
-        if any([not hasattr(part, attr) for attr in ["sl", "min_wire", "max_wire"]]):
-            raise ValueError(f"Particle {particle_type} does not have any (or all) required attributes 'sl', 'min_wire', and 'max_wire'")
-        segment = get_shower_segment(part, version=2, local=False)
-        if faceview == "phi":
-            patches.extend(ax.plot(segment[:, 0], segment[:, 1], **kwargs))
-        else:
-            patches.extend(ax.plot(segment[:, 2], sqrt(segment[:, 0]**2 + segment[:, 1]**2), **kwargs))
+    phi_patches, eta_patches = None, None
 
-    return patches
+    if ax_phi is not None:
+        if wheel is None:
+            raise ValueError("Wheel must be specified when using ax_phi.")
+        particles = ev.filter_particles(particle_type, wh=wheel)
+        phi_patches = _aux_f(ax_phi, "phi", particles)
+    if ax_eta is not None:
+        if sector is None:
+            raise ValueError("Sector must be specified when using ax_eta.")
+        particles = ev.filter_particles(particle_type, sc=sector)
+        eta_patches = _aux_f(ax_eta, "eta", particles)
 
+    return phi_patches, eta_patches
 
 def embed_cms_global_shadow(
     ev: Event,
     wheel: Optional[int] = None, 
     sector: Optional[int] = None, 
-    ax: Optional[Axes] = None,
+    ax_phi: Optional[Axes] = None,
+    ax_eta: Optional[Axes] = None,
     **kwargs
-) -> Optional[Patch]:
-    _validate_axes(ax)
-    _, faceview = _validate_wheel_sector_args(wheel, sector)
+) -> Tuple[Optional[Patch], Optional[Patch]]:
+    _validate_axes(ax_phi)
+    _validate_axes(ax_eta)
 
-    if faceview == "phi":
-        patch = Circle(
+    patch_phi, patch_eta = None, None
+
+    if ax_phi is not None:
+        patch_phi = Circle(
             xy= (0, 0),  # Center of the circle
             radius= 800,
             **kwargs,
         )
-    elif faceview == "eta":
-        patch = Rectangle(
+        ax_phi.add_patch(patch_phi)
+    if ax_eta is not None:
+        patch_eta = Rectangle(
             xy= (-700, 0),  # Bottom-left corner of the rectangle
             width= 1400,  # Width of the rectangle
             height= 800,  # Height of the rectangle
             **kwargs
         )
-    ax.add_patch(patch)
-    return patch
+        ax_eta.add_patch(patch_eta)
+
+    return patch_phi, patch_eta

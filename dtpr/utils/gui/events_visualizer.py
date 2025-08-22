@@ -11,6 +11,7 @@ from PyQt5.QtGui import QCursor, QKeySequence
 from dtpr.utils.gui.local_plotter import LocalPlotter
 from dtpr.utils.gui.artist_gui_manager import ArtistManager
 from dtpr.utils.functions import parse_filter_text_4gui
+from dtpr.utils.gui.progressbar_manager import ProgressBarManager
 from dtpr.base import NTuple
 
 
@@ -96,28 +97,22 @@ class EventsVisualizer(QMainWindow):
         self.events_list.clear()
         # Get total number of events for progress tracking
         total_events = self.ntuple.tree.GetEntries()
-        
-        # Set up progress context for event list population
-        self._set_progress_context('populate_events', 100)
-        self._update_progress(0, f"Loading {total_events} events...")
-        
-        for i, ev in enumerate(self.ntuple.tree):
-            item = QListWidgetItem(f"Event {i}")
-            item.setToolTip(f"{ev.event_eventNumber}")
-            item.setData(Qt.UserRole, (i, ev.event_eventNumber))
-            self.events_list.addItem(item)
-            
-            # Update progress periodically to avoid too many updates
-            if i % max(1, total_events // 20) == 0:
-                progress_percent = int((i + 1) / total_events * 100)
-                self._update_progress(progress_percent - self._progress_context['current_step'], f"Loading events... {i + 1}/{total_events}")
-
-        # Complete the progress and show success message
-        self._update_progress(100, f"Successfully loaded {total_events} events")
-        self.show_status_message(f"Event list populated with {total_events} events", 2000, "success")
-        
-        # Reset progress context after a short delay
-        QTimer.singleShot(1000, self.reset_progress_bar)
+        with ProgressBarManager(
+            self.progress_bar,
+            self.show_status_message,
+            total_steps=total_events,
+            message=f"Loading {total_events} events..."
+        ) as pb:
+            for i, ev in enumerate(self.ntuple.tree):
+                item = QListWidgetItem(f"Event {i}")
+                item.setToolTip(f"{ev.event_eventNumber}")
+                item.setData(Qt.UserRole, (i, ev.event_eventNumber))
+                self.events_list.addItem(item)
+                # Update progress periodically
+                if i % max(1, total_events // 20) == 0:
+                    pb.update(i - pb.current_step, f"Loading events... {i + 1}/{total_events}")
+            pb.update(total_events - pb.current_step, f"Successfully loaded {total_events} events")
+            self.show_status_message(f"Event list populated with {total_events} events", 2000, "success")
 
     def connect_signals(self):
         self.eventslist_search_bar.editingFinished.connect(self.filter_event_list)
@@ -234,40 +229,31 @@ class EventsVisualizer(QMainWindow):
         if ev_index == getattr(self.current_event, "index", -1):  # Check if the event is already loaded
             self.show_status_message(f"Event {ev_number} is already loaded", 2000, "warning")
             return
-            
-        # Set up progress context for full event loading (including plotting)
-        self._set_progress_context('event_load', 100)
-        self._update_progress(0, f"Loading event {ev_number}...")
-        QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
-        
-        try:
-            self.current_event = self._load_event(ev_index)  # Load the event when selected
-            self._update_progress(25, f"Event {ev_number} loaded from cache...")
-            
-            if self.current_event is None:
-                self.show_status_message("This event did not pass the filters", 5000, "warning")
+
+        with ProgressBarManager(self.progress_bar, self.show_status_message, total_steps=100, message=f"Loading event {ev_number}...") as pb:
+            QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+            try:
+                self.current_event = self._load_event(ev_index)
+                pb.update(25, f"Event {ev_number} loaded from cache...")
+
+                if self.current_event is None:
+                    self.show_status_message("This event did not pass the filters", 5000, "warning")
+                    QApplication.restoreOverrideCursor()
+                    return
+
+                pb.update(25, f"Adding event {ev_number} to inspector...")
+                QTimer.singleShot(0, lambda: self.event_inspector.add_event_to_tree(self.current_event))
+
+                pb.update(10, "Starting plot generation...")
+                self._make_plots()
+                pb.update(40, "Plots done")
+
+                pb.update(100 - pb.current_step, f"Event {ev_number} loaded successfully")
+                self.show_status_message(f"Event {ev_number} loaded successfully", 2000, "success")
+            except Exception as e:
+                self.show_status_message(f"Error loading event: {e}", 5000, "error")
+            finally:
                 QApplication.restoreOverrideCursor()
-                self.reset_progress_bar()
-                return
-                
-            self._update_progress(25, f"Adding event {ev_number} to inspector...")
-            QTimer.singleShot(0, lambda: self.event_inspector.add_event_to_tree(self.current_event))
-
-            # Reserve 40% of progress for plotting (20% each for XY and Zr)
-            self._update_progress(10, "Starting plot generation...")
-            # Plot synchronously for better performance
-            self._make_plots()
-
-            self._update_progress(100, f"Event {ev_number} loaded successfully")
-            self.show_status_message(f"Event {ev_number} loaded successfully", 2000, "success")
-            
-        except Exception as e:
-            self.show_status_message(f"Error loading event: {e}", 5000, "error")
-            QApplication.restoreOverrideCursor()
-            self.reset_progress_bar()
-        # Reset progress context after completion
-        self._progress_context = None
-        QTimer.singleShot(1000, self.reset_progress_bar)
 
     def wheel_changed(self):
         """Handle wheel selector value changes with delay"""
@@ -289,17 +275,19 @@ class EventsVisualizer(QMainWindow):
         """Handle checkbox state changes for additional artists"""
         if self.current_event is None:
             return
-        self._set_progress_context('checkbox_change', 100)
-        if QApplication.overrideCursor() is None:
-            QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+        with ProgressBarManager(self.progress_bar, self.show_status_message, total_steps=100, message=f"{'Adding' if state == Qt.CheckState.Checked else 'Removing'} {name} artist...") as pb:
+            if QApplication.overrideCursor() is None:
+                QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
 
-        if state == Qt.CheckState.Checked:
-            self._embed_artists([name])
-        else:
-            self.artist_manager.delete_artists([name])
+            if state == Qt.CheckState.Checked:
+                self._embed_artists([name])
+                pb.update(100, f"{name} artist added to plot")
+            else:
+                self.artist_manager.delete_artists([name])
+                pb.update(100, f"{name} artist removed from plot")
 
-        if QApplication.overrideCursor() is not None:
-            QApplication.restoreOverrideCursor()
+            if QApplication.overrideCursor() is not None:
+                QApplication.restoreOverrideCursor()
 
     def _make_plots(self, faceview: str = None):
         if QApplication.overrideCursor() is None:
@@ -316,25 +304,11 @@ class EventsVisualizer(QMainWindow):
             # Reset artists for new plot
             self.artist_manager.artists_included[_faceview] = {}
 
-        # Determine progress context - if no context exists, this is an independent call
-        if self._progress_context is None:
-            self._set_progress_context('plot', 100)
-            self._update_progress(0, f"Plotting...")
-            progress_increment = 25
-        else:
-            # Called from event_list_item_inspection, use half the remaining progress
-            progress_increment = 5  # Half of 60% for XY plot
-            self._update_progress(0, f"Plotting view...")
-
-        _artist2include = ["cms-shadow-global", "dt-station-global"]
-        _artist2include += [name for name, checkbox in self.additional_artists_checkboxes.items() if checkbox.isChecked()]
-
-        self._embed_artists(_artist2include, faceview=faceview)
-
-        self._update_progress(progress_increment)
-
-        # Final progress update for this plot
-        self._update_progress(progress_increment)
+        with ProgressBarManager(self.progress_bar, self.show_status_message, total_steps=100, message=f"Plotting...") as pb:
+            _artist2include = ["cms-shadow-global", "dt-station-global"]
+            _artist2include += [name for name, checkbox in self.additional_artists_checkboxes.items() if checkbox.isChecked()]
+            self._embed_artists(_artist2include, faceview=faceview)
+            pb.update(100, "Plotting done")
 
         for _faceview in ["phi", "eta"]:
             if faceview is not None and _faceview != faceview:
@@ -343,11 +317,6 @@ class EventsVisualizer(QMainWindow):
                 'pick_event',
                 lambda mpl_event: self.open_local_plotter(mpl_event.artist.station)
             )
-
-        if self._progress_context and self._progress_context['context'] == 'plot':
-            # Reset progress context after completion
-            self._progress_context = None
-            QTimer.singleShot(1000, self.reset_progress_bar)
 
         if QApplication.overrideCursor() is not None:
             QApplication.restoreOverrideCursor()
@@ -363,28 +332,6 @@ class EventsVisualizer(QMainWindow):
     def open_local_plotter(self, station):
         local_window = LocalPlotter(parent=self, event=self.current_event, station=station)
         local_window.show()
-
-    def _set_progress_context(self, context, total_steps=100):
-        """Set the progress context for better progress bar management"""
-        self._progress_context = {
-            'context': context,
-            'total_steps': total_steps,
-            'current_step': 0
-        }
-
-    def _update_progress(self, step_increment=None, message=None):
-        """Update progress bar based on current context"""
-        if self._progress_context is None:
-            return
-            
-        if step_increment is not None:
-            self._progress_context['current_step'] += step_increment
-            
-        progress_percentage = min(100, self._progress_context['current_step'])
-        self.progress_bar.setValue(progress_percentage)
-        
-        if message:
-            self.show_status_message(message, show_progress=True)
 
     def show_status_message(self, message, timeout=2000, type=None, show_progress=False):
         prefix = ""
@@ -408,12 +355,6 @@ class EventsVisualizer(QMainWindow):
             self.progress_bar.setRange(0, 100)
         
         QTimer.singleShot(timeout, lambda: self.statusBar.setStyleSheet(""))
-
-    def reset_progress_bar(self):
-        """Reset and hide the progress bar"""
-        self.progress_bar.setValue(0)
-        self.progress_bar.setVisible(False)
-        self._progress_context = None
 
     def reset_dock_layout(self):
         """Reset dock widgets to their default positions if they get stuck"""

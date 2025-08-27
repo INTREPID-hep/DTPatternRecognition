@@ -1,3 +1,22 @@
+# ================================================================================
+# DT Plot Functions Utility Module
+# ================================================================================
+
+# Key Points for Building Your Own Plotting Functions:
+# --------------------------------------------------------------------------------
+# 1. Arguments:
+#    - `ev`: Event object containing the relevant DT data.
+#    - `wheel`, `sector`, `station`: Integers specifying the DT chamber location.
+#    - `ax_phi`, `ax_eta`: Optional matplotlib Axes for phi and eta projections.
+#    - `particle_type`: String specifying the type of DT object to plot (e.g., 'digis', 'tps', 'fwshowers').
+#    - `cmap_var`: String for the variable to use for color mapping (optional).
+#    - `**kwargs`: Additional keyword arguments passed to plotting or patch constructors.
+
+# 2. Return Types:
+#    - Each function returns a tuple: (phi_object | None, eta_object | None).
+#    - Each element is either: A matplotlib object (e.g., Patch, plot, scatter) or a list of such objects, all supporting the `.remove()` method.
+
+
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
 

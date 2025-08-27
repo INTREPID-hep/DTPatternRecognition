@@ -6,7 +6,7 @@ import warnings
 import importlib
 import inspect
 from copy import deepcopy
-from dtpr.utils.functions import color_msg, warning_handler, error_handler, get_callable_from_src
+from dtpr.utils.functions import color_msg, warning_handler, error_handler, get_callable_from_src, create_outfolder
 from dtpr.utils.config import RUN_CONFIG, CLI_CONFIG
 
 warnings.filterwarnings(action="once", category=UserWarning)
@@ -89,11 +89,13 @@ def main():
         if args.config_file:
             change_cfg = True
         else:
-            with os.scandir(getattr(args, "outfolder", ".")) as entries:
-                for entry in entries:
-                    if entry.is_file() and entry.name.endswith(".yaml"):
-                        change_cfg = True
-                        args.config_file = entry.path
+            if getattr(args, "outfolder", None):
+                create_outfolder(args.outfolder)
+                with os.scandir(args.outfolder) as entries:
+                    for entry in entries:
+                        if entry.is_file() and entry.name.endswith(".yaml"):
+                            change_cfg = True
+                            args.config_file = entry.path
                         break
         if change_cfg:
             color_msg(f"Using configuration file: {args.config_file}", "yellow")

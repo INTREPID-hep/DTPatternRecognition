@@ -263,29 +263,6 @@ plot_configs:
     ytick.labelsize: 'x-small'    # Y-axis tick label size
     legend.fontsize: 'small'   # Legend font size
 
-  dt-cell-info:
-    particle_type: 'digis'      # Particle type to use
-    cmap_var: 'time'            # Variable to use for the colormap
-
-  cmap-configs:
-    cmap: 'viridis'             # Colormap to use
-    cmap_under: 'none'          # Color for values under vmin
-    norm:
-      class: 'matplotlib.colors.Normalize'  # Normalization class
-      vmin: 299                             # Minimum value for normalization
-      vmax: 1000                            # Maximum value for normalization
-
-  # DT bounds and cells are matplotlib.patches.Rectangle objects
-  bounds-kwargs:
-    facecolor: ["lightgray", "lightyellow", "lightpink", "lightblue"]   # Color of the rectangle [MB, SL1, SL3, SL2]
-    edgecolor: "k"                                                      # Color of the edge
-    alpha: 0.3                                                          # Transparency of the rectangle
-    linewidth: 0.5                                                      # Width of the edge
-
-  cells-kwargs:
-    edgecolor: "k"              # Color of the edge
-    linewidth: 0.025              # Width of the edge
-  
   artists:
     # artists to be used in the DT plots
     dt-station-global: &dt-station-global 
@@ -315,7 +292,7 @@ plot_configs:
       src: "dtpr.utils.dt_plot_functions.embed_dt2axes"
 
     dt-segment-global: &dt-segment-global
-      src: "dtpr.utils.dt_plot_functions.test_builder"  # Source of
+      src: "dtpr.utils.dt_plot_functions.test_builder"  # dummy function as placeholder; replace with actual implementation when available
       rep-info:
         particle_type: 'segments'  # Particle type to use
         cmap_var: 'matched_genmuons'  # Variable to use for the colormap
@@ -372,4 +349,3 @@ plot_configs:
       facecolor: "gray"
       alpha: 0.1
       linewidth: 0.5
- 

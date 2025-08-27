@@ -81,6 +81,11 @@ opt_args:
         type: str
         nargs: "*"
         help: "Artist name(s) to include. Can be a single string or multiple strings."
+    use-executable: &use_executable
+        flags: ["-e", "--exec"]
+        dest: "use_executable"
+        action: "store_true"
+        help: "Use the pre-built executable. Default is False."
 
 # ---------------------------------- posible analysis ---------------------------------------- #
 pos_args:
@@ -138,11 +143,12 @@ pos_args:
     events-visualizer:
         name: "events-visualizer"
         help: "Launch the events visualizer for DT NTuple files."
-        func: "dtpr.analysis.events_visualizer.launch_visualizer"
+        func: "dtpr.analysis.run_events_visualizer.open_visualizer"
         opt_args:
             config-path: *config_path
             input-path: *input_path
             max-files: *max_files
+            use-executable: *use_executable
     # -------------------------------- posible create-templates ---------------------------------- #
     create-particle:
         name: "create-particle"

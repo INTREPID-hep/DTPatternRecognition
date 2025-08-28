@@ -81,6 +81,12 @@ opt_args:
         type: str
         nargs: "*"
         help: "Artist name(s) to include. Can be a single string or multiple strings."
+    cores-number: &cores_number
+        flags: ["-c", "--cores"]
+        dest: "ncores"
+        type: int
+        default: -1
+        help: "Number of CPU cores to use for parallel processing. Default is -1, which means no parallelization."
     use-executable: &use_executable
         flags: ["-e", "--exec"]
         dest: "use_executable"
@@ -100,6 +106,7 @@ pos_args:
             tag: *tag
             max-files: *max_files
             max-events: *max_events
+            cores-number: *cores_number
     plot-dt:
         name: "plot-dt"
         help: "Produce CMS DT chamber plot (local view) for a specific event digis information from a DT NTuple files."

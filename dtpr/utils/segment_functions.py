@@ -1,8 +1,9 @@
 from dtpr.base import Particle
 from dtpr.utils.functions import append_to_matched_list
 import math
+from typing import Optional
 
-def match_offline_AMtp(segment: Particle, tp: Particle, max_dPhi: float = 0.1):
+def match_offline_AMtp(segment: Particle, tp: Particle, max_dPhi: Optional[float] = 0.1) -> None:
     """
     Match an offline segment to an AM trigger primitive based on dPhi.
 
@@ -12,6 +13,8 @@ def match_offline_AMtp(segment: Particle, tp: Particle, max_dPhi: float = 0.1):
     :type tp: Particle
     :param max_dPhi: The maximum dPhi for matching.
     :type max_dPhi: float
+    :return: None, modifies the segment and tp by adding matched objects to their lists
+    :rtype: None
     """
     if any([not hasattr(segment, key) for key in ['wh', 'sc', 'st', 'phi']]):
         raise AttributeError("Segment must have 'wh', 'sc', 'st', 'phi', and 'phires_conv' attributes.")

@@ -11,6 +11,7 @@ import numpy as np
 from mpldts.geometry import Station
 from mpldts.patches import DTStationPatch
 from dtpr.utils.config import RUN_CONFIG
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union, TypeVar, cast, Iterable
 
 # Make Iterators for when we want to iterate over different subdetectors
 wheels = range(-2, 3)
@@ -18,7 +19,8 @@ sectors = range(1, 15)
 stations = range(1, 5)
 superlayers = range(1, 4)
 
-def color_msg(msg, color="none", indentLevel=-1, return_str=False, bold=False, underline=False, bkg_color="none"):
+def color_msg(msg: str, color: Optional[str] = "none", indentLevel: Optional[int] = -1, return_str: Optional[bool] = False, 
+              bold: Optional[bool] = False, underline: Optional[bool] = False, bkg_color: Optional[str] = "none") -> Optional[str]:
     """
     Prints a message with ANSI coding so it can be printed with colors.
 
@@ -37,7 +39,7 @@ def color_msg(msg, color="none", indentLevel=-1, return_str=False, bold=False, u
     :param bkg_color: The background color. Default is "none".
     :type bkg_color: str
     :return: The formatted message if return_str is True.
-    :rtype: str
+    :rtype: Optional[str]
     """
     style_digit = "0"
     if bold and underline:
@@ -80,22 +82,24 @@ def color_msg(msg, color="none", indentLevel=-1, return_str=False, bold=False, u
         return formatted_msg
     else:
         print(formatted_msg)
+        return None
 
 
-def warning_handler(message, category, filename, lineno, file=None, line=None):
+def warning_handler(message: str, category: type, filename: str, lineno: int, 
+                    file: Optional[Any] = None, line: Optional[str] = None) -> None:
     """
     Handles warnings by printing them with color formatting.
 
     :param message: The warning message.
     :type message: str
     :param category: The category of the warning.
-    :type category: Warning
+    :type category: type
     :param filename: The name of the file where the warning occurred.
     :type filename: str
     :param lineno: The line number where the warning occurred.
     :type lineno: int
     :param file: The file object. Default is None.
-    :type file: file object, optional
+    :type file: Any, optional
     :param line: The line of code where the warning occurred. Default is None.
     :type line: str, optional
     """
@@ -120,7 +124,7 @@ def warning_handler(message, category, filename, lineno, file=None, line=None):
     )
 
 
-def error_handler(exc_type, exc_value, exc_traceback):
+def error_handler(exc_type: type, exc_value: Exception, exc_traceback: Any) -> None:
     """
     Handles errors by printing them with color formatting.
 
@@ -129,7 +133,7 @@ def error_handler(exc_type, exc_value, exc_traceback):
     :param exc_value: The exception instance.
     :type exc_value: Exception
     :param exc_traceback: The traceback object.
-    :type exc_traceback: traceback
+    :type exc_traceback: Any
     """
     import traceback
 
@@ -159,13 +163,14 @@ def error_handler(exc_type, exc_value, exc_traceback):
         )
     )
 
-def get_callable_from_src(src_str: str):
+def get_callable_from_src(src_str: str) -> Callable:
     """
     Returns the callable object from the given source string.
 
     :param src_str: The source string containing the callable.
-    :type src: str
+    :type src_str: str
     :return: The callable object.
+    :rtype: Callable
     """
     callable = None
     try:
@@ -180,14 +185,14 @@ def get_callable_from_src(src_str: str):
     return callable
 
 
-def flatten(lst):
+def flatten(lst: Any) -> List[Any]:
     """
     Flattens a nested list. If the input is not a list, returns the single value as a list.
 
     :param lst: The nested list to flatten.
-    :type lst: list
+    :type lst: Any
     :return: The flattened list or the single value as a list.
-    :rtype: list
+    :rtype: List[Any]
     """
     if not isinstance(lst, list):
         return [lst]
@@ -200,14 +205,7 @@ def flatten(lst):
             result.append(i)
     return result
 
-def wrap_lambda(func):
-    if isinstance(func, LambdaType) and func.__name__ == "<lambda>":
-        def wrapped_func(*args, **kwargs):
-            return func(*args, **kwargs)
-        return wrapped_func
-    return func
-
-def create_outfolder(outname):
+def create_outfolder(outname: str) -> None:
     """
     Creates an output directory if it does not exist.
 
@@ -217,7 +215,7 @@ def create_outfolder(outname):
     if not (os.path.exists(outname)):
         os.system("mkdir -p %s" % outname)
 
-def save_mpl_canvas(fig, name, path = "./results", dpi=500):
+def save_mpl_canvas(fig: plt.Figure, name: str, path: str = "./results", dpi: int = 500) -> None:
     """
     Save the given matplotlib figure to the specified path in SVG format.
 
@@ -235,7 +233,7 @@ def save_mpl_canvas(fig, name, path = "./results", dpi=500):
     fig.savefig(path + "/" + name+".svg", dpi=dpi)
     return
 
-def append_to_matched_list(obj, matched_list_name, item):
+def append_to_matched_list(obj: Any, matched_list_name: str, item: Any) -> None:
     """
     Append an item to a matched list attribute of an object if it doesn't already exist.
 
@@ -251,16 +249,16 @@ def append_to_matched_list(obj, matched_list_name, item):
     if item not in getattr(obj, matched_list_name):
         getattr(obj, matched_list_name).append(item)
 
-def get_unique_locs(particles, loc_ids=["wh", "sc", "st"]):
+def get_unique_locs(particles: List[Any], loc_ids: List[str] = ["wh", "sc", "st"]) -> Set[Tuple]:
     """
     Returns the unique locations of the specified particle types.
 
     :param particles: The list of particle objects.
-    :type particles: list
+    :type particles: List[Any]
     :param loc_ids: The location IDs. Default is ["wh", "sc", "st"].
-    :type loc_ids: list, optional
+    :type loc_ids: List[str], optional
     :return: The unique locations of the specified particle types in tuple format.
-    :rtype: set
+    :rtype: Set[Tuple]
     """
     locs = []
 
@@ -273,16 +271,16 @@ def get_unique_locs(particles, loc_ids=["wh", "sc", "st"]):
 
     return set(locs)
 
-def get_best_matches(reader, station=1):
+def get_best_matches(reader: Any, station: int = 1) -> List[Any]:
     """
     Returns the best matching segments for each generator muon.
 
     :param reader: The reader object containing generator muons.
-    :type reader: object
+    :type reader: Any
     :param station: The station number. Default is 1.
     :type station: int
     :return: The best matching segments.
-    :rtype: list
+    :rtype: List[Any]
     """
 
     genmuons = reader.genmuons
@@ -301,10 +299,10 @@ def get_best_matches(reader, station=1):
                 bestMatches[igm] = bestMatch
 
     # Remove those that are None which are simply dummy values
-    bestMatches = filter(lambda key: key is not None, bestMatches)
+    bestMatches = list(filter(lambda key: key is not None, bestMatches))
     return bestMatches
 
-def deltaPhi(phi1, phi2):
+def deltaPhi(phi1: float, phi2: float) -> float:
     """
     Calculates the difference in phi between two angles.
 
@@ -323,14 +321,14 @@ def deltaPhi(phi1, phi2):
     return res
 
 
-def deltaR(p1, p2):
+def deltaR(p1: Any, p2: Any) -> float:
     """
     Calculates the delta R between two particles. Particles must have attributes eta and phi.
 
     :param p1: The first particle with attributes eta and phi.
-    :type p1: object
+    :type p1: Any
     :param p2: The second particle with attributes eta and phi.
-    :type p2: object
+    :type p2: Any
     :return: The delta R value.
     :rtype: float
     """
@@ -339,7 +337,7 @@ def deltaR(p1, p2):
     return math.sqrt(dEta * dEta + dPhi * dPhi)
 
 
-def phiConv(phi):
+def phiConv(phi: float) -> float:
     """
     Converts a phi value.
 
@@ -350,9 +348,14 @@ def phiConv(phi):
     """
     return 0.5 * phi / 65536.0
 
-def correct_g4digi_time(g4digi):
+def correct_g4digi_time(g4digi: Any) -> float:
     """
     Correct the time of the digi by simulating the drift time.
+    
+    :param g4digi: The g4digi object with a _time attribute
+    :type g4digi: Any
+    :return: The corrected time
+    :rtype: float
     """
     # ----- mimic the Javi's Code ----
     # simulate drift time
@@ -363,13 +366,37 @@ def correct_g4digi_time(g4digi):
     return g4digi._time + abs(delay) + time_offset # why abs ?
 
 
-def format_event_attribute_str(key, value, indent):
+def format_event_attribute_str(key: str, value: Any, indent: int) -> str:
+    """
+    Format an event attribute as a colored string.
+    
+    :param key: The attribute key
+    :type key: str
+    :param value: The attribute value
+    :type value: Any
+    :param indent: The indentation level
+    :type indent: int
+    :return: The formatted string
+    :rtype: str
+    """
     return (
         color_msg(f"{key.capitalize()}:", color="green", indentLevel=indent, return_str=True)
         + color_msg(f"{value}", color="none", indentLevel=-1, return_str=True)
     )
 
-def format_event_particles_str(ptype, particles, indent):
+def format_event_particles_str(ptype: str, particles: List[Any], indent: int) -> List[str]:
+    """
+    Format a list of particle objects as colored strings.
+    
+    :param ptype: The type of particles
+    :type ptype: str
+    :param particles: The list of particles
+    :type particles: List[Any]
+    :param indent: The indentation level
+    :type indent: int
+    :return: List of formatted strings
+    :rtype: List[str]
+    """
     summary = [
         color_msg(f"{ptype.capitalize()}", color="green", indentLevel=indent, return_str=True),
         color_msg(
@@ -405,7 +432,7 @@ def format_event_particles_str(ptype, particles, indent):
 
 _stations_cached = {}
 
-def get_cached_station(wh, sc, st, dt_info=None):
+def get_cached_station(wh: int, sc: int, st: int, dt_info: Optional[Any] = None) -> Optional[Station]:
     """
     Returns a DT station object for the given wheel, sector, and station.
 
@@ -416,9 +443,9 @@ def get_cached_station(wh, sc, st, dt_info=None):
     :param st: The station number.
     :type st: int
     :param dt_info: Optional DataFrame containing DT info. Default is None.
-    :type dt_info: pandas.DataFrame, optional
+    :type dt_info: Any, optional
     :return: The DT station object.
-    :rtype: DT
+    :rtype: Optional[Station]
     """
     key = (wh, sc, st)
     
@@ -437,7 +464,13 @@ def get_cached_station(wh, sc, st, dt_info=None):
 
     return _stations_cached[key]
 
-def cast_cmaps(kargs_list):
+def cast_cmaps(kargs_list: Dict[str, Dict[str, Any]]) -> None:
+    """
+    Convert colormap specifications to matplotlib colormap objects.
+    
+    :param kargs_list: Dictionary of keyword arguments dictionaries
+    :type kargs_list: Dict[str, Dict[str, Any]]
+    """
     if not isinstance(kargs_list, dict) or not all(isinstance(v, dict) for v in kargs_list.values()):
         return
     from matplotlib import colors
@@ -463,12 +496,12 @@ def cast_cmaps(kargs_list):
                 class_name = norm.pop('class', 'Normalize')
                 kargs.update(norm=getattr(colors, class_name)(**norm))
 
-def parse_plot_configs():
+def parse_plot_configs() -> Dict[str, Any]:
     """
     Parse DT plot configurations from RUN_CONFIG.
     
-    :return: A tuple containing (mplhep_style, figure_configs, dt_cell_info, bounds_kwargs, cells_kwargs)
-    :rtype: tuple
+    :return: A dictionary containing plot configuration elements
+    :rtype: Dict[str, Any]
     """
     if not hasattr(RUN_CONFIG, "plot_configs"):
         raise ValueError("RUN_CONFIG does not contain 'plot_configs'.")
@@ -494,56 +527,15 @@ def parse_plot_configs():
         "artist": artist
     }
 
-
-def parse_dt_plot_configs():
+def parse_filter_text_4gui(filter_text: Optional[str]) -> Dict[str, Any]:
     """
-    Parse DT plot configurations from RUN_CONFIG.
+    Parse filter text into a dictionary of filter arguments.
     
-    :return: A tuple containing (mplhep_style, figure_configs, dt_cell_info, bounds_kwargs, cells_kwargs)
-    :rtype: tuple
+    :param filter_text: The filter text to parse
+    :type filter_text: Optional[str]
+    :return: Dictionary of filter arguments
+    :rtype: Dict[str, Any]
     """
-    mplhep_style = None
-    figure_configs = {}
-    dt_cell_info = None
-    bounds_kwargs = None
-    cells_kwargs = None
-
-    # use RUN_CONFIG to:
-    # - Determine which event info to use as dt_info
-    # - Get the style and configurations for the plots
-
-    if hasattr(RUN_CONFIG, "dt_plots_configs"):
-        mplhep_style = RUN_CONFIG.dt_plots_configs.get("mplhep-style", None)
-        figure_configs = RUN_CONFIG.dt_plots_configs.get("figure-configs", {})
-        dt_cell_info = RUN_CONFIG.dt_plots_configs.get("dt-cell-info", None)
-        bounds_kwargs = deepcopy(RUN_CONFIG.dt_plots_configs.get("bounds-kwargs", None))
-        cells_kwargs = deepcopy(RUN_CONFIG.dt_plots_configs.get("cells-kwargs", None))
-
-        cmap_configs = deepcopy(RUN_CONFIG.dt_plots_configs.get("cmap-configs", None))
-        if cmap_configs is not None:
-            _cmap = cmap_configs.get("cmap", "viridis")
-            if isinstance(_cmap, str):
-                cmap = plt.get_cmap(_cmap).copy()
-            else:
-                cmap = plt.get_cmap(**_cmap).copy()
-
-            cmap.set_under(cmap_configs.get("cmap_under", None))
-
-            norm_module, norm_name = cmap_configs["norm"].pop("class").rsplit('.', 1)
-            module = importlib.import_module(norm_module)
-            norm = getattr(module, norm_name)(**cmap_configs["norm"])
-            cells_kwargs = cells_kwargs or {}
-            cells_kwargs.update({"cmap": cmap, "norm": norm})
-
-    return {
-        "mplhep_style": mplhep_style,
-        "figure_configs": figure_configs,
-        "dt_cell_info": dt_cell_info,
-        "bounds_kwargs": bounds_kwargs,
-        "cells_kwargs": cells_kwargs,
-    }
-
-def parse_filter_text_4gui(filter_text):
     filter_kwargs = {}
     if filter_text:
         try:

@@ -5,18 +5,40 @@ from dtpr.utils.functions import color_msg, save_mpl_canvas
 from dtpr.utils.functions import parse_plot_configs
 from mplhep import style
 import matplotlib.pyplot as plt
-from typing import Optional, List, Dict, Union
+from typing import Optional, List, Dict, Union, Callable
 
 def make_dt_plot(
-        ev: Event,
-        wh: int,
-        sc: int,
-        st: int,
-        artist_builders: Dict[str, callable],
-        name: Optional[str] = "test_dt_plot",
-        path: Optional[str] = ".",
-        save: Optional[bool] = False
-    ) -> None:
+    ev: Event,
+    wh: int,
+    sc: int,
+    st: int,
+    artist_builders: Dict[str, Callable],
+    name: Optional[str] = "test_dt_plot",
+    path: Optional[str] = ".",
+    save: Optional[bool] = False
+) -> None:
+    """
+    Create and display or save a DT chamber plot for a given event and chamber.
+
+    :param ev: The event to plot.
+    :type ev: Event
+    :param wh: Wheel number.
+    :type wh: int
+    :param sc: Sector number.
+    :type sc: int
+    :param st: Station number.
+    :type st: int
+    :param artist_builders: Dictionary of artist builder functions for plotting.
+    :type artist_builders: Dict[str, Callable]
+    :param name: Name for the saved plot file.
+    :type name: Optional[str]
+    :param path: Directory to save the plot.
+    :type path: Optional[str]
+    :param save: If True, save the plot to disk; otherwise, display it.
+    :type save: Optional[bool]
+    :return: None
+    :rtype: None
+    """
     fig, axs = plt.subplots(1, 2, figsize=(14, 8))
     axs = axs.flat
 
@@ -58,20 +80,20 @@ def make_dt_plot(
     gc.collect()
 
 def plot_dt_chamber(
-        inpath: str,
-        outfolder: str,
-        tag: str,
-        maxfiles: int,
-        event_number: int,
-        wheel: int,
-        sector: int,
-        station: int,
-        save: bool,
-        artist_names: Union[List[str], str]
-    ):
+    inpath: str,
+    outfolder: str,
+    tag: str,
+    maxfiles: int,
+    event_number: int,
+    wheel: int,
+    sector: int,
+    station: int,
+    save: bool,
+    artist_names: Optional[Union[List[str], str]] = None
+) -> None:
     """
     Produce a single DT chamber plot based on DTNTuples.
-    
+
     :param inpath: The input directory containing DTNTuples.
     :type inpath: str
     :param outfolder: The output directory where the plots will be saved.
@@ -90,11 +112,13 @@ def plot_dt_chamber(
     :type station: int
     :param save: Whether to save the plots to disk.
     :type save: bool
+    :param artist_names: List of artist names or a single artist name to use for plotting (optional).
+    :type artist_names: Optional[Union[List[str], str]]
+    :return: None
+    :rtype: None
     """
-    # Start of the analysis 
     color_msg(f"Running program to produce a DT plot based on DTNTuples", "green")
 
-    # Create the Ntuple object
     ntuple = NTuple(
         inputFolder=inpath,
         maxfiles=maxfiles,
@@ -123,7 +147,6 @@ def plot_dt_chamber(
         if builder is None:
             raise ValueError(f"Artist builder '{name}' not found in the configuration file.")
 
-    # Now execute the plotting function with the specified parameters
     with plt.style.context(getattr(style, mplhep_style) if mplhep_style else "default"):
         plt.rcParams.update(figure_configs)
         make_dt_plot(

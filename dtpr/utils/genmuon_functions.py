@@ -5,19 +5,23 @@ from dtpr.utils.segment_functions import match_offline_AMtp
 from dtpr.utils.functions import append_to_matched_list, get_unique_locs, phiConv
 import math
 from itertools import combinations
+from typing import List, Optional
 
-def match_genmuon_offline_segment(gm: Particle, seg: Particle, max_dPhi: float, max_dEta: float):
+
+def match_genmuon_offline_segment(gm: Particle, seg: Particle, max_dPhi: float, max_dEta: float) -> None:
     """
     Matches a generator muon to an offline segment based on dPhi and dEta criteria.
 
-    :param gm: The generator muon to match.
+    :param gm: The generator muon to match
     :type gm: Particle
-    :param seg: The segment to match.
+    :param seg: The segment to match
     :type seg: Particle
-    :param max_dPhi: The maximum dPhi for matching.
+    :param max_dPhi: The maximum dPhi for matching
     :type max_dPhi: float
-    :param max_dEta: The maximum dEta for matching.
+    :param max_dEta: The maximum dEta for matching
     :type max_dEta: float
+    :return: None, modifies the gm and seg by adding matched objects to their lists
+    :rtype: None
     """
     if not hasattr(gm, 'phi') or not hasattr(gm, 'eta'):
         raise AttributeError("Generator muon must have 'phi' and 'eta' attributes.")
@@ -37,10 +41,15 @@ def match_genmuon_offline_segment(gm: Particle, seg: Particle, max_dPhi: float, 
         append_to_matched_list(gm, 'matched_segments', seg)
         append_to_matched_list(seg, 'matched_genmuons', gm)
 
-def analyze_genmuon_matches(ev: Event):
+
+def analyze_genmuon_matches(ev: Event) -> None:
     """
-    Match generator muons to segments and TPs in a broad dPhi/dEta window. After executing this function,
-    each genmuon, segment, and TP will have their respective matched lists populated.
+    Match generator muons to segments and TPs in a broad dPhi/dEta window.
+    
+    :param ev: The event containing genmuons, segments, and TPs
+    :type ev: Event
+    :return: None, modifies each genmuon, segment, and TP by adding matched objects to their lists
+    :rtype: None
     """
     if not hasattr(ev, "segments"):
         raise ValueError(
@@ -65,9 +74,19 @@ def analyze_genmuon_matches(ev: Event):
             for tp in ev.tps:
                 match_offline_AMtp(_seg, tp, max_dPhi=0.1)
 
-def analyze_genmuon_showers(ev: Event, method=1, simhits_threshold=8):
+
+def analyze_genmuon_showers(ev: Event, method: Optional[int] = 1, simhits_threshold: Optional[int] = 8) -> None:
     """
     Analyze if the generator muon showered based on matched segments.
+    
+    :param ev: The event containing genmuons
+    :type ev: Event
+    :param method: The method to use for shower detection (1, 2, or 3)
+    :type method: int
+    :param simhits_threshold: The threshold for simhits when using method 2
+    :type simhits_threshold: int
+    :return: None, modifies each genmuon by adding showered attribute
+    :rtype: None
     """
     if not hasattr(ev, "genmuons"):
         raise ValueError("Event does not have 'genmuons' they are required")
@@ -96,34 +115,42 @@ def analyze_genmuon_showers(ev: Event, method=1, simhits_threshold=8):
             gm.showered = any(loc in locs for loc in get_unique_locs(ev.realshowers, loc_ids=["wh", "sc", "st"]))
 
 
-def get_dphi_matched_segments(gm: Particle):
+def get_dphi_matched_segments(gm: Particle) -> List[float]:
     """
     Compute the dPhi between the generator muon and its matched offline segments.
-
-    :return: The dPhi.
-    :rtype: float
+    
+    :param gm: The generator muon
+    :type gm: Particle
+    :return: List of dPhi values
+    :rtype: List[float]
     """
     if not getattr(gm, 'matched_segments', []):
         return []
     return [abs(math.acos(math.cos(gm.phi - seg.phi))) for seg in getattr(gm, 'matched_segments', [])]
 
-def get_dphimax_matched_segments(gm: Particle): # it was genmuon.get_max_dphi
+
+def get_dphimax_matched_segments(gm: Particle) -> float:
     """
     Compute the maximum dPhi between the generator muon and its matched offline segments.
-
-    :return: The maximum dPhi.
+    
+    :param gm: The generator muon
+    :type gm: Particle
+    :return: The maximum dPhi or -99 if no matched segments
     :rtype: float
     """
     if getattr(gm, 'matched_segments', []):
-        return max( get_dphi_matched_segments(gm) )
+        return max(get_dphi_matched_segments(gm))
     return -99
 
-def get_dphi_b2_matched_segments(gm: Particle):
-    """
-    Compute the dPhi between pair of the segments that match to the generator muon.
 
-    :return: The dPhi.
-    :rtype: list
+def get_dphi_b2_matched_segments(gm: Particle) -> List[float]:
+    """
+    Compute the dPhi between pairs of segments that match to the generator muon.
+    
+    :param gm: The generator muon
+    :type gm: Particle
+    :return: List of dPhi values between segment pairs
+    :rtype: List[float]
     """
     if not getattr(gm, 'matched_segments', []):
         return []
@@ -131,61 +158,64 @@ def get_dphi_b2_matched_segments(gm: Particle):
     return [
         abs(math.acos(math.cos(seg1.phi - seg2.phi)))
         for seg1, seg2 in combinations(getattr(gm, 'matched_segments', []), 2)
-        for seg1, seg2 in combinations(getattr(gm, 'matched_segments', []), 2)
     ]
 
-def get_dphimax_b2_matched_segments(gm: Particle):
+
+def get_dphimax_b2_matched_segments(gm: Particle) -> float:
     """
     Compute the maximum dPhi of the pair of segments that match to the generator muon.
-
-    :return: The maximum dPhi.
+    
+    :param gm: The generator muon
+    :type gm: Particle
+    :return: The maximum dPhi or -99 if no matched segments
     :rtype: float
     """
     if getattr(gm, 'matched_segments', []):
         return max(get_dphi_b2_matched_segments(gm), default=-99)
     return -99
 
-def get_dphi_b2_matched_tp(gm: Particle):
+
+def get_dphi_b2_matched_tp(gm: Particle) -> List[float]:
     """
-    Compute the dPhi between pair of the TPs that match to the generator muon.
+    Compute the dPhi between pairs of TPs that match to the generator muon.
     
-    :param gm: The generator muon.
+    :param gm: The generator muon
     :type gm: Particle
-    :return: The dPhi.
-    :rtype: list
+    :return: List of dPhi values between TP pairs
+    :rtype: List[float]
     """
-    if not gm.matched_tps:
+    if not hasattr(gm, 'matched_tps') or not gm.matched_tps:
         return []
 
     return [
         abs(math.acos(math.cos(phiConv(tp1.phi) - phiConv(tp2.phi))))
         for tp1, tp2 in combinations(gm.matched_tps, 2)
-        for tp1, tp2 in combinations(gm.matched_tps, 2)
     ]
 
-def get_dphimax_b2_matched_tp(gm: Particle):
+
+def get_dphimax_b2_matched_tp(gm: Particle) -> float:
     """
     Compute the maximum dPhi of the pair of TPs that match to the generator muon.
-
-    :param gm: The generator muon.
+    
+    :param gm: The generator muon
     :type gm: Particle
-    :return: The maximum dPhi.
+    :return: The maximum dPhi or -99 if no matched TPs
     :rtype: float
     """
-    if gm.matched_tps:
+    if hasattr(gm, 'matched_tps') and gm.matched_tps:
         return max(get_dphi_b2_matched_tp(gm), default=-99)
     return -99
 
-def get_max_deta(gm: Particle):
+
+def get_max_deta(gm: Particle) -> float:
     """
     Compute the maximum dEta of the segments that match to the generator muon.
-
-    :param gm: The generator muon.
+    
+    :param gm: The generator muon
     :type gm: Particle
-    :return: The maximum dEta.
+    :return: The maximum dEta or -99 if no matched segments
     :rtype: float
     """
     if not getattr(gm, 'matched_segments', []):
         return -99
-    return max([abs(gm.eta - seg.eta) for seg in getattr(gm, 'matched_segments', [])], default=-99)
     return max([abs(gm.eta - seg.eta) for seg in getattr(gm, 'matched_segments', [])], default=-99)

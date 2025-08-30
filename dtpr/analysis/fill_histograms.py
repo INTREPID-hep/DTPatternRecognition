@@ -12,16 +12,14 @@ from dtpr.utils.functions import (
 )
 from dtpr.utils.config import RUN_CONFIG
 from multiprocessing import Pool, cpu_count
+from typing import Any, Dict, Optional
 
-def set_histograms_dict():
+def set_histograms_dict() -> Dict[str, Any]:
     """
     Sets up the histograms dictionary to fill based on configuration.
-    
-    Imports histograms from sources specified in RUN_CONFIG and filters
-    them based on the histogram names in the configuration.
-    
-    Returns:
-        dict: Dictionary of histograms to fill
+
+    :return: Dictionary of histograms to fill
+    :rtype: Dict[str, Any]
     """
     histos_to_fill = {}
     # Import histograms from each source in configuration
@@ -40,17 +38,18 @@ def set_histograms_dict():
 
     return histos_to_fill
 
-def _execute_histo_function(func, event, histo_key):
+def _execute_histo_function(func: Any, event: Any, histo_key: str) -> Optional[Any]:
     """
     Execute histogram function with error handling.
-    
-    Args:
-        func: The function to execute on the event
-        event: The event data to process
-        histo_key: Histogram key for error reporting
-        
-    Returns:
-        The result of the function or None if an error occurred
+
+    :param func: The function to execute on the event
+    :type func: Any
+    :param event: The event data to process
+    :type event: Any
+    :param histo_key: Histogram key for error reporting
+    :type histo_key: str
+    :return: The result of the function or None if an error occurred
+    :rtype: Optional[Any]
     """
     try:
         return func(event)
@@ -62,16 +61,16 @@ def _execute_histo_function(func, event, histo_key):
         )
         return None
 
-def fill_histograms(ev, histos_to_fill):
+def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
     """
     Fill predefined histograms with event data.
-    
-    Processes an event and fills histograms based on the provided dictionary.
-    Supports different histogram types: distribution, efficiency, and multi-dimensional.
-    
-    Args:
-        ev: The event object containing data (instance of dtpr.base.Event)
-        histos_to_fill: Dictionary defining histograms to fill
+
+    :param ev: The event object containing data (instance of dtpr.base.Event)
+    :type ev: Any
+    :param histos_to_fill: Dictionary defining histograms to fill
+    :type histos_to_fill: Dict[str, Any]
+    :return: None
+    :rtype: None
     """
     # Skip processing if event is None
     if ev is None:
@@ -123,19 +122,28 @@ def fill_histograms(ev, histos_to_fill):
             else:
                 h.Fill(*val)
 
-def process_event_chunk(index, start_idx, end_idx, events, histos_to_fill):
+def process_event_chunk(
+    index: int,
+    start_idx: int,
+    end_idx: int,
+    events: Any,
+    histos_to_fill: Dict[str, Any]
+) -> Dict[str, Any]:
     """
     Process a chunk of events for parallel execution.
-    
-    Args:
-        index: Worker index for naming cloned histograms
-        start_idx: Starting event index
-        end_idx: Ending event index
-        events: List of all events
-        histos_to_fill: Dictionary of histograms to fill
-        
-    Returns:
-        Dictionary of filled histograms for this chunk
+
+    :param index: Worker index for naming cloned histograms
+    :type index: int
+    :param start_idx: Starting event index
+    :type start_idx: int
+    :param end_idx: Ending event index
+    :type end_idx: int
+    :param events: List of all events
+    :type events: Any
+    :param histos_to_fill: Dictionary of histograms to fill
+    :type histos_to_fill: Dict[str, Any]
+    :return: Dictionary of filled histograms for this chunk
+    :rtype: Dict[str, Any]
     """
     # Clone histograms for this worker to avoid thread safety issues
     c_histos_to_fill = {}
@@ -154,14 +162,18 @@ def process_event_chunk(index, start_idx, end_idx, events, histos_to_fill):
 
     return c_histos_to_fill
 
-def save_histograms(outfolder, tag, histos_to_save):
+def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) -> None:
     """
     Store histograms in a ROOT file.
-    
-    Args:
-        outfolder: The output folder path
-        tag: Tag to append to the filename
-        histos_to_save: Dictionary of histograms to save
+
+    :param outfolder: The output folder path
+    :type outfolder: str
+    :param tag: Tag to append to the filename
+    :type tag: str
+    :param histos_to_save: Dictionary of histograms to save
+    :type histos_to_save: Dict[str, Any]
+    :return: None
+    :rtype: None
     """
     outname = os.path.join(outfolder, f"histograms{tag}.root")
     with r.TFile.Open(os.path.abspath(outname), "RECREATE") as f:
@@ -175,17 +187,31 @@ def save_histograms(outfolder, tag, histos_to_save):
                 histoinfo["histoNum"].Write()
                 histoinfo["histoDen"].Write()
 
-def fill_histos(inpath, outfolder, tag, maxfiles, maxevents, ncores):
+def fill_histos(
+    inpath: str,
+    outfolder: str,
+    tag: str,
+    maxfiles: int,
+    maxevents: int,
+    ncores: int
+) -> None:
     """
     Fill histograms based on NTuples information.
-    
-    Args:
-        inpath: Path to the input folder containing NTuples
-        outfolder: Path to the output folder for histograms
-        tag: Tag to identify the output histograms
-        maxfiles: Maximum number of files to process
-        maxevents: Maximum number of events to process (0 = all)
-        ncores: Number of CPU cores to use (1 = sequential, >1 = parallel)
+
+    :param inpath: Path to the input folder containing NTuples
+    :type inpath: str
+    :param outfolder: Path to the output folder for histograms
+    :type outfolder: str
+    :param tag: Tag to identify the output histograms
+    :type tag: str
+    :param maxfiles: Maximum number of files to process
+    :type maxfiles: int
+    :param maxevents: Maximum number of events to process (0 = all)
+    :type maxevents: int
+    :param ncores: Number of CPU cores to use (1 = sequential, >1 = parallel)
+    :type ncores: int
+    :return: None
+    :rtype: None
     """
     color_msg("Running program to fill histograms...", "green")
 

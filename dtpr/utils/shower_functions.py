@@ -4,20 +4,29 @@ from dtpr.base import Event, Particle
 import warnings
 from pandas import DataFrame
 import matplotlib.pyplot as plt
-from numpy import ceil, array
+from numpy import ceil, array, ndarray
 import gc
 from collections import deque
+from typing import Tuple, Optional, List
 
 
-def build_fwshowers(ev: Event, threshold=None, debug=False, debug_step=4, debug_path="./results"):
+def build_fwshowers(ev: Event, threshold: Optional[int] = None, debug: Optional[bool] = False, 
+                   debug_step: Optional[int] = 4, debug_path: Optional[str] = "./results") -> None:
     """
     Emulate the behavior of shower reconstruction in FPGA firmware.
-
-    Args:
-        thr (int, optional): The threshold for shower building. Defaults to None.
-        debug (bool, optional): Whether to enable debugging. Defaults to False.
-        debug_step (int, optional): The step interval for debugging. Defaults to 4.
-        debug_path (str, optional): The path to save debug plots. Defaults to "./results".
+    
+    :param ev: The event containing digis to process
+    :type ev: Event
+    :param threshold: The threshold for shower building
+    :type threshold: Optional[int]
+    :param debug: Whether to enable debugging outputs
+    :type debug: bool
+    :param debug_step: The step interval for creating debug plots
+    :type debug_step: int
+    :param debug_path: The path to save debug plots
+    :type debug_path: str
+    :return: None, modifies the event by adding fwshowers attribute
+    :rtype: None
     """
     if not hasattr(ev, "digis"):
         warnings.warn("'digis' is not included in _PARTICLE_TYPES. Please check the config YAML file. Skipping firmware shower building.")
@@ -82,22 +91,18 @@ def build_fwshowers(ev: Event, threshold=None, debug=False, debug_step=4, debug_
         _shower.sl = sl
         ev.fwshowers.append(_shower)
 
-def _process_superlayer(ev_BXs, digis_df, threshold):
+def _process_superlayer(ev_BXs: List[int], digis_df: DataFrame, threshold: int) -> Tuple[bool, int, int, ndarray]:
     """
-    Detect a shower in a superlayer by counting hits. That is done by going through the following rules:
-    - Only 8 hits can be counted per BX.
-    - Hits not read within 4 BXs will be removed from the buffer.
-    - The DT relaxing time is longer than 1 BX, so if a hit was counted in a previous BX, it will be ignored.
-    - The shower is detected if the number of hits in the last 16 BXs is greater than or equal to the threshold.
-
-    Args:
-        ev_BXs (set): The set of BXs in the event.
-        digis_df (DataFrame): The dataframe containing digi information.
-        threshold (int): The threshold for shower detection.
-
-    Returns:
-        tuple: A tuple containing a boolean indicating if a shower was detected,
-                the maximum number of hits, and the history of hit counts.
+    Detect a shower in a superlayer by counting hits following firmware rules.
+    
+    :param ev_BXs: The set of BXs (bunch crossings) in the event
+    :type ev_BXs: List[int]
+    :param digis_df: The dataframe containing digi information
+    :type digis_df: DataFrame
+    :param threshold: The threshold for shower detection
+    :type threshold: int
+    :return: Tuple containing (shower detected flag, maximum hit count, BX of max hits, hit history)
+    :rtype: Tuple[bool, int, int, ndarray]
     """
     wires_buff = deque()  # Use deque such as FIFO
     num_hits_last_16Bxs = deque(maxlen=16)  # Use deque to count hits, in BXs larger than 16 it will start to delete elements
@@ -138,13 +143,18 @@ def _process_superlayer(ev_BXs, digis_df, threshold):
     return showered, nHits, sBX, num_hits_history
 
 
-def build_real_showers(ev: Event, threshold=None, debug=False):
+def build_real_showers(ev: Event, threshold: Optional[int] = None, debug: Optional[bool] = False) -> None:
     """
     Build real showers based on simhit information.
-
-    Args:
-        threshold (int, optional): The threshold for shower building. Defaults to None.
-        debug (bool, optional): Whether to enable debugging. Defaults to False.
+    
+    :param ev: The event containing simhits to process
+    :type ev: Event
+    :param threshold: The threshold for shower building
+    :type threshold: Optional[int]
+    :param debug: Whether to enable debugging outputs
+    :type debug: bool
+    :return: None, modifies the event by adding realshowers attribute
+    :rtype: None
     """
 
     if not hasattr(ev, "simhits"):
@@ -223,18 +233,19 @@ def build_real_showers(ev: Event, threshold=None, debug=False):
                     indentLevel=2,
                 )
 
-def analyze_fwshowers(ev: Event):
+def analyze_fwshowers(ev: Event) -> None:
     """
-    Determine if the firmware showers are real by comparing them with the real showers.
-
-    Args:
-        ev (Event): The event to analyze.
+    Determine if firmware showers are real by comparing with real showers.
+    
+    :param ev: The event containing fwshowers and realshowers to analyze
+    :type ev: Event
+    :return: None, modifies each fwshower by adding is_true_shower attribute
+    :rtype: None
     """
     if not hasattr(ev, "fwshowers") or not hasattr(ev, "realshowers"):
         warnings.warn("Either 'fwshowers' or 'realshowers' are not included in _PARTICLE_TYPES. Please check the config YAML file. Skipping shower analysis.")
         return
 
-    #prepare the event to store the showers
     for shower in ev.fwshowers:   
         wh, sc, st , sl = shower.wh, shower.sc, shower.st, shower.sl
         if ev.filter_particles("realshowers", wh=wh, sc=sc, st=st, sl=sl):

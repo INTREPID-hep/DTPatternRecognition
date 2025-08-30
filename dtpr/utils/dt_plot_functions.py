@@ -18,10 +18,13 @@
 
 
 import warnings
+import numpy as np
 from typing import Any, Dict, List, Optional, Tuple
 
 from matplotlib.axes._axes import Axes
 from matplotlib.patches import Patch, Circle, Rectangle
+from matplotlib.collections import PathCollection
+import matplotlib.lines as mlines
 from numpy import array, percentile, sqrt
 from pandas import DataFrame
 
@@ -32,18 +35,26 @@ from mpldts.patches import DTStationPatch, MultiDTSegmentsPatch
 
 # --------------------------------------- Utility Functions -------------------------------------- #
 
-def test_builder(ev: Event, **kwargs) -> None:
+def test_builder(ev: Event, **kwargs) -> Tuple[None, None]:
+    """
+    Test function that returns None, None.
+    
+    :param ev: Event object
+    :type ev: Event
+    :return: Tuple of None, None
+    :rtype: Tuple[None, None]
+    """
     return None, None
 
 def _validate_axes(ax: Optional[Axes]) -> None:
     """
     Check if the provided axes are valid for plotting.
 
-    Args:
-        ax: The axes to check.
-        
-    Raises:
-        ValueError: If the axes are not valid.
+    :param ax: The axes to check
+    :type ax: Optional[Axes]
+    :raises ValueError: If the axes are not valid
+    :return: None
+    :rtype: None
     """
     if ax is not None and not isinstance(ax, Axes):
         raise ValueError(f"'ax' should be an instance of matplotlib.axes._axes.Axes class not {type(ax)}")
@@ -52,19 +63,19 @@ def get_dt_info(ev: Event, particle_type: str = "digis", **filter_kwargs) -> Dat
     """
     Get DT information from the event based on the particle type and filter criteria.
 
-    :param ev: The event containing DT data.
+    :param ev: The event containing DT data
     :type ev: Event
-    :param particle_type: The type of particles to filter (default is "digis").
+    :param particle_type: The type of particles to filter (default is "digis")
     :type particle_type: str
-    :param filter_kwargs: Additional filtering criteria.
-    :return: DataFrame containing the filtered DT information.
-    :rtype: pandas.DataFrame
+    :param filter_kwargs: Additional filtering criteria
+    :return: DataFrame containing the filtered DT information
+    :rtype: DataFrame
     """
     info = DataFrame([particle.__dict__ for particle in ev.filter_particles(particle_type, **filter_kwargs)])
 
     if not info.empty:
         # Check if the required columns are present
-        if any( not col_name in info.columns for col_name in ["sl", "l", "w"]):
+        if any(not col_name in info.columns for col_name in ["sl", "l", "w"]):
                 raise ValueError(f"attributes 'sl', 'l', and 'w' must be present in {particle_type} to be represented in a DT plot")
     return info
 
@@ -72,10 +83,14 @@ def _display_no_data_message(ax: Axes, particle_type: str, description: str) -> 
     """
     Display a message on the axes when no data is found.
     
-    Args:
-        ax: Matplotlib axes
-        particle_type: Type of particles
-        description: Description of the filter (e.g., "wheel 1")
+    :param ax: Matplotlib axes
+    :type ax: Axes
+    :param particle_type: Type of particles
+    :type particle_type: str
+    :param description: Description of the filter (e.g., "wheel 1")
+    :type description: str
+    :return: None
+    :rtype: None
     """
     message = f"No {particle_type} found in {description}"
     color_msg(message, "red")
@@ -86,17 +101,22 @@ def _display_no_data_message(ax: Axes, particle_type: str, description: str) -> 
         transform=ax.transAxes
     )
 
-def get_shower_segment(shower, version=1, local=False):
+def get_shower_segment(
+    shower: Particle, 
+    version: Optional[int] = 1, 
+    local: Optional[bool] = False
+) -> np.ndarray:
     """
     Get the segment representing the shower.
     
-    Args:
-        shower: Shower object
-        version: Version of calculation method (1 or 2)
-        local: Whether to return local or global coordinates
-        
-    Returns:
-        Array containing first and last cell centers that represent the shower segment.
+    :param shower: Shower object
+    :type shower: Particle
+    :param version: Version of calculation method (1 or 2)
+    :type version: Optional[int]
+    :param local: Whether to return local or global coordinates
+    :type local: Optional[bool]
+    :return: Array containing first and last cell centers that represent the shower segment
+    :rtype: np.ndarray
     """
     parent_station = get_cached_station(shower.wh, shower.sc, shower.st)
     layer = parent_station.super_layer(shower.sl).layer(2)
@@ -130,19 +150,20 @@ def get_shower_segment(shower, version=1, local=False):
 
 # --------------------------------------------------------------------------------------------------
 
-def map_seg_attrs(particle: Particle, particle_type="tps") -> Dict[str, Any]:
+def map_seg_attrs(
+    particle: Particle, 
+    particle_type: Optional[str] = "tps"
+) -> Dict[str, Any]:
     """
-    Map the attributes of segment like particle to the format requirted by mpldts.geometry.AMDTSegments.
+    Map the attributes of segment like particle to the format required by mpldts.geometry.AMDTSegments.
     
-    Args:
-        particle: Particle object
-        particle_type: Type of particle
-        
-    Returns:
-        Dictionary containing segment attributes
-        
-    Raises:
-        ValueError: If required attributes are missing or particle type is unknown.
+    :param particle: Particle object
+    :type particle: Particle
+    :param particle_type: Type of particle
+    :type particle_type: Optional[str]
+    :return: Dictionary containing segment attributes
+    :rtype: Dict[str, Any]
+    :raises ValueError: If required attributes are missing or particle type is unknown
     """
     info = {}
     if particle_type == "tps":
@@ -164,35 +185,40 @@ def map_seg_attrs(particle: Particle, particle_type="tps") -> Dict[str, Any]:
 
     return info
 
-def embed_dt2axes(ev, 
+def embed_dt2axes(
+    ev: Event, 
     wheel: int, 
     sector: int, 
     station: int, 
     ax_phi: Optional[Axes] = None, 
     ax_eta: Optional[Axes] = None, 
-    particle_type: Optional[str] = 'digis', 
-    cmap_var: Optional[str] = 'time', 
+    particle_type: str = 'digis', 
+    cmap_var: str = 'time', 
     **kwargs
 ) -> Tuple[Optional[DTStationPatch], Optional[DTStationPatch]]:
     """
     Embed DT chamber data into local phi and/or eta axes.
     
-    Args:
-        ev: Event containing DT data
-        wheel: Wheel identifier
-        sector: Sector identifier  
-        station: Station identifier
-        ax_phi: Matplotlib axes for phi view
-        ax_eta: Matplotlib axes for eta view
-        particle_type: Type of particles to plot
-        cmap_var: Variable for color mapping
-        **kwargs: Additional arguments for patches
-        
-    Returns:
-        Tuple of (phi_patch, eta_patch)
-        
-    Raises:
-        ValueError: If neither ax_phi nor ax_eta is provided or axes are invalid.
+    :param ev: Event containing DT data
+    :type ev: Event
+    :param wheel: Wheel identifier
+    :type wheel: int
+    :param sector: Sector identifier  
+    :type sector: int
+    :param station: Station identifier
+    :type station: int
+    :param ax_phi: Matplotlib axes for phi view
+    :type ax_phi: Optional[Axes]
+    :param ax_eta: Matplotlib axes for eta view
+    :type ax_eta: Optional[Axes]
+    :param particle_type: Type of particles to plot
+    :type particle_type: str
+    :param cmap_var: Variable for color mapping
+    :type cmap_var: str
+    :param kwargs: Additional arguments for patches
+    :return: Tuple of (phi_patch, eta_patch)
+    :rtype: Tuple[Optional[DTStationPatch], Optional[DTStationPatch]]
+    :raises ValueError: If neither ax_phi nor ax_eta is provided or axes are invalid
     """
     if ax_phi == None and ax_eta == None:
         raise ValueError("At least one 'ax_phi' or 'ax_eta' should be provided.")
@@ -237,32 +263,36 @@ def embed_dts2axes(
     sector: Optional[int] = None, 
     ax_phi: Optional[Axes] = None,
     ax_eta: Optional[Axes] = None,
-    particle_type: Optional[str] = 'digis', 
-    cmap_var: Optional[str] = 'time', 
+    particle_type: str = 'digis', 
+    cmap_var: str = 'time', 
     **kwargs
 ) -> Tuple[Optional[List[DTStationPatch]], Optional[List[DTStationPatch]]]:
     """
     Embed DT chambers data into global phi or eta axes.
     
-    Args:
-        ev: Event containing DT data
-        wheel: Wheel identifier (exclusive with sector)
-        sector: Sector identifier (exclusive with wheel)
-        ax: Matplotlib axes
-        particle_type: Type of particles to plot
-        cmap_var: Variable for color mapping
-        **kwargs: Additional arguments for patches
-        
-    Returns:
-        List of DT station patches or None if no data
-        
-    Raises:
-        ValueError: If validation fails.
+    :param ev: Event containing DT data
+    :type ev: Event
+    :param wheel: Wheel identifier (exclusive with sector)
+    :type wheel: Optional[int]
+    :param sector: Sector identifier (exclusive with wheel)
+    :type sector: Optional[int]
+    :param ax_phi: Matplotlib axes for phi view
+    :type ax_phi: Optional[Axes]
+    :param ax_eta: Matplotlib axes for eta view
+    :type ax_eta: Optional[Axes]
+    :param particle_type: Type of particles to plot
+    :type particle_type: str
+    :param cmap_var: Variable for color mapping
+    :type cmap_var: str
+    :param kwargs: Additional arguments for patches
+    :return: Tuple of (phi_patches, eta_patches)
+    :rtype: Tuple[Optional[List[DTStationPatch]], Optional[List[DTStationPatch]]]
+    :raises ValueError: If validation fails
     """
     _validate_axes(ax_phi)
     _validate_axes(ax_eta)
 
-    def _aux_f(ax, faceview, dt_info):
+    def _aux_f(ax: Axes, faceview: str, dt_info: DataFrame) -> Optional[List[DTStationPatch]]:
         if not dt_info.empty and cmap_var not in dt_info.columns:
             raise ValueError(f"{cmap_var} must be present in {particle_type} data")
 
@@ -307,34 +337,40 @@ def embed_dts2axes(
     return phi_patches, eta_patches
 
 def embed_segs2axes_glob(
-    ev : Event, 
+    ev: Event, 
     wheel: Optional[int] = None, 
     sector: Optional[int] = None, 
     ax_phi: Optional[Axes] = None,
     ax_eta: Optional[Axes] = None,
-    particle_type: Optional[str] = 'tps', 
-    cmap_var: Optional[str] = 'quality', 
+    particle_type: str = 'tps', 
+    cmap_var: str = 'quality', 
     **kwargs
-) -> Tuple[Optional[Dict], Optional[Dict]]:
+) -> Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]:
     """
     Embed segments patches into global phi or eta axes.
 
-    Args:
-        ev: Event containing segment data
-        wheel: Wheel identifier (exclusive with sector)
-        sector: Sector identifier (exclusive with wheel)
-        ax: Matplotlib axes
-        particle_type: Type of particles to plot
-        cmap_var: Variable for color mapping
-        **kwargs: Additional arguments for patches
-        
-    Returns:
-        List of segment patches or None if no data
+    :param ev: Event containing segment data
+    :type ev: Event
+    :param wheel: Wheel identifier (exclusive with sector)
+    :type wheel: Optional[int]
+    :param sector: Sector identifier (exclusive with wheel)
+    :type sector: Optional[int]
+    :param ax_phi: Matplotlib axes for phi view
+    :type ax_phi: Optional[Axes]
+    :param ax_eta: Matplotlib axes for eta view
+    :type ax_eta: Optional[Axes]
+    :param particle_type: Type of particles to plot
+    :type particle_type: str
+    :param cmap_var: Variable for color mapping
+    :type cmap_var: str
+    :param kwargs: Additional arguments for patches
+    :return: Tuple of (phi_patches, eta_patches)
+    :rtype: Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]
     """
     _validate_axes(ax_phi)
     _validate_axes(ax_eta)
 
-    def _aux_f(ax, faceview, particles):
+    def _aux_f(ax: Axes, faceview: str, particles: List[Particle]) -> Optional[Dict[int, List[Patch]]]:
         if not particles:
             return None
         segs_info = [map_seg_attrs(part, particle_type=particle_type) for part in particles]
@@ -374,26 +410,32 @@ def embed_segs2axes_loc(
     station: int, 
     ax_phi: Optional[Axes] = None, 
     ax_eta: Optional[Axes] = None, 
-    particle_type: Optional[str] = 'tps', 
-    cmap_var: Optional[str] = 'quality', 
+    particle_type: str = 'tps', 
+    cmap_var: str = 'quality', 
     **kwargs
-) -> Tuple[Optional[Dict], Optional[Dict]]:
+) -> Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]:
     """
     Embed segments patches into local phi and/or eta axes.
 
-    Args:
-        ev: Event containing segment data
-        wheel: Wheel identifier
-        sector: Sector identifier
-        station: Station identifier
-        ax_phi: Matplotlib axes for phi view
-        ax_eta: Matplotlib axes for eta view
-        particle_type: Type of particles to plot
-        cmap_var: Variable for color mapping
-        **kwargs: Additional arguments for patches
-        
-    Returns:
-        Tuple of (phi_patches, eta_patches)
+    :param ev: Event containing segment data
+    :type ev: Event
+    :param wheel: Wheel identifier
+    :type wheel: int
+    :param sector: Sector identifier
+    :type sector: int
+    :param station: Station identifier
+    :type station: int
+    :param ax_phi: Matplotlib axes for phi view
+    :type ax_phi: Optional[Axes]
+    :param ax_eta: Matplotlib axes for eta view
+    :type ax_eta: Optional[Axes]
+    :param particle_type: Type of particles to plot
+    :type particle_type: str
+    :param cmap_var: Variable for color mapping
+    :type cmap_var: str
+    :param kwargs: Additional arguments for patches
+    :return: Tuple of (phi_patches, eta_patches)
+    :rtype: Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]
     """
     _validate_axes(ax_phi)
     _validate_axes(ax_eta)
@@ -441,24 +483,29 @@ def embed_simhits2axes_loc(
     station: int, 
     ax_phi: Optional[Axes] = None, 
     ax_eta: Optional[Axes] = None, 
-    particle_type: Optional[str] = 'simhits', 
+    particle_type: str = 'simhits', 
     **kwargs
-) -> Tuple[Optional[List], Optional[List]]:
+) -> Tuple[Optional[List[PathCollection]], Optional[List[PathCollection]]]:
     """
     Embed simHits data into local phi and/or eta axes as scatter points.
     
-    Args:
-        ev: Event containing simhit data
-        wheel: Wheel identifier
-        sector: Sector identifier
-        station: Station identifier
-        ax_phi: Matplotlib axes for phi view
-        ax_eta: Matplotlib axes for eta view
-        particle_type: Type of particles to plot
-        **kwargs: Additional arguments for scatter plots
-        
-    Returns:
-        List of scatter plot collections
+    :param ev: Event containing simhit data
+    :type ev: Event
+    :param wheel: Wheel identifier
+    :type wheel: int
+    :param sector: Sector identifier
+    :type sector: int
+    :param station: Station identifier
+    :type station: int
+    :param ax_phi: Matplotlib axes for phi view
+    :type ax_phi: Optional[Axes]
+    :param ax_eta: Matplotlib axes for eta view
+    :type ax_eta: Optional[Axes]
+    :param particle_type: Type of particles to plot
+    :type particle_type: str
+    :param kwargs: Additional arguments for scatter plots
+    :return: Tuple of (phi_patches, eta_patches)
+    :rtype: Tuple[Optional[List[PathCollection]], Optional[List[PathCollection]]]
     """
     _validate_axes(ax_phi)
     _validate_axes(ax_eta)
@@ -496,30 +543,36 @@ def embed_simhits2axes_loc(
 
     return patch_phi, patch_eta
 
-def embed_shower2axes_loc(ev, 
+def embed_shower2axes_loc(
+    ev: Event, 
     wheel: int, 
     sector: int, 
     station: int, 
     ax_phi: Optional[Axes] = None, 
     ax_eta: Optional[Axes] = None, 
-    particle_type: Optional[str] = 'fwshowers', 
+    particle_type: str = 'fwshowers', 
     **kwargs
-) -> Tuple[Optional[List], Optional[List]]:
+) -> Tuple[Optional[List[mlines.Line2D]], Optional[List[mlines.Line2D]]]:
     """
     Embed shower patches into local phi and/or eta axes.
     
-    Args:
-        ev: Event containing shower data
-        wheel: Wheel identifier
-        sector: Sector identifier
-        station: Station identifier
-        ax_phi: Matplotlib axes for phi view
-        ax_eta: Matplotlib axes for eta view
-        particle_type: Type of particles to plot
-        **kwargs: Additional arguments for plot
-        
-    Returns:
-        List of plot objects
+    :param ev: Event containing shower data
+    :type ev: Event
+    :param wheel: Wheel identifier
+    :type wheel: int
+    :param sector: Sector identifier
+    :type sector: int
+    :param station: Station identifier
+    :type station: int
+    :param ax_phi: Matplotlib axes for phi view
+    :type ax_phi: Optional[Axes]
+    :param ax_eta: Matplotlib axes for eta view
+    :type ax_eta: Optional[Axes]
+    :param particle_type: Type of particles to plot
+    :type particle_type: str
+    :param kwargs: Additional arguments for plot
+    :return: Tuple of (phi_patches, eta_patches)
+    :rtype: Tuple[Optional[List[mlines.Line2D]], Optional[List[mlines.Line2D]]]
     """
     _validate_axes(ax_phi)
     _validate_axes(ax_eta)
@@ -556,25 +609,30 @@ def embed_shower2axes_glob(
     ax_eta: Optional[Axes] = None,
     particle_type: str = 'fwshowers', 
     **kwargs
-) -> Tuple[Optional[List], Optional[List]]:
+) -> Tuple[Optional[List[mlines.Line2D]], Optional[List[mlines.Line2D]]]:
     """
     Embed shower patches into global phi or eta axes.
     
-    Args:
-        ev: Event containing shower data
-        wheel: Wheel identifier (exclusive with sector)
-        sector: Sector identifier (exclusive with wheel)
-        ax: Matplotlib axes
-        particle_type: Type of particles to plot
-        **kwargs: Additional arguments for plot
-        
-    Returns:
-        List of plot objects
+    :param ev: Event containing shower data
+    :type ev: Event
+    :param wheel: Wheel identifier (exclusive with sector)
+    :type wheel: Optional[int]
+    :param sector: Sector identifier (exclusive with wheel)
+    :type sector: Optional[int]
+    :param ax_phi: Matplotlib axes for phi view
+    :type ax_phi: Optional[Axes]
+    :param ax_eta: Matplotlib axes for eta view
+    :type ax_eta: Optional[Axes]
+    :param particle_type: Type of particles to plot
+    :type particle_type: str
+    :param kwargs: Additional arguments for plot
+    :return: Tuple of (phi_patches, eta_patches)
+    :rtype: Tuple[Optional[List[mlines.Line2D]], Optional[List[mlines.Line2D]]]
     """
     _validate_axes(ax_phi)
     _validate_axes(ax_eta)
 
-    def _aux_f(ax, faceview, particles):
+    def _aux_f(ax: Axes, faceview: str, particles: List[Particle]) -> Optional[List[mlines.Line2D]]:
         if not particles:
             return None
         patches = []
@@ -611,6 +669,23 @@ def embed_cms_global_shadow(
     ax_eta: Optional[Axes] = None,
     **kwargs
 ) -> Tuple[Optional[Patch], Optional[Patch]]:
+    """
+    Embed a global shadow for CMS visualization.
+    
+    :param ev: Event containing data
+    :type ev: Event
+    :param wheel: Wheel identifier
+    :type wheel: Optional[int]
+    :param sector: Sector identifier
+    :type sector: Optional[int]
+    :param ax_phi: Matplotlib axes for phi view
+    :type ax_phi: Optional[Axes]
+    :param ax_eta: Matplotlib axes for eta view
+    :type ax_eta: Optional[Axes]
+    :param kwargs: Additional arguments for patches
+    :return: Tuple of (phi_patch, eta_patch)
+    :rtype: Tuple[Optional[Patch], Optional[Patch]]
+    """
     _validate_axes(ax_phi)
     _validate_axes(ax_eta)
 

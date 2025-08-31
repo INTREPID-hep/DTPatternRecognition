@@ -138,10 +138,10 @@ pos_args:
             sector: *sector
             save: *save
             artist-names: *artist_names
-    inspect-event:
-        name: "inspect-event"
-        help: "Inspect a specific event from DT NTuple files."
-        func: "dtpr.analysis.inspect_event.inspect_event"
+    inspect-events:
+        name: "inspect-events"
+        help: "Inspect specific events from DT NTuple files."
+        func: "dtpr.analysis.inspect_events.inspect_events"
         opt_args:
             config-path: *config_path
             input-path: *input_path

@@ -2,8 +2,8 @@ import ROOT as r
 import os
 from functools import partial
 from dtpr.base import Event, EventList
+from dtpr.base.config import RUN_CONFIG
 from dtpr.utils.functions import color_msg, get_callable_from_src
-from dtpr.utils.config import RUN_CONFIG
 from natsort import natsorted
 import warnings
 
@@ -168,12 +168,12 @@ if __name__ == "__main__":
     input_file = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
-            "../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+            "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
             )
         )
     cf_path = RUN_CONFIG.path
     # [start-example-1]
-    from dtpr.utils.config import RUN_CONFIG
+    from dtpr.base.config import RUN_CONFIG
 
     # update the configuration file -> if it is not set, it will use the default one 'run_config.yaml'
     RUN_CONFIG.change_config_file(config_path=cf_path)

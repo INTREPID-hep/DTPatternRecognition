@@ -44,10 +44,8 @@ def make_plots(
     for iaxs in range(-2, 3):
         patches[iaxs] = {}
         for ploter_name, ploter in artist_builders.items():
-            patches[iaxs][ploter_name] = ploter(ev=ev, wheel=iaxs, ax=axs[iaxs + 2])
+            patches[iaxs][ploter_name] = ploter(ev=ev, wheel=iaxs, ax_phi=axs[iaxs + 2])
         setup_axs(axs[iaxs + 2], wh=iaxs)
-
-    list(patches[-2]["dt-am-tps-global"].values())[0].segments_collection.remove()
 
     axs[-1].remove()
     if save:
@@ -111,13 +109,16 @@ def plot_dt_chambers(
 
     if artist_names is None:
         artist_names = ["dt-station-global", "cms-shadow-global"]
+    else:
+        if "all" in artist_names:
+            artist_names = list(artist_builders.keys())
 
-    if isinstance(artist_names, str):
-        artist_names = [artist_names]
+    # Ensure only artists with "global" in their name are included
+    artist_names = [name for name in artist_names if "global" in name]
 
-    if "dt-station-global" not in artist_names:
+    if "dt-station-global" not in artist_names and "dt-station-global" in artist_builders:
         artist_names.append("dt-station-global")
-    if "cms-shadow-global" not in artist_names:
+    if "cms-shadow-global" not in artist_names and "cms-shadow-global" in artist_builders:
         artist_names.append("cms-shadow-global")
 
     artist_builders_filtered = {name: artist_builders.get(name, None) for name in artist_names}
@@ -140,10 +141,10 @@ def plot_dt_chambers(
 
 if __name__ == "__main__":
     plot_dt_chambers(
-        inpath="../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+        inpath="../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
         outfolder="./results",
         tag="test",
         maxfiles=-1,
-        event_number=11,
+        event_number=9,
         save=False
     )

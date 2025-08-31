@@ -11,7 +11,7 @@
 from dtpr.base import Particle
 
 class {name}(Particle):
-    def __init__(self, index, ev=None, branches=None, **kwargs):
+    def __init__(self, index, ev=None, **kwargs):
         """
         Initialize a {name} instance.
 
@@ -23,11 +23,10 @@ class {name}(Particle):
         . (add more parameters here if needed)
         .
         """
-        super().__init__(index, ev, branches, **kwargs)
+        super().__init__(index, ev, **kwargs)
 
 
 if __name__ == '__main__':
     # Test the class here
     particle_instance = {name}(1)
-
     print(particle_instance)

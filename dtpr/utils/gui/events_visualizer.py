@@ -422,6 +422,8 @@ class EventsVisualizer(QMainWindow):
 def launch_visualizer(inpath: str, maxfiles: int = -1) -> None:
     app = QApplication(sys.argv)
     ex = EventsVisualizer(inpath, maxfiles)
+    if os.environ.get("DTPR_TEST_AUTOCLOSE_GUI") == "1":
+        QTimer.singleShot(1000, app.quit)  # Close after 1 second
     ex.show()
     sys.exit(app.exec_())
 
@@ -433,7 +435,7 @@ if __name__ == "__main__":
         inpath = os.path.abspath(
             os.path.join(
                 __file__,
-                "../../../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"
+                "../../../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"
             )
         )
 

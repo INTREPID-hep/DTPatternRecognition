@@ -60,7 +60,7 @@ class Particle():
             # elif not isinstance(value, Number):
             type_name = type(value).__name__.lower()
             if "vector" in type_name or "array" in type_name:
-                if "vector<vector<" in type_name or "array" in type_name:
+                if "vector<vector<" in type_name:
                     # If the branch is a nested vector, set the attribute to the value at the current index
                     value = list(value[self.index])
                 else:
@@ -180,7 +180,7 @@ if __name__ == "__main__":
     input_file= os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
-            "../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+            "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
         )
     )
     # case 1 : Directly set attributes

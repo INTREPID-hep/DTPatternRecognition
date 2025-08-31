@@ -76,9 +76,9 @@ class Config:
                 raise exc
 
 # ------- create CLI_CONFIG -------
-cli_config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./yamls/config_cli.yaml"))
+cli_config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../utils/yamls/config_cli.yaml"))
 CLI_CONFIG = Config(cli_config_path)
 
 # ------- create RUN_CONFIG and customize its method -------
-run_config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./yamls/run_config.yaml"))
+run_config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../utils/yamls/run_config.yaml"))
 RUN_CONFIG = Config(run_config_path)

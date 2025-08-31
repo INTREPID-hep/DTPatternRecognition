@@ -11,11 +11,11 @@ import os
 import importlib
 import warnings
 from dtpr.base import Event, NTuple
+from dtpr.base.config import RUN_CONFIG
 from dtpr.utils.functions import color_msg, create_outfolder
-from dtpr.utils.config import RUN_CONFIG
 from tqdm import tqdm
 
-def _process_event(ev: Event):
+def _process_event(ev: Event) -> None:
     pass
 
 def {name}(
@@ -30,13 +30,15 @@ def {name}(
         station: int,
         save: bool,
         debug: bool
-    ):
+    ) -> None:
     """
     DOCSTRING DESCRIPTION...
 
     Parameters:
-    inpath (str): Path to the input folder containing the ntuples.
-    outfolder (str): Path to the output folder where results will be saved.
+    :param inpath: Path to the input folder containing the ntuples.
+    :type inpath: str
+    :param outfolder: Path to the output folder where results will be saved.
+    :type outfolder: str
     ...
     """
 

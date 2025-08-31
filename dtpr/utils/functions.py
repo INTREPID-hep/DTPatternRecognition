@@ -1,23 +1,15 @@
 """ Miscelaneous """
 from functools import partial
-import importlib
 import os
 import math
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from types import LambdaType
 from importlib import import_module
 import numpy as np
 from mpldts.geometry import Station
-from mpldts.patches import DTStationPatch
-from dtpr.utils.config import RUN_CONFIG
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union, TypeVar, cast, Iterable
+from dtpr.base.config import RUN_CONFIG
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
-# Make Iterators for when we want to iterate over different subdetectors
-wheels = range(-2, 3)
-sectors = range(1, 15)
-stations = range(1, 5)
-superlayers = range(1, 4)
 
 def color_msg(msg: str, color: Optional[str] = "none", indentLevel: Optional[int] = -1, return_str: Optional[bool] = False, 
               bold: Optional[bool] = False, underline: Optional[bool] = False, bkg_color: Optional[str] = "none") -> Optional[str]:
@@ -185,26 +177,6 @@ def get_callable_from_src(src_str: str) -> Callable:
     return callable
 
 
-def flatten(lst: Any) -> List[Any]:
-    """
-    Flattens a nested list. If the input is not a list, returns the single value as a list.
-
-    :param lst: The nested list to flatten.
-    :type lst: Any
-    :return: The flattened list or the single value as a list.
-    :rtype: List[Any]
-    """
-    if not isinstance(lst, list):
-        return [lst]
-    
-    result = []
-    for i in lst:
-        if isinstance(i, list):
-            result.extend(flatten(i))
-        else:
-            result.append(i)
-    return result
-
 def create_outfolder(outname: str) -> None:
     """
     Creates an output directory if it does not exist.
@@ -228,8 +200,7 @@ def save_mpl_canvas(fig: plt.Figure, name: str, path: str = "./results", dpi: in
     :param dpi: The resolution of the saved figure. Default is 500.
     :type dpi: int
     """
-    if not os.path.exists(path):
-        os.system("mkdir -p %s"%(path))
+    create_outfolder(path)
     fig.savefig(path + "/" + name+".svg", dpi=dpi)
     return
 
@@ -270,101 +241,6 @@ def get_unique_locs(particles: List[Any], loc_ids: List[str] = ["wh", "sc", "st"
                 raise ValueError(f"Location Id attribute not found in particle object: {er}")
 
     return set(locs)
-
-def get_best_matches(reader: Any, station: int = 1) -> List[Any]:
-    """
-    Returns the best matching segments for each generator muon.
-
-    :param reader: The reader object containing generator muons.
-    :type reader: Any
-    :param station: The station number. Default is 1.
-    :type station: int
-    :return: The best matching segments.
-    :rtype: List[Any]
-    """
-
-    genmuons = reader.genmuons
-
-    bestMatches = [None for igm in range(len(genmuons))]
-
-    # This is what's done in Jaime's code: https://github.com/jaimeleonh/DTNtuples/blob/unifiedPerf/test/DTNtupleTPGSimAnalyzer_Efficiency.C#L181-L208
-    # Basically: get the best matching segment to a generator muon per MB chamber
-
-    # color_msg(f"[FUNCTIONS::GET_BEST_MATCHES] Debugging with station {station}", color = "red", indentLevel = 0)
-    for igm, gm in enumerate(genmuons):
-        # color_msg(f"[FUNCTIONS::GET_BEST_MATCHES] igm {igm}", indentLevel = 1)
-        # gm.summarize(indentLevel = 2)
-        for bestMatch in getattr(gm, 'matched_segments', []):
-            if bestMatch.st == station:
-                bestMatches[igm] = bestMatch
-
-    # Remove those that are None which are simply dummy values
-    bestMatches = list(filter(lambda key: key is not None, bestMatches))
-    return bestMatches
-
-def deltaPhi(phi1: float, phi2: float) -> float:
-    """
-    Calculates the difference in phi between two angles.
-
-    :param phi1: The first angle in radians.
-    :type phi1: float
-    :param phi2: The second angle in radians.
-    :type phi2: float
-    :return: The difference in phi.
-    :rtype: float
-    """
-    res = phi1 - phi2
-    while res > math.pi:
-        res -= 2 * math.pi
-    while res <= -math.pi:
-        res += 2 * math.pi
-    return res
-
-
-def deltaR(p1: Any, p2: Any) -> float:
-    """
-    Calculates the delta R between two particles. Particles must have attributes eta and phi.
-
-    :param p1: The first particle with attributes eta and phi.
-    :type p1: Any
-    :param p2: The second particle with attributes eta and phi.
-    :type p2: Any
-    :return: The delta R value.
-    :rtype: float
-    """
-    dEta = abs(p1.eta - p2.eta)
-    dPhi = deltaPhi(p1.phi, p2.phi)
-    return math.sqrt(dEta * dEta + dPhi * dPhi)
-
-
-def phiConv(phi: float) -> float:
-    """
-    Converts a phi value.
-
-    :param phi: The phi value to convert.
-    :type phi: float
-    :return: The converted phi value.
-    :rtype: float
-    """
-    return 0.5 * phi / 65536.0
-
-def correct_g4digi_time(g4digi: Any) -> float:
-    """
-    Correct the time of the digi by simulating the drift time.
-    
-    :param g4digi: The g4digi object with a _time attribute
-    :type g4digi: Any
-    :return: The corrected time
-    :rtype: float
-    """
-    # ----- mimic the Javi's Code ----
-    # simulate drift time
-
-    mean, stddev = 175, 75
-    time_offset = 400
-    delay = np.random.normal(loc=mean, scale=stddev)
-    return g4digi._time + abs(delay) + time_offset # why abs ?
-
 
 def format_event_attribute_str(key: str, value: Any, indent: int) -> str:
     """
@@ -429,40 +305,6 @@ def format_event_particles_str(ptype: str, particles: List[Any], indent: int) ->
                 summary.append(color_msg("...", color="cyan", indentLevel=indent + 2, return_str=True))
 
     return summary
-
-_stations_cached = {}
-
-def get_cached_station(wh: int, sc: int, st: int, dt_info: Optional[Any] = None) -> Optional[Station]:
-    """
-    Returns a DT station object for the given wheel, sector, and station.
-
-    :param wh: The wheel number.
-    :type wh: int
-    :param sc: The sector number.
-    :type sc: int
-    :param st: The station number.
-    :type st: int
-    :param dt_info: Optional DataFrame containing DT info. Default is None.
-    :type dt_info: Any, optional
-    :return: The DT station object.
-    :rtype: Optional[Station]
-    """
-    key = (wh, sc, st)
-    
-    if key not in _stations_cached:
-        try:
-            _stations_cached[key] = Station(wheel=wh, sector=sc, station=st, dt_info=dt_info)
-        except ValueError:
-            # If the station cannot be created, we return None
-            _stations_cached[key] = None
-            return None
-    else:
-        # If the station is already cached, we can return it directly
-        # This avoids unnecessary re-creation of the Station object
-        if dt_info is not None:
-            _stations_cached[key].set_cell_attrs(dt_info)
-
-    return _stations_cached[key]
 
 def cast_cmaps(kargs_list: Dict[str, Dict[str, Any]]) -> None:
     """
@@ -547,3 +389,50 @@ def parse_filter_text_4gui(filter_text: Optional[str]) -> Dict[str, Any]:
         except:
             pass
     return filter_kwargs
+
+
+def deltaPhi(phi1: float, phi2: float) -> float:
+    """
+    Calculates the difference in phi between two angles.
+
+    :param phi1: The first angle in radians.
+    :type phi1: float
+    :param phi2: The second angle in radians.
+    :type phi2: float
+    :return: The difference in phi.
+    :rtype: float
+    """
+    res = phi1 - phi2
+    while res > math.pi:
+        res -= 2 * math.pi
+    while res <= -math.pi:
+        res += 2 * math.pi
+    return res
+
+def deltaEta(eta1: float, eta2: float) -> float:
+    """
+    Calculates the difference in eta between two pseudorapidity values.
+
+    :param eta1: The first eta value.
+    :type eta1: float
+    :param eta2: The second eta value.
+    :type eta2: float
+    :return: The difference in eta.
+    :rtype: float
+    """
+    return abs(eta1 - eta2)
+
+def deltaR(p1: Any, p2: Any) -> float:
+    """
+    Calculates the delta R between two particles. Particles must have attributes eta and phi.
+
+    :param p1: The first particle with attributes eta and phi.
+    :type p1: Any
+    :param p2: The second particle with attributes eta and phi.
+    :type p2: Any
+    :return: The delta R value.
+    :rtype: float
+    """
+    dEta = deltaEta(p1.eta, p2.eta)
+    dPhi = deltaPhi(p1.phi, p2.phi)
+    return math.sqrt(dEta * dEta + dPhi * dPhi)

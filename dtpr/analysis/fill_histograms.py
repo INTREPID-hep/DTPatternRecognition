@@ -4,14 +4,14 @@ import warnings
 import ROOT as r
 from tqdm import tqdm
 from dtpr.base import NTuple
+from dtpr.base.config import RUN_CONFIG
 from dtpr.utils.functions import (
     color_msg,
     error_handler,
     create_outfolder,
-    flatten,
 )
-from dtpr.utils.config import RUN_CONFIG
-from multiprocessing import Pool, cpu_count
+from more_itertools import collapse
+from multiprocess import Pool, cpu_count
 from typing import Any, Dict, Optional
 
 def set_histograms_dict() -> Dict[str, Any]:
@@ -91,7 +91,7 @@ def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
             h = histoinfo["histo"]
             if isinstance(val, (list, tuple)):
                 # Handle multi-value results
-                for ival in flatten(val):
+                for ival in collapse(val):
                     h.Fill(ival)
             elif val:
                 h.Fill(val)
@@ -117,7 +117,7 @@ def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
             h = histoinfo["histo"]
             if isinstance(val, list):
                 # Handle multiple points
-                for ival in val:
+                for ival in collapse(val, base_type=tuple):
                     h.Fill(*ival)
             else:
                 h.Fill(*val)

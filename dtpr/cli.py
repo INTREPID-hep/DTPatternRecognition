@@ -3,11 +3,10 @@ import os
 import sys
 import argparse
 import warnings
-import importlib
 import inspect
 from copy import deepcopy
+from dtpr.base.config import RUN_CONFIG, CLI_CONFIG
 from dtpr.utils.functions import color_msg, warning_handler, error_handler, get_callable_from_src, create_outfolder
-from dtpr.utils.config import RUN_CONFIG, CLI_CONFIG
 
 warnings.filterwarnings(action="once", category=UserWarning)
 # Set the custom warning handler
@@ -71,7 +70,7 @@ def main():
             "fill-histos",
             "plot-dts",
             "plot-dt",
-            "inspect-event",
+            "inspect-events",
             "events-visualizer",
             # ---- config commands ----
             "create-particle",

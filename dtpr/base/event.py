@@ -1,9 +1,8 @@
 import os
 import warnings
-from dtpr.utils.config import RUN_CONFIG
-from dtpr.utils.functions import color_msg
+from dtpr.base.config import RUN_CONFIG
 from dtpr.base.particle import Particle  # Import the base Particle class
-from dtpr.utils.functions import get_callable_from_src, format_event_attribute_str, format_event_particles_str
+from dtpr.utils.functions import color_msg, get_callable_from_src, format_event_attribute_str, format_event_particles_str
 
 class Event:
     """
@@ -262,13 +261,13 @@ if __name__ == "__main__":
     input_file= os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
-            "../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+            "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
         )
     )
     cf_path = RUN_CONFIG.path
     # [start-example-2]
     from ROOT import TFile
-    from dtpr.utils.config import RUN_CONFIG
+    from dtpr.base.config import RUN_CONFIG
 
     # update the configuration file -> if it is not set, it will use the default one 'run_config.yaml'
     RUN_CONFIG.change_config_file(config_path=cf_path)

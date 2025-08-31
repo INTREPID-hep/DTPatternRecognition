@@ -135,10 +135,15 @@ def plot_dt_chamber(
 
     if artist_names is None:
         artist_names = ["dt-station-local"]
-    elif isinstance(artist_names, str):
-        artist_names = [artist_names]
+    else:
+        if "all" in artist_names:
+            artist_names = list(artist_builders.keys())
 
-    if "dt-station-local" not in artist_names:
+    # Ensure only artists with "local" in their name are included
+    artist_names = [name for name in artist_names if "local" in name]
+
+    # Always include "dt-station-local" if not present and available
+    if "dt-station-local" not in artist_names and "dt-station-local" in artist_builders:
         artist_names.append("dt-station-local")
 
     artist_builders_filtered = {name: artist_builders.get(name, None) for name in artist_names}
@@ -164,7 +169,7 @@ def plot_dt_chamber(
 
 if __name__ == "__main__":
     plot_dt_chamber(
-        inpath = "../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+        inpath = "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
         outfolder="./results",
         tag="test",
         maxfiles = -1,

@@ -29,11 +29,12 @@ from numpy import array, percentile, sqrt
 from pandas import DataFrame
 
 from dtpr.base import Event, Particle
-from dtpr.utils.functions import color_msg, get_cached_station
-from mpldts.geometry import AMDTSegments
+from dtpr.utils.functions import color_msg
+from mpldts.geometry import AMDTSegments, StationsCache
 from mpldts.patches import DTStationPatch, MultiDTSegmentsPatch
 
 # --------------------------------------- Utility Functions -------------------------------------- #
+stations_cache = StationsCache()
 
 def test_builder(ev: Event, **kwargs) -> Tuple[None, None]:
     """
@@ -118,7 +119,7 @@ def get_shower_segment(
     :return: Array containing first and last cell centers that represent the shower segment
     :rtype: np.ndarray
     """
-    parent_station = get_cached_station(shower.wh, shower.sc, shower.st)
+    parent_station = stations_cache.get(shower.wh, shower.sc, shower.st)
     layer = parent_station.super_layer(shower.sl).layer(2)
     if version == 1: # compute using the wires profile
         # dump profile to wires numbers
@@ -168,7 +169,7 @@ def map_seg_attrs(
     info = {}
     if particle_type == "tps":
         info.update({
-            "parent": get_cached_station(particle.wh, particle.sc, particle.st),
+            "parent": stations_cache.get(particle.wh, particle.sc, particle.st),
             "index": getattr(particle, "index", -1),
             "sl": getattr(particle, "sl", None),
             "angle": -1 * getattr(particle, "dirLoc_phi", None),
@@ -233,7 +234,7 @@ def embed_dt2axes(
             raise ValueError(f"{cmap_var} must be present in {particle_type} data")
         _dti = dt_info[["sl", "l", "w", cmap_var]]
 
-    _dt_chamber = get_cached_station(wheel, sector, station, dt_info=_dti)
+    _dt_chamber = stations_cache.get(wheel, sector, station, dt_info=_dti)
     phi_patch, eta_patch = None, None
 
     if ax_phi is not None:
@@ -304,7 +305,7 @@ def embed_dts2axes(
         patches = []
         for (wh, sc, st), dt_info in dt_info.groupby(["wh", "sc", "st"]):
                 _dti = dt_info[["sl", "l", "w", cmap_var]]
-                _dt_chamber = get_cached_station(wh, sc, st, dt_info=_dti)
+                _dt_chamber = stations_cache.get(wh, sc, st, dt_info=_dti)
                 if _dt_chamber is None:
                     continue
                 patches.append(
@@ -523,7 +524,7 @@ def embed_simhits2axes_loc(
         22: {"color": "blue", "s": 20, "marker": "s"},
     }
 
-    _parent_station = get_cached_station(wheel, sector, station)
+    _parent_station = stations_cache.get(wheel, sector, station)
 
     patch_phi, patch_eta = None, None
 

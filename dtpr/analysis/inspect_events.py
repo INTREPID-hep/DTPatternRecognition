@@ -1,11 +1,11 @@
-from functools import partial
 from dtpr.base import NTuple
+from dtpr.base.config import RUN_CONFIG
 from dtpr.utils.functions import color_msg, get_callable_from_src
-from dtpr.utils.config import RUN_CONFIG
+from functools import partial
 from tqdm import tqdm
 
 
-def inspect_event(inpath: str, maxfiles: int, event_number: int):
+def inspect_events(inpath: str, maxfiles: int, event_number: int):
     """
     Inspect a specific event from NTuples.
 
@@ -55,7 +55,6 @@ def inspect_event(inpath: str, maxfiles: int, event_number: int):
             total = (int(end[0]) - int(beg)) // int(end[1])
         except IndexError:
             total = int(end[0]) - int(beg)
-        print(f"Total events: {total}")
     else:
         if event_number == -1:
             events = ntuple.events
@@ -84,7 +83,7 @@ def inspect_event(inpath: str, maxfiles: int, event_number: int):
 
             if inspector_functions:
                 for inspector in inspector_functions:
-                    inspector(ev)
+                    inspector(ev, tqdm_pbar=pbar)
             else:
                 tqdm.write(ev.__str__())
 

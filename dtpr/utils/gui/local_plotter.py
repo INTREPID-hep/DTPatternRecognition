@@ -93,7 +93,7 @@ if __name__ == "__main__":
     from mpldts.geometry import Station
 
     ntuple = NTuple(
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"))
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"))
     )
     event = ntuple.events[9]
     station = Station(-2, 5, 2)

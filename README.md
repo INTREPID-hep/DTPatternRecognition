@@ -16,13 +16,13 @@ Take a look at the [Contributors](CONTRIBUTING.md) and [Developers](DEVELOPERS.m
 You can install the latest version of the package directly from GitHub using pip:
 
 ```shell
-pip install "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@v2.0.0"
+pip install "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
 ```
 
 Or, if you prefer to use Poetry for dependency and environment management:
 
 ```shell
-poetry add "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@v2.0.0"
+poetry add "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
 ```
 
 If you want to work with the source and editable installs, you can initialize and build the environment with Poetry:
@@ -34,12 +34,8 @@ poetry shell
 
 To check if the package was installed successfully, run:
 
-```shell
-# If you used pip
+```shell  
 pip show DTPatternRecognition
-
-# If you used Poetry
-poetry show DTPatternRecognition
 ```
 
 > [!IMPORTANT]

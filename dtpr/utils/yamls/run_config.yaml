@@ -1,26 +1,25 @@
 # ------------------------------- configuration for Event -------------------------------------#
-# follow this format to specify particles to be built:
+# This configuration file defines how to build particle objects from NTuple data for the DTPatternRecognition framework.
+# The structure below specifies the available particle types, their attributes, and how to extract or compute them
+# from the ROOT TTree branches. It also includes configuration for NTuple access, preprocessors, selectors,
+# histogram sources, plotting, and event inspectors.
+
+# Particle types and their construction rules:
 # particle_types:
 #   ...
 #   particle_name:
-#     class: 'path.to.particle_class', if not defined it will use the default 'dtpr.particles.Particle' class
-#     amount: (int, TBranch<int> or TBranch<vector>) that could define how many particles to build  
-#     branches: list of branches to be used as attributes 
-#       attr_name: 'branch_name' 
-#       ...
-#     attributes: Other attributes that can be put directly or computed with a expression or a method
-#       attr_name: (value)
-#         expr: 'expression' to define the attribute, it expects a expression that can use any of 
-#                the class attributes directly
-#         src: 'src' to define the attribute, it expects the path to a method that receives 
-#                 the particle as input
-#     filter: condition to filter the particles that want to be built, it expects a expression that
-#             can use the particle instace (ref as 'p') and the root event entry (ref as 'ev')
-#     sorter: how to sort the particles
-#       by: A expresion to execute to decide the order. it expects a expression that can use the 
-#           particle instance (ref as 'p') and the root event entry (ref as 'ev')
-#       reverse: True/False to sort in reverse order. If not indicated default is False
-#
+#     class: 'path.to.particle_class'  # Optional: custom class, defaults to 'dtpr.particles.Particle'
+#     amount: (int, TBranch<int> or TBranch<vector>)  # How many particles to build per event
+#     attributes:
+#       attr_name:
+#         branch: 'branch_name'        # Directly from a TTree branch
+#         expr: 'expression'           # Python expression using other attributes
+#         src: 'path.to.function'      # Callable, receives the particle as input
+#     filter: 'expression'             # Optional: filter particles using 'p' (particle) and 'ev' (event)
+#     sorter:
+#       by: 'expression'               # Sorting key, can use 'p' and 'ev'
+#       reverse: True/False            # Optional: reverse sorting order
+
 # ================= available particles - dtntuple ================= #
 # comment/uncomment/add as needed...
 particle_types:
@@ -218,6 +217,7 @@ histo_names:
   - muon_DR
 
 # ----------------------------- configuration for event inspector ---------------------------------#
+# Functions to be used in the event inspector.
 inspector-functions:
 # define the functions to be used in the event inspector in the format:
 # func1:
@@ -230,6 +230,7 @@ inspector-functions:
     src: "dtpr.utils.inspectors.test_inspector"
 
 # ------------------------------- configuration for dt plots  -------------------------------------#
+# Plotting configuration for DT visualizations.
 plot_configs:
   mplhep-style: 'CMS'         # Style to use for the plots
 

@@ -175,6 +175,10 @@ class Particle():
         )
 
 if __name__ == "__main__":
+    # case 1 : Directly set attributes
+    particle = Particle(index=0, wh=-2, sc=1, st=1, detector_side={ "expr": "'+z' if wh > 0 else '-z'"})
+    print(particle)
+    # case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here
     import os
     # Example usage
     input_file= os.path.abspath(
@@ -183,10 +187,6 @@ if __name__ == "__main__":
             "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
         )
     )
-    # case 1 : Directly set attributes
-    particle = Particle(index=0, wh=-2, sc=1, st=1, detector_side={ "expr": "'+z' if wh > 0 else '-z'"})
-    print(particle)
-    # case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here
     from ROOT import TFile
     # first, create a TFile object to read the dt ntuple (this is not necessary by using NTuple Class)
     attributes = {

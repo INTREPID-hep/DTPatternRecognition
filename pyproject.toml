@@ -25,6 +25,10 @@ mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", rev = "v2.
 optional = true
 
 [tool.poetry.group.dev.dependencies]
+sphinx = "*"
+sphinx-rtd-theme = "*"
+sphinx-copybutton = "*"
+sphinx-design = "*"
 pytest = "*"
 black = "*"
 

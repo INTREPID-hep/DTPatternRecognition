@@ -1,10 +1,17 @@
-
 project = 'DTPatternRecognition'
 copyright = '2025, Daniel Estrada, Universidad de Oviedo'
 author = 'Daniel Estrada'
-release = '1.0.0'
+release = '3.0.0'
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode", "sphinx.ext.todo", "sphinx.ext.autosectionlabel", "sphinx_copybutton"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.todo",
+    "sphinx.ext.autosectionlabel",
+    "sphinx_copybutton",
+    "sphinx_design",
+    "sphinxcontrib.mermaid",
+]
 suppress_warnings = ['autosectionlabel.*']
 
 templates_path = ['_templates']

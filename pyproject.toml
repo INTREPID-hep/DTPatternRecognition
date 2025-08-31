@@ -1,12 +1,11 @@
 [tool.poetry]
 name = "DTPatternRecognition"
-version = "2.0.0"
-description = "Set of tools to implement patter recognition algorithms on CMS DTs"
+version = "3.0.0"
+description = "Set of tools to implement pattern recognition algorithms on CMS DTs"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-# You need to install also ROOT
 python = ">=3.9"
 numpy = ">=2.0"
 pandas = ">=2.2"
@@ -17,24 +16,17 @@ argparse = "*"
 pyqt5 = "*"
 tqdm = ">=4.6"
 natsort = ">=8.4"
-mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", rev = "v2.1.1-beta" }
+multiprocess = ">=0.7"
+more-itertools = ">=10.0"
+mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", rev = "v2.2.1-beta" }
+# ROOT is not available on PyPI, will be installed in CI
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
+pytest = "*"
 black = "*"
-
-[tool.poetry.group.doc]
-optional = true
-
-[tool.poetry.group.doc.dependencies]
-sphinx = "*"
-sphinx-rtd-theme = "*"
-sphinx-copybutton = "*"
-
-[[tool.poetry.packages]]
-include = "dtpr"
 
 [tool.poetry.scripts]
 dtpr = "dtpr.cli:main"

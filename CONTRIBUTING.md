@@ -60,6 +60,17 @@ Before you submit your work consider the following guidelines:
     - The branch name should start with a meaningful name such as `(feature|bugfix|cleanup)-*`.
 
 * Test your code.
+
+    - You can run the tests locally using [pytest](https://docs.pytest.org/):
+      ```shell
+      poetry run pytest
+      ```
+      or, if you are not using Poetry:
+      ```shell
+      pytest
+      ```
+    - All tests (including code style checks) will also be run automatically when you open a pull request to the `main` branch, thanks to our GitHub Actions CI pipeline.
+
 * Create your patch commit.
     - If it's your first commit in this repository, add yourself to the `CONTRIBUTORS` file
 

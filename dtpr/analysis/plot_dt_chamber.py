@@ -7,6 +7,7 @@ from mplhep import style
 import matplotlib.pyplot as plt
 from typing import Optional, List, Dict, Union, Callable
 
+
 def make_dt_plot(
     ev: Event,
     wh: int,
@@ -15,7 +16,7 @@ def make_dt_plot(
     artist_builders: Dict[str, Callable],
     name: Optional[str] = "test_dt_plot",
     path: Optional[str] = ".",
-    save: Optional[bool] = False
+    save: Optional[bool] = False,
 ) -> None:
     """
     Create and display or save a DT chamber plot for a given event and chamber.
@@ -44,7 +45,9 @@ def make_dt_plot(
 
     patches = {}
     for ploter_name, ploter in artist_builders.items():
-        patches[ploter_name] = ploter(ev, wheel=wh, sector=sc, station=st, ax_phi=axs[0], ax_eta=axs[1])
+        patches[ploter_name] = ploter(
+            ev, wheel=wh, sector=sc, station=st, ax_phi=axs[0], ax_eta=axs[1]
+        )
 
     patch_phi, patch_eta = patches.get("dt-station-local", (None, None))
     patch2cbar = patch_phi if patch_phi else patch_eta
@@ -66,7 +69,7 @@ def make_dt_plot(
     else:
         axs[1].remove()
 
-    plt.suptitle(f"Wheel {wh}, Sector {sc}, Station {st}", y=.9)
+    plt.suptitle(f"Wheel {wh}, Sector {sc}, Station {st}", y=0.9)
 
     fig.colorbar(patch2cbar.cells_collection, ax=axs[1], label=f"{patch2cbar.vmap}")
     plt.tight_layout()
@@ -79,6 +82,7 @@ def make_dt_plot(
     del fig  # Explicitly delete the figure object
     gc.collect()
 
+
 def plot_dt_chamber(
     inpath: str,
     outfolder: str,
@@ -89,7 +93,7 @@ def plot_dt_chamber(
     sector: int,
     station: int,
     save: bool,
-    artist_names: Optional[Union[List[str], str]] = None
+    artist_names: Optional[Union[List[str], str]] = None,
 ) -> None:
     """
     Produce a single DT chamber plot based on DTNTuples.
@@ -162,20 +166,21 @@ def plot_dt_chamber(
             artist_builders_filtered,
             name=f"dt_plot{tag}_ev{ev.index}",
             path=os.path.join(outfolder, "dt_plots"),
-            save=save
+            save=save,
         )
 
     color_msg(f"Done!", color="green")
 
+
 if __name__ == "__main__":
     plot_dt_chamber(
-        inpath = "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+        inpath="../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
         outfolder="./results",
         tag="test",
-        maxfiles = -1,
-        event_number = 11,
-        wheel = -2,
-        sector = 10,
-        station = 1,
-        save=False
+        maxfiles=-1,
+        event_number=11,
+        wheel=-2,
+        sector=10,
+        station=1,
+        save=False,
     )

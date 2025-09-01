@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QProgressBar
 from PyQt5.QtCore import QTimer
 
+
 class ProgressBarManager:
     """
     Context manager for handling progress bar updates in a PyQt5 application.
@@ -9,7 +10,15 @@ class ProgressBarManager:
             pb.update(10, "Step 1")
             pb.update(20, "Step 2")
     """
-    def __init__(self, progress_bar: QProgressBar, status_callback=None, total_steps=100, message=None, auto_hide=True):
+
+    def __init__(
+        self,
+        progress_bar: QProgressBar,
+        status_callback=None,
+        total_steps=100,
+        message=None,
+        auto_hide=True,
+    ):
         self.progress_bar = progress_bar
         self.status_callback = status_callback  # Function to show status messages
         self.total_steps = total_steps

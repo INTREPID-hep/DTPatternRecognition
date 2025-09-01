@@ -1,12 +1,7 @@
-from PyQt5.QtWidgets import (
-    QTreeWidget,
-    QTreeWidgetItem,
-    QVBoxLayout,
-    QWidget,
-    QHeaderView
-)
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget, QHeaderView
 from PyQt5.QtCore import Qt
 from dtpr.utils.functions import parse_filter_text_4gui
+
 
 class EventTreeInspector(QWidget):
     def __init__(self, parent=None):
@@ -21,7 +16,9 @@ class EventTreeInspector(QWidget):
         self.tree_widget.header().setDefaultAlignment(Qt.AlignLeft)
         self.tree_widget.header().setStretchLastSection(False)
         self.tree_widget.header().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.tree_widget.setStyleSheet("QTreeWidget::item { border-bottom: 1px solid #dcdcdc; border-right: 1px solid #dcdcdc; }")
+        self.tree_widget.setStyleSheet(
+            "QTreeWidget::item { border-bottom: 1px solid #dcdcdc; border-right: 1px solid #dcdcdc; }"
+        )
 
     def add_event_to_tree(self, event, filter_text=""):
         filter_kwargs = parse_filter_text_4gui(filter_text)
@@ -33,7 +30,9 @@ class EventTreeInspector(QWidget):
         self.tree_widget.addTopLevelItem(event_item)
 
         for particle_name, particle_list in event._particles.items():
-            filtered_particles = self.get_filtered_particles(event, particle_name, filter_kwargs, particle_list)
+            filtered_particles = self.get_filtered_particles(
+                event, particle_name, filter_kwargs, particle_list
+            )
             particle_item = QTreeWidgetItem([particle_name, ""])
             event_item.addChild(particle_item)
             self.add_particles_to_tree(particle_item, filtered_particles)
@@ -54,7 +53,7 @@ class EventTreeInspector(QWidget):
         # Prevent infinite recursion by limiting depth
         if depth > max_depth:
             return
-            
+
         for key, value in particle.__dict__.items():
             if key in ["index", "name"]:
                 continue
@@ -78,13 +77,12 @@ class EventTreeInspector(QWidget):
             for i, item in enumerate(value):
                 item_item = QTreeWidgetItem([f"{key}[{i}]", ""])
                 list_item.addChild(item_item)
-                
+
                 # Check if we're at max depth and the item has an index (likely a particle)
-                if depth >= max_depth and hasattr(item, 'index'):
+                if depth >= max_depth and hasattr(item, "index"):
                     # Show only the index to prevent recursion
                     index_item = QTreeWidgetItem(["index", str(item.index)])
                     item_item.addChild(index_item)
                 else:
                     # Continue recursion with increased depth
                     self.add_properties_to_tree(item_item, item, depth + 1, max_depth)
-

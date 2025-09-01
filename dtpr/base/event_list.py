@@ -1,9 +1,11 @@
 from dtpr.base import Event
 
+
 class EventList:
     """
     A class to manage events such as a list, but without loading all events in memory.
     """
+
     def __init__(self, tree, processor=None):
         """
         Initialize an EventList instance.
@@ -70,7 +72,7 @@ class EventList:
         :raises: ValueError: If no event with the specified number is found.
         """
         for iev, ev in enumerate(self._tree):
-            if  getattr(ev, "event_eventNumber", None) == number:
+            if getattr(ev, "event_eventNumber", None) == number:
                 event = Event(ev, iev, use_config=True)
                 return self._processor(event)
         raise ValueError(f"No event found with number: {number}")

@@ -1,4 +1,5 @@
 """Main CLI interface"""
+
 import os
 import sys
 import argparse
@@ -6,7 +7,13 @@ import warnings
 import inspect
 from copy import deepcopy
 from dtpr.base.config import RUN_CONFIG, CLI_CONFIG
-from dtpr.utils.functions import color_msg, warning_handler, error_handler, get_callable_from_src, create_outfolder
+from dtpr.utils.functions import (
+    color_msg,
+    warning_handler,
+    error_handler,
+    get_callable_from_src,
+    create_outfolder,
+)
 
 warnings.filterwarnings(action="once", category=UserWarning)
 # Set the custom warning handler
@@ -27,15 +34,19 @@ def add_arguments(parser: argparse.ArgumentParser, args: dict) -> None:
         except:
             raise ValueError(f"Failed to add argument: {arg_name} with items: {args_items}")
 
+
 def create_wrapper(func: callable) -> callable:
     """Create a wrapper function to map parsed arguments to the function's parameters."""
     sig = inspect.signature(func)
+
     def wrapper(args: argparse.Namespace) -> None:
         kwargs = {}
         for param in sig.parameters.values():
             kwargs[param.name] = getattr(args, param.name)
         return func(**kwargs)
+
     return wrapper
+
 
 def add_subcommands(subparser: argparse._SubParsersAction, subcommands: list) -> None:
     """Add subcommands to the subparser."""
@@ -100,7 +111,10 @@ def main():
             color_msg(f"Using configuration file: {args.config_file}", "yellow")
             RUN_CONFIG.change_config_file(config_path=args.config_file)
         else:
-            color_msg(f"No configuration file provided or found in the output path. Using default configuration file: {RUN_CONFIG.path}", "yellow")
+            color_msg(
+                f"No configuration file provided or found in the output path. Using default configuration file: {RUN_CONFIG.path}",
+                "yellow",
+            )
 
     # Add the directory of config_file and outfolder to sys.path
     if hasattr(args, "config_file") and args.config_file:

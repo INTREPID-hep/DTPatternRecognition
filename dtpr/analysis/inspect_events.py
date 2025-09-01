@@ -11,7 +11,7 @@ def inspect_events(inpath: str, maxfiles: int, event_number: int):
 
     :param inpath: Path to the input folder containing the ntuples.
     :type inpath: (str)
-    :param outfolder: Path to the output folder where debug information will be saved.    
+    :param outfolder: Path to the output folder where debug information will be saved.
     :type outfolder: (str)
     :param filter_type: Type of event filter to apply.
     :type filter_type: (str)
@@ -22,7 +22,7 @@ def inspect_events(inpath: str, maxfiles: int, event_number: int):
     :param debug: If True, enables debug mode. Default is False.
     :type debug: (bool)
     """
-    # Start of the analysis 
+    # Start of the analysis
     color_msg(f"Inpecting event {event_number} from NTuples", "green")
 
     # Create the Ntuple object
@@ -65,9 +65,7 @@ def inspect_events(inpath: str, maxfiles: int, event_number: int):
 
     with tqdm(
         total=total,
-        desc=color_msg(
-            "Running:", color="purple", indentLevel=1, return_str=True
-        ),
+        desc=color_msg("Running:", color="purple", indentLevel=1, return_str=True),
         ncols=100,
         ascii=True,
         unit=" event",

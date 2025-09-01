@@ -2,7 +2,13 @@ import os
 import warnings
 from dtpr.base.config import RUN_CONFIG
 from dtpr.base.particle import Particle  # Import the base Particle class
-from dtpr.utils.functions import color_msg, get_callable_from_src, format_event_attribute_str, format_event_particles_str
+from dtpr.utils.functions import (
+    color_msg,
+    get_callable_from_src,
+    format_event_attribute_str,
+    format_event_particles_str,
+)
+
 
 class Event:
     """
@@ -21,6 +27,7 @@ class Event:
         direct user access. Instead, users should access particles by their type name
         (e.g., `event.genmuons`).
     """
+
     def __init__(self, ev=None, index=None, use_config=False):
         """
         Initialize an Event instance.
@@ -39,9 +46,9 @@ class Event:
             # Default to the index if the event number is not found
             self.number = getattr(ev, "event_eventNumber", self.number)
 
-        if use_config and hasattr(RUN_CONFIG, 'particle_types'):
+        if use_config and hasattr(RUN_CONFIG, "particle_types"):
             for ptype, pinfo in getattr(RUN_CONFIG, "particle_types", {}).items():
-                    self._build_particles(ev, ptype, pinfo)
+                self._build_particles(ev, ptype, pinfo)
         else:
             warnings.warn(
                 "No particle types defined in the configuration file. Initializing an empty Event instance."
@@ -86,7 +93,12 @@ class Event:
         :return: The event summary.
         """
         summary = [
-            color_msg(f"------ Event {self.number} info ------", color="yellow", indentLevel=indentLevel, return_str=True)
+            color_msg(
+                f"------ Event {self.number} info ------",
+                color="yellow",
+                indentLevel=indentLevel,
+                return_str=True,
+            )
         ]
         summary.extend(
             format_event_attribute_str(key, val, indentLevel + 1)
@@ -102,16 +114,18 @@ class Event:
         Build particles of a specific type based on the information indicated in the config file.
 
         :param ev: The ROOT TTree entry containing event data.
-        :param ptype: The type (name) of particles to build. It will be the attribute name in the 
+        :param ptype: The type (name) of particles to build. It will be the attribute name in the
             Event instance.
-        :param pinfo: The information dictionary for the particle type builder. It should contain 
-            the class builder path, the name of the branch to infer the number of particles, and 
+        :param pinfo: The information dictionary for the particle type builder. It should contain
+            the class builder path, the name of the branch to infer the number of particles, and
             optional conditions and sorting parameters.
         """
         # determine the number of particles to build
         _amount_attr = pinfo.get("amount", None)
         if _amount_attr is None:
-            raise ValueError(f"Particle type {pinfo} does not specify an amount of instances to build.")
+            raise ValueError(
+                f"Particle type {pinfo} does not specify an amount of instances to build."
+            )
         else:
             if isinstance(_amount_attr, int):
                 num_particles = _amount_attr
@@ -123,9 +137,11 @@ class Event:
                     num_particles = _n
                 else:
                     try:
-                        num_particles = len(_n) 
+                        num_particles = len(_n)
                     except Exception as e:
-                        raise RuntimeError(f"Amount of particles can be determined from {_amount_attr} branch: {e}")
+                        raise RuntimeError(
+                            f"Amount of particles can be determined from {_amount_attr} branch: {e}"
+                        )
 
         # determine the class to be used to build the particles
         if "class" in pinfo:
@@ -133,7 +149,7 @@ class Event:
             if ParticleClass is None:
                 raise ValueError(f"Particle class {pinfo['class']} wrongly defined.")
         else:
-            ParticleClass = Particle # Default to the base Particle class
+            ParticleClass = Particle  # Default to the base Particle class
 
         # Build the particles
         _particles = []
@@ -150,7 +166,9 @@ class Event:
             if "filter" in pinfo:  # Only keep the particles that pass the filter, if defined
                 filter_expr = pinfo["filter"]
                 if not isinstance(filter_expr, str):
-                    raise ValueError(f"The 'filter' must be a string, got {type(filter_expr)} instead.")
+                    raise ValueError(
+                        f"The 'filter' must be a string, got {type(filter_expr)} instead."
+                    )
                 try:
                     # Validate the filter expression by compiling it
                     compile(filter_expr, "<string>", "eval")
@@ -162,10 +180,12 @@ class Event:
             else:
                 _particles.append(_particle)
 
-        if "sorter" in pinfo: # Sort the particles if a sorter is defined
+        if "sorter" in pinfo:  # Sort the particles if a sorter is defined
             sorter_info = pinfo["sorter"]
             if "by" not in sorter_info:
-                raise ValueError(f"Sorter information must contain 'by' key, got {sorter_info.keys()} instead.")
+                raise ValueError(
+                    f"Sorter information must contain 'by' key, got {sorter_info.keys()} instead."
+                )
             key_expr = sorter_info["by"]
             if not isinstance(key_expr, str):
                 raise ValueError(f"The sorter 'by' must be a string, got {type(key_expr)} instead.")
@@ -245,20 +265,22 @@ if __name__ == "__main__":
     Example of how to use the Event class to build particles and analyze them.
     """
     # [start-example-1]
-    event = Event(index=1) # initialize an empty event with index 1
+    event = Event(index=1)  # initialize an empty event with index 1
     print(event)
 
     # It is possible to manually add particles or other attributes
     from dtpr.base import Particle
 
-    showers = [Particle(index=i, wh=1, sc=1, st=1, name="Shower") for i in range(5)] # create 5 showers
-    event.showers = showers # add them to the event
+    showers = [
+        Particle(index=i, wh=1, sc=1, st=1, name="Shower") for i in range(5)
+    ]  # create 5 showers
+    event.showers = showers  # add them to the event
 
     print(event)
     print(event.showers[-1])
     # [end-example-1]
     # The event can be built from a TTree entry
-    input_file= os.path.abspath(
+    input_file = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
             "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
@@ -283,4 +305,4 @@ if __name__ == "__main__":
             # Print the event summary
             print(event)
 
-            break # break after the first event
+            break  # break after the first event

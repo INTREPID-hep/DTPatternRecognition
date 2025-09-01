@@ -4,6 +4,7 @@ from mpldts.patches import DTRelatedPatch
 from dtpr.utils.functions import parse_plot_configs
 from typing import Any, Dict, List, Optional
 
+
 class ArtistManager:
     """
     Utility class to manage embedding and deleting matplotlib artists (patches) on axes.
@@ -19,7 +20,7 @@ class ArtistManager:
         self,
         artist_builders: Optional[Dict[str, Any]] = None,
         ax_phi: Optional[Any] = None,
-        ax_eta: Optional[Any] = None
+        ax_eta: Optional[Any] = None,
     ):
         self.artists_included = {"phi": {}, "eta": {}}
         self.ax_phi = ax_phi
@@ -41,7 +42,7 @@ class ArtistManager:
         self,
         artist_names: List[str],
         builder_kwargs: Dict[str, Any],
-        faceview: Optional[str] = None
+        faceview: Optional[str] = None,
     ) -> None:
         """
         Embed artists on the phi and eta axes.
@@ -51,8 +52,8 @@ class ArtistManager:
             builder_kwargs (Dict[str, Any]): Arguments to pass to the builder functions.
         """
         # Ensure correct axes are passed
-        builder_kwargs['ax_phi'] = self.ax_phi if faceview is None or faceview == "phi" else None
-        builder_kwargs['ax_eta'] = self.ax_eta if faceview is None or faceview == "eta" else None
+        builder_kwargs["ax_phi"] = self.ax_phi if faceview is None or faceview == "phi" else None
+        builder_kwargs["ax_eta"] = self.ax_eta if faceview is None or faceview == "eta" else None
         for artist_name in artist_names:
             artist_builder = self.artist_builders.get(artist_name)
             if artist_builder is None:
@@ -75,17 +76,20 @@ class ArtistManager:
         Args:
             artist_names (List[str]): List of artist names to delete.
         """
+
         def _remove_artist(artist):
             removed = False
             if isinstance(artist, DTRelatedPatch):
-                for collection in getattr(artist, '_collections', []):
+                for collection in getattr(artist, "_collections", []):
                     collection.remove()
                 removed = True
-            elif hasattr(artist, 'remove'):
+            elif hasattr(artist, "remove"):
                 artist.remove()
                 removed = True
             else:
-                raise ValueError(f"Artist {artist} does not have a remove method or is not a DTRelatedPatch.")
+                raise ValueError(
+                    f"Artist {artist} does not have a remove method or is not a DTRelatedPatch."
+                )
             return removed
 
         for artist_name in artist_names:

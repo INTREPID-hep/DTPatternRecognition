@@ -1,7 +1,8 @@
 from dtpr.utils.functions import color_msg, get_callable_from_src
 from copy import deepcopy
 
-class Particle():
+
+class Particle:
     """
     Base class to represent a particle.
 
@@ -12,6 +13,7 @@ class Particle():
     name : str
         The name of the particle class. By default, it is the class name.
     """
+
     def __init__(self, index=None, ev=None, **kwargs):
         """
         Initialize a Particle instance.
@@ -24,13 +26,13 @@ class Particle():
         :param kwargs: Additional attributes to set explicitly.
         """
         self.index = index
-        self.name = self.__class__.__name__ # By default, it is the class name
+        self.name = self.__class__.__name__  # By default, it is the class name
 
         for key, value in kwargs.items():
             if isinstance(value, dict):
                 self._init_from_dict(key, value, event=ev)
             else:
-                setattr(self, key, deepcopy(value)) 
+                setattr(self, key, deepcopy(value))
 
     def _init_from_dict(self, attr, attr_info, event=None):
         """
@@ -39,20 +41,24 @@ class Particle():
         :param attr: The attribute name to set.
         :param attr_info: A dictionary containing the information to set the attribute.
         """
-        branch = attr_info.get('branch', None)
-        expr = attr_info.get('expr', None)
-        src = attr_info.get('src', None)
-        _type = attr_info.get('type', None)
+        branch = attr_info.get("branch", None)
+        expr = attr_info.get("expr", None)
+        src = attr_info.get("src", None)
+        _type = attr_info.get("type", None)
 
         # Ensure exactly one of 'branch', 'expr', or 'src' is provided
         provided = [x for x in [branch, expr, src] if x is not None]
         if len(provided) != 1:
-            raise ValueError(f"'attributes' field must specify exactly one of 'branch', 'expr', or 'src' for attribute definition : '{attr}'.")
+            raise ValueError(
+                f"'attributes' field must specify exactly one of 'branch', 'expr', or 'src' for attribute definition : '{attr}'."
+            )
 
         if branch:
             # If a branch is provided, set the attribute to the value from the event
             if event is None:
-                raise ValueError(f"Event must be provided to set attribute '{attr}' from branch '{branch}'.")
+                raise ValueError(
+                    f"Event must be provided to set attribute '{attr}' from branch '{branch}'."
+                )
             value = getattr(event, branch, None)
             if value is None:
                 raise ValueError(f"Branch '{branch}' not found in the event entry.")
@@ -90,7 +96,9 @@ class Particle():
             except NameError as e:
                 raise ValueError(f"Invalid type '{_type}' for attribute '{attr}'. Error: {e}")
             except TypeError as e:
-                raise ValueError(f"Cannot convert value '{value}' to type '{_type}' for attribute '{attr}'. Error: {e}")
+                raise ValueError(
+                    f"Cannot convert value '{value}' to type '{_type}' for attribute '{attr}'. Error: {e}"
+                )
 
         # Set the attribute to the value
         setattr(self, attr, value)
@@ -112,7 +120,7 @@ class Particle():
         summary = [
             color_msg(
                 f"{self.name} {self.index} info -->",
-                color= kwargs.pop("color", "yellow"),
+                color=kwargs.pop("color", "yellow"),
                 indentLevel=indentLevel,
                 return_str=True,
                 **kwargs,
@@ -150,14 +158,8 @@ class Particle():
 
         # Compare all attributes except 'index' and 'name'
         return {
-            key: value
-            for key, value in self.__dict__.items()
-            if key not in {"index", "name"}
-        } == {
-            key: value
-            for key, value in other.__dict__.items()
-            if key not in {"index", "name"}
-        }
+            key: value for key, value in self.__dict__.items() if key not in {"index", "name"}
+        } == {key: value for key, value in other.__dict__.items() if key not in {"index", "name"}}
 
     def __hash__(self):
         """
@@ -168,32 +170,35 @@ class Particle():
         """
         return hash(
             frozenset(
-                (key, value)
-                for key, value in self.__dict__.items()
-                if key not in {"index", "name"}
+                (key, value) for key, value in self.__dict__.items() if key not in {"index", "name"}
             )
         )
 
+
 if __name__ == "__main__":
     # case 1 : Directly set attributes
-    particle = Particle(index=0, wh=-2, sc=1, st=1, detector_side={ "expr": "'+z' if wh > 0 else '-z'"})
+    particle = Particle(
+        index=0, wh=-2, sc=1, st=1, detector_side={"expr": "'+z' if wh > 0 else '-z'"}
+    )
     print(particle)
     # case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here
     import os
+
     # Example usage
-    input_file= os.path.abspath(
+    input_file = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
             "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
         )
     )
     from ROOT import TFile
+
     # first, create a TFile object to read the dt ntuple (this is not necessary by using NTuple Class)
     attributes = {
-        'pt': {'branch': 'gen_pt'},
-        'eta': {'branch': 'gen_eta'},
-        'phi': {'branch': 'gen_phi'},
-        'charge': {'branch': 'gen_charge'},
+        "pt": {"branch": "gen_pt"},
+        "eta": {"branch": "gen_eta"},
+        "phi": {"branch": "gen_phi"},
+        "charge": {"branch": "gen_charge"},
     }
     with TFile(input_file, "read") as ntuple:
         tree = ntuple["dtNtupleProducer/DTTREE;1"]
@@ -202,4 +207,4 @@ if __name__ == "__main__":
             # so, set index 0 or 1 allows to take properties of the first or second genmuon
             particle = Particle(index=0, ev=ev, name="GenMuon", **attributes)
             print(particle)
-            break # just to test the first event
+            break  # just to test the first event

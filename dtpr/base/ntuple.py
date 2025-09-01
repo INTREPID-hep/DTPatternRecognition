@@ -40,8 +40,8 @@ class NTuple(object):
         self._preprocessors = preprocessors
         self._maxfiles = maxfiles
         self.tree = r.TChain()
-        
-        _tree_name = getattr(RUN_CONFIG, 'ntuple_tree_name', None)
+
+        _tree_name = getattr(RUN_CONFIG, "ntuple_tree_name", None)
         if _tree_name is None:
             warnings.warn(f"No tree name provided in RUN_CONFIG. Defaulting to '/TTREE'.")
             self._tree_name = "/TTREE"
@@ -66,9 +66,9 @@ class NTuple(object):
         :returns: The preprocessed event if it passes the selection criteria, otherwise None.
         :rtype: Event
         """
-        if self._preprocessors: # Apply preprocessors if they exist
+        if self._preprocessors:  # Apply preprocessors if they exist
             self._preprocess_event(ev)
-        if self._selectors: # Apply global selection if selectors exist
+        if self._selectors:  # Apply global selection if selectors exist
             if not self._select_event(ev):
                 return None
         return ev
@@ -110,13 +110,17 @@ class NTuple(object):
             target_list = self._preprocessors
             item_type = "preprocessor"
         else:
-            raise ValueError(f"Invalid config_key: {config_key}. Must contain 'selector' or 'preprocessor'.")
+            raise ValueError(
+                f"Invalid config_key: {config_key}. Must contain 'selector' or 'preprocessor'."
+            )
 
         items = []
         for name, item_info in getattr(RUN_CONFIG, config_key, {}).items():
             src = item_info.get("src", None)
             if src is None:
-                raise ValueError(f"{item_type.capitalize()} {name} has no src defined in the config.")
+                raise ValueError(
+                    f"{item_type.capitalize()} {name} has no src defined in the config."
+                )
             item = get_callable_from_src(src)
             if item is None:
                 raise ImportError(f"{item_type.capitalize()} {name} not found in module {src}.")
@@ -153,24 +157,21 @@ class NTuple(object):
         else:
             color_msg(f"Opening input files from {inpath}", "blue", 1)
             allFiles = natsorted(get_root_files(inpath))
-            nFiles = (
-                len(allFiles)
-                if self._maxfiles == -1
-                else min(len(allFiles), self._maxfiles)
-            )
+            nFiles = len(allFiles) if self._maxfiles == -1 else min(len(allFiles), self._maxfiles)
             self._maxfiles = nFiles
 
             for iF in range(nFiles):
                 color_msg(f"File {allFiles[iF].split('/')[-1]} added", indentLevel=2)
                 self.tree.Add(allFiles[iF] + self._tree_name)
 
+
 if __name__ == "__main__":
     input_file = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
             "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
-            )
         )
+    )
     cf_path = RUN_CONFIG.path
     # [start-example-1]
     from dtpr.base.config import RUN_CONFIG
@@ -179,11 +180,13 @@ if __name__ == "__main__":
     RUN_CONFIG.change_config_file(config_path=cf_path)
 
     # input_file could be the path to the DT Ntuple, or to a folder with several files
-    ntuple = NTuple(input_file) # It also admits passing a list of selectors and preprocessors when instantiating
+    ntuple = NTuple(
+        input_file
+    )  # It also admits passing a list of selectors and preprocessors when instantiating
 
     # you can access events by index or slice such as a list
     print(ntuple.events[9])
-    print(ntuple.events[3:5]) # slicing return a generator
+    print(ntuple.events[3:5])  # slicing return a generator
 
     # you can also loop over the events
     for iev, ev in enumerate(ntuple.events):

@@ -14,6 +14,7 @@ from more_itertools import collapse
 from multiprocess import Pool, cpu_count
 from typing import Any, Dict, Optional
 
+
 def set_histograms_dict() -> Dict[str, Any]:
     """
     Sets up the histograms dictionary to fill based on configuration.
@@ -27,7 +28,9 @@ def set_histograms_dict() -> Dict[str, Any]:
         module = importlib.import_module(source)
         module_histos = getattr(module, "histos", {})
         # Only include histograms specified in the configuration
-        histos_to_fill.update({k: v for k, v in module_histos.items() if k in RUN_CONFIG.histo_names})
+        histos_to_fill.update(
+            {k: v for k, v in module_histos.items() if k in RUN_CONFIG.histo_names}
+        )
 
     # Warn about any missing histograms
     missing_histos = set(RUN_CONFIG.histo_names) - set(histos_to_fill.keys())
@@ -37,6 +40,7 @@ def set_histograms_dict() -> Dict[str, Any]:
         )
 
     return histos_to_fill
+
 
 def _execute_histo_function(func: Any, event: Any, histo_key: str) -> Optional[Any]:
     """
@@ -61,6 +65,7 @@ def _execute_histo_function(func: Any, event: Any, histo_key: str) -> Optional[A
         )
         return None
 
+
 def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
     """
     Fill predefined histograms with event data.
@@ -75,11 +80,11 @@ def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
     # Skip processing if event is None
     if ev is None:
         return
-        
+
     for histo_key, histoinfo in histos_to_fill.items():
         hType = histoinfo["type"]
         func = histoinfo["func"]
-        
+
         # Get values from the event
         val = _execute_histo_function(func, ev, histo_key)
         if val is None:
@@ -100,12 +105,12 @@ def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
         elif hType == "eff":
             num = histoinfo["histoNum"]
             den = histoinfo["histoDen"]
-            
+
             # Get which values pass the criteria
             numPasses = _execute_histo_function(histoinfo["numdef"], ev, histo_key)
             if numPasses is None:
                 continue
-                
+
             # Fill denominator for all values, numerator only for passing values
             for v, passes in zip(val, numPasses):
                 den.Fill(v)
@@ -122,12 +127,9 @@ def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
             else:
                 h.Fill(*val)
 
+
 def process_event_chunk(
-    index: int,
-    start_idx: int,
-    end_idx: int,
-    events: Any,
-    histos_to_fill: Dict[str, Any]
+    index: int, start_idx: int, end_idx: int, events: Any, histos_to_fill: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
     Process a chunk of events for parallel execution.
@@ -162,6 +164,7 @@ def process_event_chunk(
 
     return c_histos_to_fill
 
+
 def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) -> None:
     """
     Store histograms in a ROOT file.
@@ -179,7 +182,7 @@ def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) ->
     with r.TFile.Open(os.path.abspath(outname), "RECREATE") as f:
         for histoinfo in histos_to_save.values():
             hType = histoinfo["type"]
-            
+
             # Write histograms to file based on type
             if "distribution" in hType:
                 histoinfo["histo"].Write()
@@ -187,13 +190,9 @@ def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) ->
                 histoinfo["histoNum"].Write()
                 histoinfo["histoDen"].Write()
 
+
 def fill_histos(
-    inpath: str,
-    outfolder: str,
-    tag: str,
-    maxfiles: int,
-    maxevents: int,
-    ncores: int
+    inpath: str, outfolder: str, tag: str, maxfiles: int, maxevents: int, ncores: int
 ) -> None:
     """
     Fill histograms based on NTuples information.
@@ -222,7 +221,7 @@ def fill_histos(
     # Set up histograms to fill from configured sources
     histograms_to_fill = set_histograms_dict()
     color_msg("Histograms to be filled:", color="blue", indentLevel=1)
-    
+
     if not histograms_to_fill:
         color_msg("No histograms to fill.", color="red", indentLevel=2)
         return
@@ -237,7 +236,7 @@ def fill_histos(
 
     # Determine number of cores for processing
     _ncores = min(ncores, cpu_count()) if ncores > 1 else None
-    
+
     # Process events with progress bar
     with tqdm(
         total=_maxevents + 1,
@@ -248,7 +247,7 @@ def fill_histos(
     ) as pbar:
         if _ncores is None:
             # Sequential processing
-            each_print = (_maxevents+1) // 10 if (_maxevents+1) > 10 else 1
+            each_print = (_maxevents + 1) // 10 if (_maxevents + 1) > 10 else 1
             for i, ev in enumerate(ntuple.events):
                 if i > _maxevents:
                     pbar.update(_maxevents + 1 - pbar.n)
@@ -256,7 +255,7 @@ def fill_histos(
                 if i > 0 and i % each_print == 0:
                     pbar.update(each_print)
                 fill_histograms(ev, histograms_to_fill)
-            
+
             histograms_result = histograms_to_fill
         else:
             # Parallel processing with worker pool
@@ -271,12 +270,11 @@ def fill_histos(
                         pool.apply_async(
                             process_event_chunk,
                             args=(i, start_idx, end_idx, ntuple.events, histograms_to_fill),
-                            callback=lambda _, i=i:\
-                                pbar.write(f"Processed events chunk {i}") or pbar.update(chunk_size)
-
+                            callback=lambda _, i=i: pbar.write(f"Processed events chunk {i}")
+                            or pbar.update(chunk_size),
                         )
                     )
-                
+
                 # Gather results from all workers
                 histograms_results = [r.get() for r in results]
 
@@ -284,22 +282,23 @@ def fill_histos(
     color_msg("Saving histograms...", color="purple", indentLevel=1)
     outpath = os.path.join(outfolder, "histograms")
     create_outfolder(outpath)
-    
+
     if _ncores is None:
         # Direct save for sequential processing
         save_histograms(outpath, tag, histograms_result)
     else:
         # For parallel processing, save temporary files and merge them
         import subprocess as bash
+
         tmp_path = os.path.join(outpath, "_tmp")
         create_outfolder(tmp_path)
-        
+
         histo_files = []
         for i, histograms_i in enumerate(histograms_results):
             file_path = os.path.join(tmp_path, f"histograms_{i}.root")
             save_histograms(tmp_path, f"_{i}", histograms_i)
             histo_files.append(file_path)
-        
+
         # Merge all temporary files with hadd
         color_msg("Merging histograms...", color="purple", indentLevel=1)
         output_file = os.path.join(outpath, f"histograms{tag}.root")

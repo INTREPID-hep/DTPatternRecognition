@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.uic import loadUi
 from dtpr.utils.gui.artist_gui_manager import ArtistManager
 
+
 class LocalPlotter(QDialog):
     def __init__(self, parent=None, event=None, station=None):
         super().__init__()
@@ -15,13 +16,19 @@ class LocalPlotter(QDialog):
         self.station = station
 
         # Use parent's artist_builders if available, else parse configs
-        artist_builders = parent.artist_manager.artist_builders if parent and hasattr(parent, "artist_manager") else None
+        artist_builders = (
+            parent.artist_manager.artist_builders
+            if parent and hasattr(parent, "artist_manager")
+            else None
+        )
 
         # Initialize ArtistManager with current axes (will be set after UI loads)
         self.artist_manager = ArtistManager(artist_builders=artist_builders)
 
         if "dt-station-local" not in self.artist_manager.artist_builders:
-            raise ValueError("Required artist 'dt-station-local' not found in the configuration file.")
+            raise ValueError(
+                "Required artist 'dt-station-local' not found in the configuration file."
+            )
 
         loadUi(os.path.abspath(os.path.join(os.path.dirname(__file__), "local_plotter.ui")), self)
         self.initialize_ui_elements()
@@ -31,12 +38,17 @@ class LocalPlotter(QDialog):
     def initialize_ui_elements(self):
         # Set the title label
         self.title_label.setText(f"Event {self.event.number} | {self.station.name}")
-        self.title_label.setStyleSheet("font-weight: bold; font-size: 14pt; qproperty-alignment: 'AlignCenter';")
+        self.title_label.setStyleSheet(
+            "font-weight: bold; font-size: 14pt; qproperty-alignment: 'AlignCenter';"
+        )
         # get the axes for the plots
         self.plot_widgets = {"phi": self.plot_widget_phi, "eta": self.plot_widget_eta}
-        self.axes = {"phi": self.plot_widget_phi.canvas.axes, "eta": self.plot_widget_eta.canvas.axes}
-        self.axes["phi"].set_title(r'$\phi$ View')
-        self.axes["eta"].set_title(r'$\eta$ View')
+        self.axes = {
+            "phi": self.plot_widget_phi.canvas.axes,
+            "eta": self.plot_widget_eta.canvas.axes,
+        }
+        self.axes["phi"].set_title(r"$\phi$ View")
+        self.axes["eta"].set_title(r"$\eta$ View")
 
         # Set axes in artist_manager
         self.artist_manager.ax_phi = self.axes["phi"]
@@ -50,7 +62,7 @@ class LocalPlotter(QDialog):
             pattern = r"^dt-(.+)-local$"
             match = re.match(pattern, name)
             if match:
-                checkbox_str = match.group(1).replace('-', ' ').capitalize()
+                checkbox_str = match.group(1).replace("-", " ").capitalize()
                 checkbox = QCheckBox(f"{checkbox_str}")
                 checkbox.setObjectName(name)
                 checkbox.setChecked(True)  # Default to checked
@@ -66,7 +78,11 @@ class LocalPlotter(QDialog):
 
     def _make_plots(self):
         _artist2include = ["dt-station-local"]
-        _artist2include += [name for name, checkbox in self.additional_artists_checkboxes.items() if checkbox.isChecked()]
+        _artist2include += [
+            name
+            for name, checkbox in self.additional_artists_checkboxes.items()
+            if checkbox.isChecked()
+        ]
         self._embed_artists(_artist2include)
 
     def checkbox_changed(self, state, name):
@@ -88,12 +104,18 @@ class LocalPlotter(QDialog):
     def _delete_artists(self, artist2delete=[""]):
         self.artist_manager.delete_artists(artist2delete)
 
+
 if __name__ == "__main__":
     from dtpr.base import NTuple
     from mpldts.geometry import Station
 
     ntuple = NTuple(
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"))
+        os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "../../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+            )
+        )
     )
     event = ntuple.events[9]
     station = Station(-2, 5, 2)

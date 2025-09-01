@@ -7,12 +7,13 @@ import matplotlib.pyplot as plt
 from mplhep import style
 import matplotlib
 
+
 def make_plots(
     ev: Event,
     artist_builders: Dict[str, Callable],
     name: Optional[str] = "test_dt_plot",
     path: Optional[str] = ".",
-    save: Optional[bool] = False
+    save: Optional[bool] = False,
 ) -> None:
     """
     Create and display or save DT plots for a given event.
@@ -56,6 +57,7 @@ def make_plots(
     del fig
     gc.collect()
 
+
 def plot_dt_chambers(
     inpath: str,
     outfolder: str,
@@ -65,7 +67,7 @@ def plot_dt_chambers(
     save: bool,
     wheel: Optional[int] = None,
     sector: Optional[int] = None,
-    artist_names: Optional[Union[List[str], str]] = None
+    artist_names: Optional[Union[List[str], str]] = None,
 ) -> None:
     """
     Generate and save or display DT plots from DTNTuples for a specific event.
@@ -139,6 +141,7 @@ def plot_dt_chambers(
 
     color_msg(f"Done!", color="green")
 
+
 if __name__ == "__main__":
     plot_dt_chambers(
         inpath="../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
@@ -146,5 +149,5 @@ if __name__ == "__main__":
         tag="test",
         maxfiles=-1,
         event_number=9,
-        save=False
+        save=False,
     )

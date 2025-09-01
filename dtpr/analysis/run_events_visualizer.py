@@ -4,7 +4,10 @@ from dtpr.utils.gui.events_visualizer import launch_visualizer
 import subprocess as bash
 from typing import Optional
 
-def open_visualizer(inpath: str, use_executable: Optional[bool] = False,  maxfiles: Optional[int] = -1) -> None:
+
+def open_visualizer(
+    inpath: str, use_executable: Optional[bool] = False, maxfiles: Optional[int] = -1
+) -> None:
     """
     Launch the events visualizer for a given input path.
 
@@ -21,6 +24,9 @@ def open_visualizer(inpath: str, use_executable: Optional[bool] = False,  maxfil
     if use_executable:
         color_msg("Using pre-built executable.", color="yellow")
         # Temporarily simulate running the executable by invoking the script via the command line.
-        bash.call(f"python {os.path.abspath(os.path.join(__file__,f'../../utils/gui/events_visualizer.py'))} {inpath}", shell=True)
+        bash.call(
+            f"python {os.path.abspath(os.path.join(__file__,f'../../utils/gui/events_visualizer.py'))} {inpath}",
+            shell=True,
+        )
     else:
         launch_visualizer(inpath, maxfiles=maxfiles)

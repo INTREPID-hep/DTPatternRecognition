@@ -3,7 +3,14 @@ import os
 import re
 from functools import cache
 from typing import Optional, Any, List
-from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QShortcut, QProgressBar, QCheckBox
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QListWidgetItem,
+    QShortcut,
+    QProgressBar,
+    QCheckBox,
+)
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QCursor, QKeySequence
@@ -16,6 +23,7 @@ from dtpr.base import NTuple
 WHEEL_UPDATE_DELAY_MS = 500
 SECTOR_UPDATE_DELAY_MS = 500
 STATUS_MESSAGE_TIMEOUT_MS = 2000
+
 
 class EventsVisualizer(QMainWindow):
     def __init__(self, inpath: str, maxfiles: int = -1) -> None:
@@ -32,9 +40,13 @@ class EventsVisualizer(QMainWindow):
         self.artist_manager = ArtistManager()
 
         if "dt-station-global" not in self.artist_manager.artist_builders:
-            raise ValueError("Required artists 'dt-station-global' not found in the configuration file.")
+            raise ValueError(
+                "Required artists 'dt-station-global' not found in the configuration file."
+            )
 
-        loadUi(os.path.abspath(os.path.join(os.path.dirname(__file__), "events_visualizer.ui")), self)
+        loadUi(
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "events_visualizer.ui")), self
+        )
         self.initialize_ui_elements()
         self.reset_ui_context()
         self.connect_signals()
@@ -57,7 +69,10 @@ class EventsVisualizer(QMainWindow):
         """
         # Get the axes for the plots
         self.plot_widgets = {"phi": self.plot_widget_phi, "eta": self.plot_widget_eta}
-        self.axes = {"phi": self.plot_widget_phi.canvas.axes, "eta": self.plot_widget_eta.canvas.axes}
+        self.axes = {
+            "phi": self.plot_widget_phi.canvas.axes,
+            "eta": self.plot_widget_eta.canvas.axes,
+        }
         self.artist_manager.ax_phi = self.axes["phi"]
         self.artist_manager.ax_eta = self.axes["eta"]
         # Enable nested docking to prevent blocking issues
@@ -83,7 +98,7 @@ class EventsVisualizer(QMainWindow):
             pattern = r"^dt-(.+)-global$"
             match = re.match(pattern, name)
             if match:
-                checkbox_str = match.group(1).replace('-', ' ').capitalize()
+                checkbox_str = match.group(1).replace("-", " ").capitalize()
                 checkbox = QCheckBox(f"{checkbox_str}")
                 checkbox.setObjectName(name)
                 checkbox.setChecked(True)  # Default to checked
@@ -124,7 +139,7 @@ class EventsVisualizer(QMainWindow):
             self.progress_bar,
             self.show_status_message,
             total_steps=total_events,
-            message=f"Loading {total_events} events..."
+            message=f"Loading {total_events} events...",
         ) as pb:
             for i, ev in enumerate(self.ntuple.tree):
                 item = QListWidgetItem(f"Event {i}")
@@ -135,7 +150,9 @@ class EventsVisualizer(QMainWindow):
                 if i % max(1, total_events // 20) == 0:
                     pb.update(i - pb.current_step, f"Loading events... {i + 1}/{total_events}")
             pb.update(total_events - pb.current_step, f"Successfully loaded {total_events} events")
-            self.show_status_message(f"Event list populated with {total_events} events", 2000, "success")
+            self.show_status_message(
+                f"Event list populated with {total_events} events", 2000, "success"
+            )
 
     def connect_signals(self) -> None:
         """
@@ -144,9 +161,13 @@ class EventsVisualizer(QMainWindow):
         self.eventslist_search_bar.editingFinished.connect(self.filter_event_list)
         self.eventtree_search_bar.editingFinished.connect(self.filter_event_tree)
         self.events_list.itemDoubleClicked.connect(self.event_list_item_inspection)
-        self.actionEvents_Box.triggered.connect(lambda checked: self.set_dock_widget_visibility(checked, "ev-box"))
-        self.actionEvent_inspector.triggered.connect(lambda checked: self.set_dock_widget_visibility(checked, "ev-inspector"))
-        
+        self.actionEvents_Box.triggered.connect(
+            lambda checked: self.set_dock_widget_visibility(checked, "ev-box")
+        )
+        self.actionEvent_inspector.triggered.connect(
+            lambda checked: self.set_dock_widget_visibility(checked, "ev-inspector")
+        )
+
         # Connect checkboxes for additional artists
         for name, checkbox in self.additional_artists_checkboxes.items():
             checkbox.stateChanged.connect(
@@ -155,7 +176,9 @@ class EventsVisualizer(QMainWindow):
 
         # Connect dock widget visibility changes to menu actions
         self.eventsBox_dockWidget.visibilityChanged.connect(self.actionEvents_Box.setChecked)
-        self.event_inspector_dockWidget.visibilityChanged.connect(self.actionEvent_inspector.setChecked)
+        self.event_inspector_dockWidget.visibilityChanged.connect(
+            self.actionEvent_inspector.setChecked
+        )
 
         # Connect tab widget changes to update selector states
         self.tabWidget.currentChanged.connect(self.update_selector_states)
@@ -177,7 +200,10 @@ class EventsVisualizer(QMainWindow):
             checked (bool): Whether the widget should be visible.
             dockwidget (str): Widget key ('ev-box' or 'ev-inspector').
         """
-        _dock_widget = {"ev-box": self.eventsBox_dockWidget, "ev-inspector": self.event_inspector_dockWidget}.get(dockwidget, None)
+        _dock_widget = {
+            "ev-box": self.eventsBox_dockWidget,
+            "ev-inspector": self.event_inspector_dockWidget,
+        }.get(dockwidget, None)
         if _dock_widget:
             _dock_widget.setVisible(checked)
 
@@ -227,7 +253,9 @@ class EventsVisualizer(QMainWindow):
         if filter_text == self._eventtree_search_bar_prevtext:
             return
         self._eventtree_search_bar_prevtext = filter_text
-        QTimer.singleShot(0, lambda: self.event_inspector.add_event_to_tree(self.current_event, filter_text))
+        QTimer.singleShot(
+            0, lambda: self.event_inspector.add_event_to_tree(self.current_event, filter_text)
+        )
 
     def event_list_item_inspection(self, item: QListWidgetItem) -> None:
         """
@@ -236,11 +264,18 @@ class EventsVisualizer(QMainWindow):
             item (QListWidgetItem): The clicked event item.
         """
         ev_index, ev_number = item.data(Qt.UserRole)
-        if ev_index == getattr(self.current_event, "index", -1):  # Check if the event is already loaded
+        if ev_index == getattr(
+            self.current_event, "index", -1
+        ):  # Check if the event is already loaded
             self.show_status_message(f"Event {ev_number} is already loaded", 2000, "warning")
             return
 
-        with ProgressBarManager(self.progress_bar, self.show_status_message, total_steps=100, message=f"Loading event {ev_number}...") as pb:
+        with ProgressBarManager(
+            self.progress_bar,
+            self.show_status_message,
+            total_steps=100,
+            message=f"Loading event {ev_number}...",
+        ) as pb:
             QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
             try:
                 self.current_event = self._load_event(ev_index)
@@ -252,7 +287,9 @@ class EventsVisualizer(QMainWindow):
                     return
 
                 pb.update(25, f"Adding event {ev_number} to inspector...")
-                QTimer.singleShot(0, lambda: self.event_inspector.add_event_to_tree(self.current_event))
+                QTimer.singleShot(
+                    0, lambda: self.event_inspector.add_event_to_tree(self.current_event)
+                )
 
                 pb.update(10, "Starting plot generation...")
                 self._make_plots()
@@ -294,7 +331,12 @@ class EventsVisualizer(QMainWindow):
         """
         if self.current_event is None:
             return
-        with ProgressBarManager(self.progress_bar, self.show_status_message, total_steps=100, message=f"{'Adding' if state == Qt.CheckState.Checked else 'Removing'} {name} artist...") as pb:
+        with ProgressBarManager(
+            self.progress_bar,
+            self.show_status_message,
+            total_steps=100,
+            message=f"{'Adding' if state == Qt.CheckState.Checked else 'Removing'} {name} artist...",
+        ) as pb:
             if QApplication.overrideCursor() is None:
                 QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
 
@@ -328,9 +370,15 @@ class EventsVisualizer(QMainWindow):
             # Reset artists for new plot
             self.artist_manager.artists_included[_faceview] = {}
 
-        with ProgressBarManager(self.progress_bar, self.show_status_message, total_steps=100, message=f"Plotting...") as pb:
+        with ProgressBarManager(
+            self.progress_bar, self.show_status_message, total_steps=100, message=f"Plotting..."
+        ) as pb:
             _artist2include = ["cms-shadow-global", "dt-station-global"]
-            _artist2include += [name for name, checkbox in self.additional_artists_checkboxes.items() if checkbox.isChecked()]
+            _artist2include += [
+                name
+                for name, checkbox in self.additional_artists_checkboxes.items()
+                if checkbox.isChecked()
+            ]
             self._embed_artists(_artist2include, faceview=faceview)
             pb.update(100, "Plotting done")
 
@@ -338,14 +386,15 @@ class EventsVisualizer(QMainWindow):
             if faceview is not None and _faceview != faceview:
                 continue
             self.mpl_connection_id[_faceview] = self.plot_widgets[_faceview].canvas.mpl_connect(
-                'pick_event',
-                lambda mpl_event: self.open_local_plotter(mpl_event.artist.station)
+                "pick_event", lambda mpl_event: self.open_local_plotter(mpl_event.artist.station)
             )
 
         if QApplication.overrideCursor() is not None:
             QApplication.restoreOverrideCursor()
 
-    def _embed_artists(self, artist2include: Optional[List[str]] = None, faceview: Optional[str] = None) -> None:
+    def _embed_artists(
+        self, artist2include: Optional[List[str]] = None, faceview: Optional[str] = None
+    ) -> None:
         if artist2include is None:
             artist2include = [""]
         """
@@ -375,7 +424,7 @@ class EventsVisualizer(QMainWindow):
         message: str,
         timeout: int = STATUS_MESSAGE_TIMEOUT_MS,
         type: Optional[str] = None,
-        show_progress: bool = False
+        show_progress: bool = False,
     ) -> None:
         """
         Show a status message in the status bar, with optional color and progress bar.
@@ -400,7 +449,9 @@ class EventsVisualizer(QMainWindow):
         self.statusBar.showMessage(f"{prefix}{message}", timeout)
 
         # Only show progress bar if explicitly requested or if we have an active progress context
-        if (show_progress or self._progress_context is not None) and not self.progress_bar.isVisible():
+        if (
+            show_progress or self._progress_context is not None
+        ) and not self.progress_bar.isVisible():
             self.progress_bar.setVisible(True)
             self.progress_bar.setRange(0, 100)
         QTimer.singleShot(timeout, lambda: self.statusBar.setStyleSheet(""))
@@ -419,6 +470,7 @@ class EventsVisualizer(QMainWindow):
         self.actionEvents_Box.setChecked(True)
         self.actionEvent_inspector.setChecked(True)
 
+
 def launch_visualizer(inpath: str, maxfiles: int = -1) -> None:
     app = QApplication(sys.argv)
     ex = EventsVisualizer(inpath, maxfiles)
@@ -435,7 +487,7 @@ if __name__ == "__main__":
         inpath = os.path.abspath(
             os.path.join(
                 __file__,
-                "../../../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"
+                "../../../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
             )
         )
 

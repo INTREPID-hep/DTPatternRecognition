@@ -1,4 +1,5 @@
-""" Miscelaneous """
+"""Miscelaneous"""
+
 from functools import partial
 import os
 import math
@@ -11,8 +12,15 @@ from dtpr.base.config import RUN_CONFIG
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 
-def color_msg(msg: str, color: Optional[str] = "none", indentLevel: Optional[int] = -1, return_str: Optional[bool] = False, 
-              bold: Optional[bool] = False, underline: Optional[bool] = False, bkg_color: Optional[str] = "none") -> Optional[str]:
+def color_msg(
+    msg: str,
+    color: Optional[str] = "none",
+    indentLevel: Optional[int] = -1,
+    return_str: Optional[bool] = False,
+    bold: Optional[bool] = False,
+    underline: Optional[bool] = False,
+    bkg_color: Optional[str] = "none",
+) -> Optional[str]:
     """
     Prints a message with ANSI coding so it can be printed with colors.
 
@@ -77,8 +85,14 @@ def color_msg(msg: str, color: Optional[str] = "none", indentLevel: Optional[int
         return None
 
 
-def warning_handler(message: str, category: type, filename: str, lineno: int, 
-                    file: Optional[Any] = None, line: Optional[str] = None) -> None:
+def warning_handler(
+    message: str,
+    category: type,
+    filename: str,
+    lineno: int,
+    file: Optional[Any] = None,
+    line: Optional[str] = None,
+) -> None:
     """
     Handles warnings by printing them with color formatting.
 
@@ -138,9 +152,7 @@ def error_handler(exc_type: type, exc_value: Exception, exc_traceback: Any) -> N
                     return_str=True,
                     indentLevel=-1,
                 ),
-                color_msg(
-                    f"{exc_value}", color="yellow", return_str=True, indentLevel=-1
-                ),
+                color_msg(f"{exc_value}", color="yellow", return_str=True, indentLevel=-1),
                 color_msg(
                     (
                         "Traceback (most recent call last):"
@@ -154,6 +166,7 @@ def error_handler(exc_type: type, exc_value: Exception, exc_traceback: Any) -> N
             ]
         )
     )
+
 
 def get_callable_from_src(src_str: str) -> Callable:
     """
@@ -187,6 +200,7 @@ def create_outfolder(outname: str) -> None:
     if not (os.path.exists(outname)):
         os.system("mkdir -p %s" % outname)
 
+
 def save_mpl_canvas(fig: plt.Figure, name: str, path: str = "./results", dpi: int = 500) -> None:
     """
     Save the given matplotlib figure to the specified path in SVG format.
@@ -201,8 +215,9 @@ def save_mpl_canvas(fig: plt.Figure, name: str, path: str = "./results", dpi: in
     :type dpi: int
     """
     create_outfolder(path)
-    fig.savefig(path + "/" + name+".svg", dpi=dpi)
+    fig.savefig(path + "/" + name + ".svg", dpi=dpi)
     return
+
 
 def append_to_matched_list(obj: Any, matched_list_name: str, item: Any) -> None:
     """
@@ -219,6 +234,7 @@ def append_to_matched_list(obj: Any, matched_list_name: str, item: Any) -> None:
         setattr(obj, matched_list_name, [])
     if item not in getattr(obj, matched_list_name):
         getattr(obj, matched_list_name).append(item)
+
 
 def get_unique_locs(particles: List[Any], loc_ids: List[str] = ["wh", "sc", "st"]) -> Set[Tuple]:
     """
@@ -242,10 +258,11 @@ def get_unique_locs(particles: List[Any], loc_ids: List[str] = ["wh", "sc", "st"
 
     return set(locs)
 
+
 def format_event_attribute_str(key: str, value: Any, indent: int) -> str:
     """
     Format an event attribute as a colored string.
-    
+
     :param key: The attribute key
     :type key: str
     :param value: The attribute value
@@ -255,15 +272,15 @@ def format_event_attribute_str(key: str, value: Any, indent: int) -> str:
     :return: The formatted string
     :rtype: str
     """
-    return (
-        color_msg(f"{key.capitalize()}:", color="green", indentLevel=indent, return_str=True)
-        + color_msg(f"{value}", color="none", indentLevel=-1, return_str=True)
-    )
+    return color_msg(
+        f"{key.capitalize()}:", color="green", indentLevel=indent, return_str=True
+    ) + color_msg(f"{value}", color="none", indentLevel=-1, return_str=True)
+
 
 def format_event_particles_str(ptype: str, particles: List[Any], indent: int) -> List[str]:
     """
     Format a list of particle objects as colored strings.
-    
+
     :param ptype: The type of particles
     :type ptype: str
     :param particles: The list of particles
@@ -276,72 +293,102 @@ def format_event_particles_str(ptype: str, particles: List[Any], indent: int) ->
     summary = [
         color_msg(f"{ptype.capitalize()}", color="green", indentLevel=indent, return_str=True),
         color_msg(
-            f"Number of {ptype}: {len(particles)}", color="purple", indentLevel=indent + 1,
-            return_str=True
+            f"Number of {ptype}: {len(particles)}",
+            color="purple",
+            indentLevel=indent + 1,
+            return_str=True,
         ),
     ]
 
     if ptype == "genmuons":
         for gm in particles:
             summary.append(
-                gm.__str__(indentLevel=indent + 1, color="cyan", exclude=["matched_tps", "matched_segments"]) + "\n"
+                gm.__str__(
+                    indentLevel=indent + 1,
+                    color="cyan",
+                    exclude=["matched_tps", "matched_segments"],
+                )
+                + "\n"
                 + color_msg(
-                    f"Matched offline - segments: {len(gm.matched_segments)}", color="none", indentLevel=indent + 2, return_str=True
-                ) + "\n"
+                    f"Matched offline - segments: {len(gm.matched_segments)}",
+                    color="none",
+                    indentLevel=indent + 2,
+                    return_str=True,
+                )
+                + "\n"
                 + color_msg(
-                    f"Matched AM TPs: {len(gm.matched_tps)}", color="none", indentLevel=indent + 2, return_str=True
+                    f"Matched AM TPs: {len(gm.matched_tps)}",
+                    color="none",
+                    indentLevel=indent + 2,
+                    return_str=True,
                 )
             )
 
     elif ptype == "segments":
         matches_segments = [seg for seg in particles if seg.matched_tps]
         if matches_segments:
-            summary.append(color_msg("Segs which match an AM-TP:", color="cyan", indentLevel=indent + 1, return_str=True))
+            summary.append(
+                color_msg(
+                    "Segs which match an AM-TP:",
+                    color="cyan",
+                    indentLevel=indent + 1,
+                    return_str=True,
+                )
+            )
             summary.extend(
-                seg.__str__(indentLevel=indent + 2, color="cyan", include=["wh", "sc", "st", "phi", "eta"])
+                seg.__str__(
+                    indentLevel=indent + 2, color="cyan", include=["wh", "sc", "st", "phi", "eta"]
+                )
                 for seg in matches_segments[:2]
             )
             if len(matches_segments) > 2:
-                summary.append(color_msg("...", color="cyan", indentLevel=indent + 2, return_str=True))
+                summary.append(
+                    color_msg("...", color="cyan", indentLevel=indent + 2, return_str=True)
+                )
 
     return summary
+
 
 def cast_cmaps(kargs_list: Dict[str, Dict[str, Any]]) -> None:
     """
     Convert colormap specifications to matplotlib colormap objects.
-    
+
     :param kargs_list: Dictionary of keyword arguments dictionaries
     :type kargs_list: Dict[str, Dict[str, Any]]
     """
-    if not isinstance(kargs_list, dict) or not all(isinstance(v, dict) for v in kargs_list.values()):
+    if not isinstance(kargs_list, dict) or not all(
+        isinstance(v, dict) for v in kargs_list.values()
+    ):
         return
     from matplotlib import colors
     from matplotlib.pyplot import get_cmap
+
     for kargs in kargs_list.values():
-        if 'cmap' in kargs:
-            cmap = kargs['cmap']
+        if "cmap" in kargs:
+            cmap = kargs["cmap"]
             if isinstance(cmap, colors.ListedColormap):
-                pass # Nothing to do
+                pass  # Nothing to do
             elif isinstance(cmap, str):
-                cmap=get_cmap(cmap)
+                cmap = get_cmap(cmap)
             elif isinstance(cmap, dict):
-                cmap=get_cmap(cmap['name'], cmap.get('N'))
+                cmap = get_cmap(cmap["name"], cmap.get("N"))
             elif isinstance(cmap, list):
-                cmap=colors.ListedColormap(cmap)
+                cmap = colors.ListedColormap(cmap)
             else:
                 raise ValueError(f"Unsupported colormap format: {cmap}")
-            cmap.set_under('None')
+            cmap.set_under("None")
             kargs.update(cmap=cmap)
-        if 'norm' in kargs:
-            norm = kargs['norm']
+        if "norm" in kargs:
+            norm = kargs["norm"]
             if isinstance(norm, dict):
-                class_name = norm.pop('class', 'Normalize')
+                class_name = norm.pop("class", "Normalize")
                 kargs.update(norm=getattr(colors, class_name)(**norm))
+
 
 def parse_plot_configs() -> Dict[str, Any]:
     """
     Parse DT plot configurations from RUN_CONFIG.
-    
+
     :return: A dictionary containing plot configuration elements
     :rtype: Dict[str, Any]
     """
@@ -363,16 +410,13 @@ def parse_plot_configs() -> Dict[str, Any]:
         cast_cmaps(artist_configs)
         artist[artist_name] = partial(artist_builder, **rep_info, **artist_configs)
 
-    return {
-        "mplhep_style": mplhep_style,
-        "figure_configs": figure_configs,
-        "artist": artist
-    }
+    return {"mplhep_style": mplhep_style, "figure_configs": figure_configs, "artist": artist}
+
 
 def parse_filter_text_4gui(filter_text: Optional[str]) -> Dict[str, Any]:
     """
     Parse filter text into a dictionary of filter arguments.
-    
+
     :param filter_text: The filter text to parse
     :type filter_text: Optional[str]
     :return: Dictionary of filter arguments
@@ -409,6 +453,7 @@ def deltaPhi(phi1: float, phi2: float) -> float:
         res += 2 * math.pi
     return res
 
+
 def deltaEta(eta1: float, eta2: float) -> float:
     """
     Calculates the difference in eta between two pseudorapidity values.
@@ -421,6 +466,7 @@ def deltaEta(eta1: float, eta2: float) -> float:
     :rtype: float
     """
     return abs(eta1 - eta2)
+
 
 def deltaR(p1: Any, p2: Any) -> float:
     """

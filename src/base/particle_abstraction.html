@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Particle Abstraction &mdash; DTPatternRecognition 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Event Abstraction" href="event_abstraction.html" />
+    <link rel="prev" title="Base" href="main.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="main.html">Base</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Particle Abstraction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dynamic-attribute-initialization">Dynamic Attribute Initialization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-particle-classes">Custom Particle Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="event_abstraction.html">Event Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ntuple_data_access.html">NTuple Data Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_management.html">Configuration Management</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="main.html">Base</a></li>
+      <li class="breadcrumb-item active">Particle Abstraction</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="particle-abstraction">
+<h1>Particle Abstraction<a class="headerlink" href="#particle-abstraction" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">Particle</span></code> class is a flexible base class for representing any object with properties in your
+analysis—such as physics particles (muons, electrons) or detector objects (hits, segments). It allows
+you to easily convert NTuple data into Python objects by initializing attributes from TTree branches,
+keyword arguments, or expressions. You can also extend this class to create your own custom particle types.</p>
+<p class="rubric">Example</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Particle</span></code> object can be created from scratch, defining its properties directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Particle</span>
+
+<span class="c1"># Create a Particle instance named &quot;Shower&quot; with an index and some attributes</span>
+<span class="n">my_shower</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wh</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nDigis</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Shower&quot;</span><span class="p">)</span>
+
+<span class="c1"># Print the particle&#39;s summary</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">my_shower</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Output</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&gt;&gt; Shower 0 info --&gt;
+    + Wh: 1, Sc: 3, St: 4, Ndigis: 10
+</pre></div>
+</div>
+<p>In this example:
+- <code class="docutils literal notranslate"><span class="pre">my_shower</span></code> is an instance of the <code class="docutils literal notranslate"><span class="pre">Particle</span></code> class.
+- <code class="docutils literal notranslate"><span class="pre">index=0</span></code> gives it a unique identifier.
+- <code class="docutils literal notranslate"><span class="pre">wh=1</span></code>, <code class="docutils literal notranslate"><span class="pre">sc=3</span></code>, <code class="docutils literal notranslate"><span class="pre">st=4</span></code>, <code class="docutils literal notranslate"><span class="pre">nDigis=10</span></code> are custom attributes representing properties such as
+the “wheel”, “sector”, “station” (detector locations), and “number of digis” (number of hits).
+- <code class="docutils literal notranslate"><span class="pre">name=&quot;Shower&quot;</span></code> assigns a descriptive name to the particle.</p>
+<p>This <code class="docutils literal notranslate"><span class="pre">Particle</span></code> object encapsulates all relevant information about the detected shower.</p>
+<section id="dynamic-attribute-initialization">
+<h2>Dynamic Attribute Initialization<a class="headerlink" href="#dynamic-attribute-initialization" title="Link to this heading"></a></h2>
+<p>The core functionality of the <code class="docutils literal notranslate"><span class="pre">Particle</span></code> class is implemented in the <code class="docutils literal notranslate"><span class="pre">_init_from_dict</span></code> method, which
+allows attributes to be defined dynamically. For each attribute, its value can be obtained from several sources:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">branch</span></code></p></td>
+<td><p>Read directly from a raw data branch (e.g., from an NTuple).</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'digi_wheel'</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">expr</span></code></p></td>
+<td><p>Calculate using a Python expression.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'time</span> <span class="pre">//</span> <span class="pre">25'</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src</span></code></p></td>
+<td><p>Call a Python function, passing the <code class="docutils literal notranslate"><span class="pre">Particle</span></code> itself to a callable.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'path.to.module.get_detector_side'</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">type</span></code></p></td>
+<td><p>Optionally convert the value to a specific data type.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'int'</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Understanding this mechanism enables the definition of particle initialization through the configuration file or passing directly.
+the dictionary-like structure to read from a ROOT TTree entry.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wh</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detector_side</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expr&quot;</span><span class="p">:</span> <span class="s2">&quot;&#39;+z&#39; if wh &gt; 0 else &#39;-z&#39;&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
+<span class="c1"># case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="c1"># Example usage</span>
+<span class="n">input_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
+        <span class="s2">&quot;../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ROOT</span><span class="w"> </span><span class="kn">import</span> <span class="n">TFile</span>
+
+<span class="c1"># first, create a TFile object to read the dt ntuple (this is not necessary by using NTuple Class)</span>
+<span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;pt&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_pt&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;eta&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_eta&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;phi&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_phi&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;charge&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_charge&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+<span class="k">with</span> <span class="n">TFile</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s2">&quot;read&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ntuple</span><span class="p">:</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ntuple</span><span class="p">[</span><span class="s2">&quot;dtNtupleProducer/DTTREE;1&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">iev</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+</pre></div>
+</div>
+<p class="rubric">Output</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&gt;&gt; GenMuon 0 info --&gt;
+    + Pt: 258.0812683105469, Eta: -1.9664770364761353, Phi: 0.5708979964256287, Charge: -1
+</pre></div>
+</div>
+<p>The following snippet from <code class="docutils literal notranslate"><span class="pre">run_config.yaml</span></code> demonstrates how “digis” (detector hits) are defined using these options:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># File: dtpr/utils/yamls/run_config.yaml</span>
+<span class="nt">particle_types</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">digis</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">amount</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_nDigis&#39;</span><span class="w"> </span><span class="c1"># How many digis to create, read from &#39;digi_nDigis&#39; branch</span>
+<span class="w">    </span><span class="nt">attributes</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">wh</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_wheel&#39;</span><span class="w"> </span><span class="c1"># &#39;wh&#39; attribute comes from &#39;digi_wheel&#39; branch</span>
+<span class="w">      </span><span class="nt">sc</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_sector&#39;</span>
+<span class="w">      </span><span class="c1"># ... other branch-based attributes ...</span>
+<span class="w">      </span><span class="nt">time</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_time&#39;</span>
+<span class="w">      </span><span class="nt">BX</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;time</span><span class="nv"> </span><span class="s">//</span><span class="nv"> </span><span class="s">25</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">time</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">None</span><span class="nv"> </span><span class="s">else</span><span class="nv"> </span><span class="s">None&#39;</span><span class="w"> </span><span class="c1"># &#39;BX&#39; computed from &#39;time&#39;</span>
+</pre></div>
+</div>
+<p>In this configuration:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">digis</span></code> particle type is configured to create as many instances as indicated by the <code class="docutils literal notranslate"><span class="pre">digi_nDigis</span></code> entry in the raw data.</p></li>
+<li><p>For each digi, its <code class="docutils literal notranslate"><span class="pre">wh</span></code> (wheel) attribute is read directly from the <code class="docutils literal notranslate"><span class="pre">digi_wheel</span></code> branch.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">BX</span></code> (Bunch Crossing) attribute is computed using a Python expression that divides the <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute by 25, illustrating how new information can be derived from existing attributes.</p></li>
+</ul>
+</section>
+<section id="custom-particle-classes">
+<h2>Custom Particle Classes<a class="headerlink" href="#custom-particle-classes" title="Link to this heading"></a></h2>
+<p>A custom particle class skeleton can be generated using the CLI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>create-particle<span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>output_folder<span class="o">]</span><span class="w"> </span>--name<span class="w"> </span>TestParticle
+</pre></div>
+</div>
+<p>This command creates a file <code class="docutils literal notranslate"><span class="pre">testparticle.py</span></code> with a template for your new class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generic Particle template generated by dtpr-package on Wed Apr 09 22:54:25 2025.</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     [Your Name]</span>
+<span class="c1"># Version:</span>
+<span class="c1">#     0.0</span>
+<span class="c1">#</span>
+<span class="c1"># This class is a template for a generic particle class. It inherits from dtpr.base.Particle which </span>
+<span class="c1"># provides needed methods such as &#39;__str__&#39; &#39;_init_from_ev&#39; and &#39;_init_from_dict&#39;. Implement other</span>
+<span class="c1"># class methods as needed.</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Particle</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TestParticle</span><span class="p">(</span><span class="n">Particle</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">ev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">branches</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a TestParticle instance.</span>
+
+<span class="sd">        description here...</span>
+
+<span class="sd">        :param index: The index of the TestParticle.</span>
+<span class="sd">        :type index: int</span>
+<span class="sd">        .</span>
+<span class="sd">        . (add more parameters here if needed)</span>
+<span class="sd">        .</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">ev</span><span class="p">,</span> <span class="n">branches</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1"># Test the class here</span>
+    <span class="n">particle_instance</span> <span class="o">=</span> <span class="n">TestParticle</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">particle_instance</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By inheriting from <code class="docutils literal notranslate"><span class="pre">Particle</span></code>, your class can initialize attributes from NTuple data and provides
+useful methods such as a colored string representation and equality comparison.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="main.html" class="btn btn-neutral float-left" title="Base" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="event_abstraction.html" class="btn btn-neutral float-right" title="Event Abstraction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

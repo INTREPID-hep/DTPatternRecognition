@@ -9,3 +9,4 @@
 *_build
 *pkl
 *pytest*
+*.lock

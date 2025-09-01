@@ -1,6 +1,6 @@
 # Pattern Recognition for DTs
 This package is intended to serve as a base framework for Trigger pattern recognition processes in the CMS Drift Tubes system,
-using as input data .root NTuples in a format similar to [this one](test-ntuple). It is basically a flat tree structure, where
+using as input data `.root` NTuples in a format similar to [this one](test-ntuple). It is basically a flat tree structure, where
 each branch represents a property of a CMS event or particle(s).
 
 Since the framework was developed in the context of the Drift Tube detectors, it also includes visualization tools considering
@@ -13,30 +13,23 @@ Take a look at the [Contributors](CONTRIBUTING.md) and [Developers](DEVELOPERS.m
 
 ## Installation
 
-You can install the latest version of the package directly from GitHub using pip:
+You can install any version of the package directly from GitHub using pip:
 
 ```shell
 pip install "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
-```
-
-Or, if you prefer to use Poetry for dependency and environment management:
-
-```shell
-poetry add "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
-```
-
-If you want to work with the source and editable installs, you can initialize and build the environment with Poetry:
-
-```shell
-poetry install
-poetry shell
-```
-
-To check if the package was installed successfully, run:
-
-```shell  
+# To check if the package was installed successfully, run:
 pip show DTPatternRecognition
 ```
+
+Or, if you prefer to use Poetry for dependency and environment management, you can add the package to your existing Poetry project using:
+
+```shell
+poetry add "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git#[TAG_VERSION]"
+# To check if the package was installed successfully, run:
+poetry show DTPatternRecognition
+```
+
+If you are dev and and you want to work with the source and editable installs, you can follow the instructions in the [Developers](DEVELOPERS.md) guide.
 
 > [!IMPORTANT]
 > The package requires PyROOT, so you should have it installed and available in your environment.  

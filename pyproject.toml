@@ -1,40 +1,84 @@
-[tool.poetry]
+[project]
 name = "DTPatternRecognition"
 version = "3.0.0"
 description = "Set of tools to implement pattern recognition algorithms on CMS DTs"
-authors = ["Your Name <you@example.com>"]
 readme = "README.md"
+authors = [
+  { name = "Daniel Estrada", email = "destrada@cern.ch" }
+]
+maintainers = [
+  { name = "Daniel Estrada", email = "destrada@cern.ch" }
+]
+documentation = "https://danielestrada971102.github.io/DTPatternRecognition"
+requires-python = ">=3.9"
+
+dependencies = [
+    "numpy>=1.23,<2.0",
+    "pandas>=2.2",
+    "matplotlib>=3.9",
+    "mplhep>=0.3",
+    "PyYAML>=5.4.1",
+    "pyqt5>=5.15",
+    "tqdm>=4.6",
+    "natsort>=8.4",
+    "multiprocess>=0.7",
+    "more-itertools>=10.0",
+    "mplDTs @ git+https://github.com/DanielEstrada971102/mplDTs.git@v2.2.0-beta"
+]
+
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+    "sphinx-design",
+    "sphinxcontrib-mermaid",
+]
+dev = [
+    "pytest",
+    "black"
+]
+
+[project.scripts]
+dtpr = "dtpr.cli:main"
+
+[tool.poetry]
+packages = [
+    { include = "dtpr" }
+]
 
 [tool.poetry.dependencies]
+# It requires ROOT >=6.32 , it is not installable with PyPI, so, install it separately...
 python = ">=3.9"
-numpy = ">=2.0"
+numpy = ">=1.23,<2.0"
 pandas = ">=2.2"
 matplotlib = ">=3.9"
 mplhep = ">=0.3"
 PyYAML = ">=5.4.1"
-argparse = "*"
-pyqt5 = "*"
+pyqt5 = ">=5.15"
 tqdm = ">=4.6"
 natsort = ">=8.4"
 multiprocess = ">=0.7"
 more-itertools = ">=10.0"
-mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", rev = "v2.2.1-beta" }
-# ROOT is not available on PyPI, will be installed in CI
+mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", rev = "v2.2.0-beta" }
+
+[tool.poetry.group.docs]
+optional = true
 
 [tool.poetry.group.dev]
 optional = true
 
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.group.docs.dependencies]
 sphinx = "*"
 sphinx-rtd-theme = "*"
-sphinx-copybutton = "*"
+sphinx-copybutton = "*" 
 sphinx-design = "*"
+sphinxcontrib-mermaid = "*"
+
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 black = "*"
 
-[tool.poetry.scripts]
-dtpr = "dtpr.cli:main"
-
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

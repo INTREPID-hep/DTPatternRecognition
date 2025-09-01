@@ -6,24 +6,63 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>base &mdash; DTPatternRecognition 1.0.0 documentation</title>
+  <title>Base &mdash; DTPatternRecognition 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/documentation_options.js?v=acc74ff5"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+const load = async () => {
+    await mermaid.run();
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_to_add_zoom = 1 === -1 ? all_mermaids.length : 1;
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    if(mermaids_to_add_zoom > 0) {
+        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-6bbe37d8-ab80-45ed-91e1-b5c339e86153] svg");
+        if(all_mermaids.length !== mermaids_processed.length) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else if(svgs.size() !== mermaids_to_add_zoom) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else {
+            svgs.each(function() {
+                var svg = d3.select(this);
+                svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                var inner = svg.select("g");
+                var zoom = d3.zoom().on("zoom", function(event) {
+                    inner.attr("transform", event.transform);
+                });
+                svg.call(zoom);
+            });
+        }
+    }
+};
+
+window.addEventListener("load", load);
+</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Particle" href="particle.html" />
-    <link rel="prev" title="inspect-event" href="../analysis/inspect-event.html" /> 
+    <link rel="next" title="Particle Abstraction" href="particle_abstraction.html" />
+    <link rel="prev" title="Installation" href="../installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,16 +86,15 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../analysis/main.html">analysis</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">base</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="particle.html">Particle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event.html">Event</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ntuple.html">NTuple</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event_list.html">EventList</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Base</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="particle_abstraction.html">Particle Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="event_abstraction.html">Event Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ntuple_data_access.html">NTuple Data Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_management.html">Configuration Management</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../particles/main.html">particles</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../utils/main.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
 
         </div>
@@ -73,7 +111,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">base</li>
+      <li class="breadcrumb-item active">Base</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
               <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
@@ -85,23 +123,58 @@
            <div itemprop="articleBody">
              
   <section id="base">
-<h1>base<a class="headerlink" href="#base" title="Link to this heading"></a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">dtpr.base</span></code> module provides a collection of classes designed to simplify and enhance the manipulation
+<h1>Base<a class="headerlink" href="#base" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">dtpr.base</span></code> module provides a collection of core classes designed to simplify and enhance the manipulation
 of <strong>Event</strong> data extracted from ROOT TTrees of <strong>NTuples</strong>. These classes enable efficient extraction,
-transformation, and analysis of event information.</p>
+transformation, and analysis of event information in a structured, object-oriented way.</p>
+<p>The main abstractions are:</p>
+<ul class="simple">
+<li><p><strong>Particle</strong>: Represents a single physics object (e.g., muon, electron) with its properties.</p></li>
+<li><p><strong>Event</strong>: Aggregates particles and event-level information, providing an intuitive interface for event-by-event analysis.</p></li>
+<li><p><strong>NTuple</strong>: Handles access to ROOT files and trees, mapping data into Event and Particle objects.</p></li>
+<li><p><strong>EventList</strong>: Provides iterable access to collections of events.</p></li>
+</ul>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>The base classes handle reading and processing data from input files using a central configuration
 file, such as <a class="reference download internal" download="" href="../../_downloads/f5460224d6fd97fc70da64df3fa38483/run_config.yaml"><code class="xref download docutils literal notranslate"><span class="pre">run_config.yaml</span></code></a>. Throughout the documentation,
 you will find details on the configurable parameters that allow support for various data formats.</p>
 </div>
-<div class="toctree-wrapper compound">
+<p class="rubric">Visual Overview</p>
+<pre align="center" data-zoom-id="id-6bbe37d8-ab80-45ed-91e1-b5c339e86153" id="dtpr-visual-overview" class="mermaid align-center">
+        flowchart TD
+    A0[&quot;Particle Abstraction&quot;]
+    A1[&quot;Event Abstraction&quot;]
+    A2[&quot;NTuple Data Access&quot;]
+    A3[&quot;Configuration Management&quot;]
+    A4[&quot;Command Line Interface (CLI)&quot;]
+    A5[&quot;Event Preprocessing and Filtering&quot;]
+    A6[&quot;Histogram Filling&quot;]
+    A7[&quot;Matplotlib Plotting&quot;]
+    A8[&quot;Events Visualizer (GUI)&quot;]
+    A1 -- &quot;Aggregates&quot; --&gt; A0
+    A2 -- &quot;Provides&quot; --&gt; A1
+    A3 -- &quot;Configures&quot; --&gt; A2
+    A3 -- &quot;Configures&quot; --&gt; A1
+    A4 -- &quot;Loads&quot; --&gt; A3
+    A2 -- &quot;Applies&quot; --&gt; A5
+    A5 -- &quot;Operates on&quot; --&gt; A1
+    A6 -- &quot;Processes&quot; --&gt; A1
+    A3 -- &quot;Defines&quot; --&gt; A6
+    A4 -- &quot;Invokes&quot; --&gt; A6
+    A7 -- &quot;Visualizes&quot; --&gt; A1
+    A3 -- &quot;Configures&quot; --&gt; A7
+    A4 -- &quot;Invokes&quot; --&gt; A7
+    A8 -- &quot;Inspects&quot; --&gt; A1
+    A8 -- &quot;Uses&quot; --&gt; A7
+    A4 -- &quot;Launches&quot; --&gt; A8
+    </pre><div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="particle.html">Particle</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event.html">Event</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ntuple.html">NTuple</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event_list.html">EventList</a></li>
+<li class="toctree-l1"><a class="reference internal" href="particle_abstraction.html">Particle Abstraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_abstraction.html">Event Abstraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ntuple_data_access.html">NTuple Data Access</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_management.html">Configuration Management</a></li>
 </ul>
 </div>
 </section>
@@ -110,8 +183,8 @@ you will find details on the configurable parameters that allow support for vari
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../analysis/inspect-event.html" class="btn btn-neutral float-left" title="inspect-event" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="particle.html" class="btn btn-neutral float-right" title="Particle" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="particle_abstraction.html" class="btn btn-neutral float-right" title="Particle Abstraction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

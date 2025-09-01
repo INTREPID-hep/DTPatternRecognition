@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Histogram Filling &mdash; DTPatternRecognition 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+const load = async () => {
+    await mermaid.run();
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_to_add_zoom = 1 === -1 ? all_mermaids.length : 1;
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    if(mermaids_to_add_zoom > 0) {
+        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-7ab3301f-4f24-4aa1-8e31-31f1981f639b] svg");
+        if(all_mermaids.length !== mermaids_processed.length) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else if(svgs.size() !== mermaids_to_add_zoom) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else {
+            svgs.each(function() {
+                var svg = d3.select(this);
+                svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                var inner = svg.select("g");
+                var zoom = d3.zoom().on("zoom", function(event) {
+                    inner.attr("transform", event.transform);
+                });
+                svg.call(zoom);
+            });
+        }
+    }
+};
+
+window.addEventListener("load", load);
+</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Event Inspection" href="events_inspection.html" />
+    <link rel="prev" title="Command Line Interface (CLI)" href="command_line_interface.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base/main.html">Base</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Histogram Filling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events_inspection.html">Event Inspection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="matplotlib_plotting.html">Matplotlib Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+      <li class="breadcrumb-item active">Histogram Filling</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="histogram-filling">
+<h1>Histogram Filling<a class="headerlink" href="#histogram-filling" title="Link to this heading"></a></h1>
+<p>The histogram filling tool in DTPatternRecognition automates the process of extracting physics quantities
+from your events and populating ROOT histograms for further analysis or plotting. You define <em>what</em> to
+fill and <em>how</em> to extract the values, and the framework handles the repetitive event loop and output file creation.</p>
+<p>You specify which histograms to fill and how to fill them using a combination of your configuration
+file and Python modules that define the histogram logic. This system is highly
+flexible: you can add new histograms, change their binning, or update their filling logic without
+modifying the core analysis code.</p>
+<p class="rubric">General Format for Histogram Definitions</p>
+<p>Histograms should be defined in a Python dictionary called <code class="docutils literal notranslate"><span class="pre">histos</span></code> within your source modules. The supported formats are:</p>
+<p><strong>For Flat Distributions (1D, 2D, 3D):</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;HISTONAME&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;distribution&quot;</span><span class="p">,</span>  <span class="c1"># also supports &quot;distribution2d&quot;, &quot;distribution3d&quot;</span>
+    <span class="s2">&quot;histo&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;HISTONAME&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;TitleX; Events&#39;</span><span class="p">,</span> <span class="n">nBins</span><span class="p">,</span> <span class="n">firstBin</span><span class="p">,</span> <span class="n">lastBin</span><span class="p">),</span>
+    <span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="n">__function_for_filling_histograms__</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">HISTONAME</span></code>: The name that will appear in the output <code class="docutils literal notranslate"><span class="pre">.root</span></code> file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">func</span></code>: A function that provides the value(s) for filling the histogram. It takes the <code class="docutils literal notranslate"><span class="pre">reader</span></code> (an <code class="docutils literal notranslate"><span class="pre">Event</span></code> instance) as input.</p></li>
+</ul>
+<p><strong>For Efficiencies:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;HISTONAME&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;eff&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;histoDen&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;Denominator name&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;TitleX; Events&#39;</span><span class="p">,</span> <span class="n">nBins</span><span class="p">,</span> <span class="n">firstBin</span><span class="p">,</span> <span class="n">lastBin</span><span class="p">),</span>
+    <span class="s2">&quot;histoNum&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;Numerator name&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;TitleX; Events&#39;</span><span class="p">,</span> <span class="n">nBins</span><span class="p">,</span> <span class="n">firstBin</span><span class="p">,</span> <span class="n">lastBin</span><span class="p">),</span>
+    <span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="n">__function_for_filling_histogram__</span><span class="p">,</span>
+    <span class="s2">&quot;numdef&quot;</span><span class="p">:</span> <span class="n">__condition_for_numerator__</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">func</span></code>: Returns the value(s) to fill for the denominator.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">numdef</span></code>: Returns a boolean or list of booleans (same length as <code class="docutils literal notranslate"><span class="pre">func</span></code> output) to determine which entries go into the numerator.</p></li>
+</ul>
+<p class="rubric">Example</p>
+<p>Suppose you want to study:</p>
+<ol class="arabic simple">
+<li><p>The transverse momentum (<span class="math notranslate nohighlight">\(p_T\)</span>) of the leading generator muon in each event.</p></li>
+<li><p>The <span class="math notranslate nohighlight">\(\Delta R\)</span> between the generator muons (see <a class="reference internal" href="base/ntuple_data_access.html#preprocessor-selector-examples"><span class="std std-ref">Example: Preprocessor and Selector Functions</span></a>).</p></li>
+<li><p>The efficiency of a trigger algorithm (e.g., <cite>AM</cite>) by wheel and station type.</p></li>
+</ol>
+<p>You want to fill these into ROOT histograms and save them for later analysis.</p>
+<p class="rubric">Step 1: Specify Histogram Sources and Names</p>
+<p>First, tell DTPatternRecognition where to find your histogram definitions and which ones to fill. In your <code class="docutils literal notranslate"><span class="pre">run_config.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">histo_sources</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dtpr.utils.histograms</span><span class="w">   </span><span class="c1"># Contains muon-related histograms</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my.path.to.am_histos</span><span class="w">    </span><span class="c1"># Contains AM efficiency/rate histograms</span>
+
+<span class="nt">histo_names</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LeadingMuon_pt</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">muon_DR</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">seg_eff_MB1</span>
+</pre></div>
+</div>
+<p>This tells the framework to look for histogram definitions in the specified Python modules and to fill only the listed histograms.</p>
+<p class="rubric">Step 2: Define Histograms in Python</p>
+<p>In your source modules (e.g., <code class="docutils literal notranslate"><span class="pre">dtpr/utils/histograms.py</span></code>), define your histograms in a dictionary called <code class="docutils literal notranslate"><span class="pre">histos</span></code>. For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ROOT</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">r</span>
+
+<span class="n">histos</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">histos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="s2">&quot;LeadingMuon_pt&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;distribution&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;histo&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;LeadingMuon_pt&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;Leading muon p_T; Events&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+        <span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">reader</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">genmuons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pt</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;muon_DR&quot;</span> <span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span> <span class="p">:</span> <span class="s2">&quot;distribution&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;histo&quot;</span> <span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;muon_DR&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;#DeltaR both muons; Events&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+    <span class="s2">&quot;func&quot;</span> <span class="p">:</span> <span class="k">lambda</span> <span class="n">reader</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">dR</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>For efficiency histograms, you can use the following structure (and also use auxiliary functions):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">am_eff_func</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">station</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">wh</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">list_of_offline_segments_that_match_genmuon</span> <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">st</span> <span class="o">==</span> <span class="n">station</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">am_eff_numdef</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">station</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span> <span class="nb">len</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">am_tps_matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">list_of_offline_segments_that_match_genmuon</span> <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">st</span> <span class="o">==</span> <span class="n">station</span><span class="p">]</span>
+
+<span class="n">histos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="s2">&quot;seg_eff_MB1&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;eff&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;histoDen&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;Denominator&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;p_</span><span class="si">{T}</span><span class="s1">; Events&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+        <span class="s2">&quot;histoNum&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;Numerator&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;p_</span><span class="si">{T}</span><span class="s1">; Events&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+        <span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">reader</span><span class="p">:</span> <span class="n">am_eff_func</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s2">&quot;numdef&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">reader</span><span class="p">:</span> <span class="n">am_eff_numdef</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="p">},</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p><strong>Key fields:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: The histogram type (<cite>distribution</cite>, <cite>distribution2d</cite>, <cite>distribution3d</cite>, or <cite>eff</cite> for efficiency).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">histo</span></code>/<code class="docutils literal notranslate"><span class="pre">histoDen</span></code>/<code class="docutils literal notranslate"><span class="pre">histoNum</span></code>: The ROOT histogram objects.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">func</span></code>: A function that extracts the value(s) to fill from the event (the <code class="docutils literal notranslate"><span class="pre">reader</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">numdef</span></code>: For efficiency histograms, a function that returns a boolean or list of booleans indicating which entries go into the numerator.</p></li>
+</ul>
+<p class="rubric">Step 3: Run the Histogram Filling Tool</p>
+<p>Once your configuration and histogram definitions are set, run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>fill-histos<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span><span class="w"> </span>-cf<span class="w"> </span><span class="o">[</span>CONFIGFILE<span class="o">]</span><span class="w"> </span><span class="o">[</span>other<span class="w"> </span>options<span class="o">]</span>
+</pre></div>
+</div>
+<p>You can also run the histogram filling in parallel by specifying the number of CPU cores with the <code class="docutils literal notranslate"><span class="pre">-c</span></code> or <code class="docutils literal notranslate"><span class="pre">--ncores</span></code> argument:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>fill-histos<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span><span class="w"> </span>-cf<span class="w"> </span><span class="o">[</span>CONFIGFILE<span class="o">]</span><span class="w"> </span>-c<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+<p>This will process your events using 4 CPU cores, speeding up the filling for large datasets.</p>
+<p class="rubric">How It Works</p>
+<ul class="simple">
+<li><p>The tool loads the histogram definitions from the modules listed in <code class="docutils literal notranslate"><span class="pre">histo_sources</span></code>.</p></li>
+<li><p>Only the histograms listed in <code class="docutils literal notranslate"><span class="pre">histo_names</span></code> are filled.</p></li>
+<li><p>For each event, the tool calls the <code class="docutils literal notranslate"><span class="pre">func</span></code> for each histogram, passing the event object (<code class="docutils literal notranslate"><span class="pre">reader</span></code>).</p></li>
+<li><p>For efficiency histograms, it also evaluates <code class="docutils literal notranslate"><span class="pre">numdef</span></code> to determine which entries go into the numerator.</p></li>
+<li><p>The filled histograms are saved to a ROOT file for further analysis or plotting.</p></li>
+<li><p>When running in parallel, temporary files are merged automatically at the end.</p></li>
+</ul>
+<p class="rubric">Advanced Usage</p>
+<pre align="center" data-zoom-id="id-7ab3301f-4f24-4aa1-8e31-31f1981f639b" id="histogram-filling-diagram" class="mermaid align-center">
+        sequenceDiagram
+    participant User
+    participant dtpr CLI
+    participant RUN_CONFIG
+    participant NTuple
+    participant EventList
+    participant Event
+    participant Histogram Filler
+
+    User-&gt;&gt;dtpr CLI: dtpr fill-histos ...
+    dtpr CLI-&gt;&gt;RUN_CONFIG: Load/Update config (histo_sources, histo_names)
+    dtpr CLI-&gt;&gt;Histogram Filler: Call fill_histos(inpath, outfolder, ...)
+    Histogram Filler-&gt;&gt;Histogram Filler: Call set_histograms_dict()
+    Histogram Filler-&gt;&gt;RUN_CONFIG: Request histo_sources and histo_names
+    Note over Histogram Filler: Loads Python modules and initializes ROOT histograms
+    Histogram Filler-&gt;&gt;NTuple: Create NTuple(inpath)
+    NTuple--&gt;&gt;Histogram Filler: NTuple object ready (contains EventList)
+
+    loop For each event in NTuple.events
+        Histogram Filler-&gt;&gt;EventList: Request next Event
+        EventList-&gt;&gt;NTuple: Get raw data entry
+        NTuple-&gt;&gt;Event: Create Event(raw data)
+        Note over Event: Event dynamically builds Particles (Chapter 2)
+        NTuple-&gt;&gt;NTuple: Apply Preprocessors &amp; Filters (Chapter 4)
+        NTuple--&gt;&gt;EventList: Return processed Event (or None)
+        EventList--&gt;&gt;Histogram Filler: Return Event
+
+        alt If Event is not None
+            Histogram Filler-&gt;&gt;Histogram Filler: Call fill_histograms(Event, all_histograms)
+            loop For each configured histogram
+                Histogram Filler-&gt;&gt;Event: Call histogram's 'func' (e.g., event.genmuons[0].pt)
+                Event--&gt;&gt;Histogram Filler: Return value
+                Histogram Filler-&gt;&gt;ROOT Histogram: Fill(value)
+            end
+        end
+    end
+    Histogram Filler-&gt;&gt;Histogram Filler: Call save_histograms()
+    Histogram Filler-&gt;&gt;ROOT File: Write all filled histograms
+    Histogram Filler--&gt;&gt;dtpr CLI: Done
+    dtpr CLI--&gt;&gt;User: Output messages
+    </pre><p>You can also use the <strong>methods</strong> <code class="docutils literal notranslate"><span class="pre">fill_histograms</span></code> and <code class="docutils literal notranslate"><span class="pre">save_histograms</span></code> from the <code class="docutils literal notranslate"><span class="pre">dtpr.analysis.fill_histograms</span></code> module directly in your own scripts for more customized workflows.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="command_line_interface.html" class="btn btn-neutral float-left" title="Command Line Interface (CLI)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="events_inspection.html" class="btn btn-neutral float-right" title="Event Inspection" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -17,25 +17,28 @@ You can install the latest version of the package directly from GitHub using pip
 
 ```shell
 pip install "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
+# To check if the package was installed successfully, run:
+pip show DTPatternRecognition
+
 ```
 
 Or, if you prefer to use Poetry for dependency and environment management:
 
 ```shell
 poetry add "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
+# To check if the package was installed successfully, run:
+poetry show DTPatternRecognition
 ```
 
 If you want to work with the source and editable installs, you can initialize and build the environment with Poetry:
 
 ```shell
 poetry install
+# Then you can execute commands by prefixing them with `poetry run`, e.g.,
+# to check if the package was installed successfully, run:
+poetry run dtpr --help
+# Or you can also go into a virtual environment where the package is installed with
 poetry shell
-```
-
-To check if the package was installed successfully, run:
-
-```shell  
-pip show DTPatternRecognition
 ```
 
 > [!IMPORTANT]

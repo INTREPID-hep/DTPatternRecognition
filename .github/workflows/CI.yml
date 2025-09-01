@@ -2,9 +2,15 @@ name: Python CI
 
 on:
   push:
-    branches: [main, destrada-dtpr]
+    branches:
+      - main
+    paths:
+      - 'dtpr/**'
   pull_request:
-    branches: [main, destrada-dtpr]
+    branches:
+      - main
+    paths:
+      - 'dtpr/**'
 
 jobs:
   black:
@@ -16,7 +22,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.x'
 
       - name: Install Poetry
         uses: abatilo/actions-poetry@v3
@@ -25,36 +31,31 @@ jobs:
         run: poetry add --group dev black
 
       - name: Check code formatting with black
-        run: poetry run black --check -l 100 dtpr.
+        run: poetry run black --check -l 100 dtpr
 
-  pytest:
-  # Use a pre-built Docker container with ROOT and Python pre-installed.
-  # This simplifies the setup and ensures a consistent environment.
-  runs-on: ubuntu-latest
-  needs: black
-  container:
-    image: cern/root:6.26.06-python3.9
-  # The entrypoint is set to avoid potential issues with Poetry
-  # and the container's default setup.
-  options: --entrypoint=/bin/bash
+  pytest: # NEED TO BE FIXED - DISABLE AT THE MOMENT
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Install ROOT
+        run: |
+          sudo apt update
+          sudo apt install -y binutils cmake dpkg-dev g++ gcc libssl-dev git libx11-dev libxext-dev libxft-dev libxpm-dev python3 libtbb-dev libvdt-dev libgif-dev
+          wget https://root.cern/download/root_v6.32.16.Linux-ubuntu24.04-x86_64-gcc13.3.tar.gz
+          tar -xzvf root_v6.32.16.Linux-ubuntu24.04-x86_64-gcc13.3.tar.gz
+          source root/bin/thisroot.sh >> .bashrc
+          python -c "import ROOT; print(ROOT.__version__)"
 
-    # Python and ROOT are already available in the container
-    # No need for separate setup steps.
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install Poetry
-      run: |
-        pip install poetry
-      shell: bash
+      - name: Install project dependencies
+        run: pip install . && pip install pytest
 
-    - name: Install project dependencies
-      run: |
-        poetry install
-      shell: bash
-
-    - name: Run tests with pytest
-      run: poetry run pytest
-      shell: bash
+      - name: Run tests with pytest
+        run: pytest

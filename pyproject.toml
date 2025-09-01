@@ -4,16 +4,18 @@ version = "3.0.0"
 description = "Set of tools to implement pattern recognition algorithms on CMS DTs"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
+packages = [
+    { include = "dtpr" }
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9"
-numpy = ">=2.0"
+numpy = ">=1.23,<2.0"
 pandas = ">=2.2"
 matplotlib = ">=3.9"
 mplhep = ">=0.3"
 PyYAML = ">=5.4.1"
-argparse = "*"
-pyqt5 = "*"
+pyqt5 = ">=5.15"
 tqdm = ">=4.6"
 natsort = ">=8.4"
 multiprocess = ">=0.7"
@@ -21,14 +23,12 @@ more-itertools = ">=10.0"
 mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", rev = "v2.2.0-beta" }
 # ROOT is not available on PyPI, will be installed in CI
 
-[tool.poetry.group.dev]
-optional = true
-
 [tool.poetry.group.dev.dependencies]
 sphinx = "*"
 sphinx-rtd-theme = "*"
 sphinx-copybutton = "*"
 sphinx-design = "*"
+sphinxcontrib-mermaid = "*"
 pytest = "*"
 black = "*"
 

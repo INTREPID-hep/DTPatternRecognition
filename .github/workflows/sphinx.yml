@@ -1,6 +1,10 @@
 name: "Sphinx: Render docs"
 
-on: push
+on:
+  push:
+    branches: [main, destrada-dtpr]
+  pull_request:
+    branches: [main, destrada-dtpr]
 
 jobs:
   build:

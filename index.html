@@ -6,25 +6,23 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DT Pattern Recognition Package &mdash; DTPatternRecognition 3.0.0 documentation</title>
+  <title>DT Pattern Recognition Package &mdash; DTPatternRecognition 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="_static/copybutton.js?v=f281be69"></script>
-      <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installation" href="src/installation.html" /> 
+    <link rel="next" title="analysis" href="src/analysis/main.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,9 +46,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="src/installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src/base/main.html">Base</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src/command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/analysis/main.html">analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/base/main.html">base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/particles/main.html">particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/utils/main.html">utils</a></li>
 </ul>
 
         </div>
@@ -80,11 +79,9 @@
              
   <section id="dt-pattern-recognition-package">
 <h1>DT Pattern Recognition Package<a class="headerlink" href="#dt-pattern-recognition-package" title="Link to this heading"></a></h1>
-<p>This package is intended to serve as a base framework for Trigger pattern recognition processes in the CMS Drift Tubes system,
-using as input data <code class="docutils literal notranslate"><span class="pre">.root</span></code> NTuples in a format similar to <a class="reference download internal" download="" href="_downloads/c501ed77dbcc84dbc55f57ac73f7b198/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"><code class="xref download docutils literal notranslate"><span class="pre">this</span> <span class="pre">one</span></code></a>.
-Since the framework was developed in the context of the Drift Tube detectors, it also includes visualization tools considering
-the geometrical features of the CMS DT system by using another auxiliary package <a class="reference external" href="https://danielestrada971102.github.io/mplDTs">mplDTs</a>
-and custom implementations in the <code class="docutils literal notranslate"><span class="pre">dtpr/utils/dt_plot_functions.py</span></code> module.</p>
+<p>This package provides a set of base tools for implementing pattern recognition algorithms for the CMS DT system
+using input data in NTuples format. It also includes visualization tools for DT Ntuples, taking into account
+the geometrical features of the CMS DT system by using another auxiliary package <a class="reference external" href="https://github.com/DanielEstrada971102/mplDTs">mplDTs</a>.</p>
 <p>The core idea of this framework is to simplify the analysis of input data by adopting an event-by-event approach
 using Python classes. This approach makes the code more intuitive and readable. For example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">muon</span> <span class="ow">in</span> <span class="n">events</span><span class="o">.</span><span class="n">genmuons</span><span class="p">:</span>
@@ -102,40 +99,74 @@ using Python classes. This approach makes the code more intuitive and readable. 
 data formats since the mapping of input data into Python classes is configurable through a <code class="docutils literal notranslate"><span class="pre">YAML</span></code> <a class="reference download internal" download="" href="_downloads/f5460224d6fd97fc70da64df3fa38483/run_config.yaml"><code class="xref download docutils literal notranslate"><span class="pre">configuration</span> <span class="pre">file</span></code></a>, as you will
 see along the different sections. The idea is that this allows users to adapt the framework to their specific needs.</p>
 <p>Some useful, and as general as possible, tools using the framework have been implemented to facilitate some common tasks
-such as filling ROOT histograms, or inspecting or visualizing information from the NTuples. They are accessible through the
-<code class="docutils literal notranslate"><span class="pre">dtpr</span></code> CLI command and are described in the <a class="reference internal" href="src/command_line_interface.html"><span class="doc">Command Line Interface (CLI)</span></a> section. Reading, manipulating, and mapping
+such as fill ROOT histograms, or inspect or visualize information from the NTuples. They are accessible through the
+<cite>dtpr</cite> CLI command and are described in the <a class="reference internal" href="src/analysis/main.html"><span class="doc">analysis</span></a> section. But, reading, manipulating, and mapping
 the information from the input files into the respective classes are handled
-by central classes, just go around the <a class="reference internal" href="src/base/main.html"><span class="doc">Base</span></a> section to know more about them.</p>
-<p>Bear in mind that the package is under development, so feel free to contribute, report bugs, or suggest improvements.
-Take a look at the <a class="reference external" href="https://github.com/DanielEstrada971102/DTPatternRecognition/blob/main/CONTRIBUTING.md">Contributors</a>
-and <a class="reference external" href="https://github.com/DanielEstrada971102/DTPatternRecognition/blob/main/DEVELOPERS.md">Developers</a> guides.</p>
+by central classes, just go around the <a class="reference internal" href="src/base/main.html"><span class="doc">base</span></a> section to know more about them.</p>
+<p>Bear in mind that the package is just in its early stages, so feel free to contribute, report bugs, or suggest improvements.
+Take a look at the :<a class="reference external" href="https://github.com/DanielEstrada971102/DTPatternRecognition/CONTRIBUTING.md">Contributors</a> and
+<a class="reference external" href="https://github.com/DanielEstrada971102/DTPatternRecognition/DEVELOPERS.md">Developers</a> guides.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>First, download the source files or clone the repository:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/DanielEstrada971102/DTPatternRecognition.git
+<span class="nb">cd</span><span class="w"> </span>DTPatternRecognition
+</pre></div>
+</div>
+<p>You can then install the package with pip by running:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+<p>To check if the package was installed successfully, run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>show<span class="w"> </span>DTPatternRecognition
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Be aware that the package requires PyROOT, so you should have it installed. If you are working in
+a Python virtual environment, ensure to include ROOT in it. To do this, use the command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>--system-site-packages<span class="w"> </span>ROOT<span class="w"> </span>ENV_DIR<span class="o">[</span>ENV_DIR<span class="w"> </span>...<span class="o">]</span>
+</pre></div>
+</div>
+</div>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="src/installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="src/base/main.html">Base</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="src/base/particle_abstraction.html">Particle Abstraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/base/event_abstraction.html">Event Abstraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/base/ntuple_data_access.html">NTuple Data Access</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/base/configuration_management.html">Configuration Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/analysis/main.html">analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/fill-histos.html">fill-histos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/plot-dts.html">plot-dt / plot-dts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/event-visualizer.html">event-visualizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/analysis/inspect-event.html">inspect-event</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="src/command_line_interface.html">Command Line Interface (CLI)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="src/histogram_filling.html">Histogram Filling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/events_inspection.html">Event Inspection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/matplotlib_plotting.html">Matplotlib Plotting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="src/events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/base/main.html">base</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/base/particle.html">Particle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/base/event.html">Event</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/base/ntuple.html">NTuple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/base/event_list.html">EventList</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src/particles/main.html">particles</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/particles/gen_muon.html">GenMuon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/particles/segment.html">Segment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/particles/g4digi.html">G4Digi</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src/utils/main.html">utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/utils/functions.html">functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/utils/config.html">config</a></li>
 </ul>
 </li>
 </ul>
 </div>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="src/installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="src/analysis/main.html" class="btn btn-neutral float-right" title="analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

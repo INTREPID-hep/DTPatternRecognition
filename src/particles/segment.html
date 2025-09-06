@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>base &mdash; DTPatternRecognition 1.0.0 documentation</title>
+  <title>Segment &mdash; DTPatternRecognition 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -22,8 +22,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Particle" href="particle.html" />
-    <link rel="prev" title="inspect-event" href="../analysis/inspect-event.html" /> 
+    <link rel="next" title="G4Digi" href="g4digi.html" />
+    <link rel="prev" title="GenMuon" href="gen_muon.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,14 +48,13 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../analysis/main.html">analysis</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">base</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="particle.html">Particle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event.html">Event</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ntuple.html">NTuple</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event_list.html">EventList</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../base/main.html">base</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="main.html">particles</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gen_muon.html">GenMuon</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Segment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="g4digi.html">G4Digi</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../particles/main.html">particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../utils/main.html">utils</a></li>
 </ul>
 
@@ -73,7 +72,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">base</li>
+          <li class="breadcrumb-item"><a href="main.html">particles</a></li>
+      <li class="breadcrumb-item active">Segment</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
               <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
@@ -84,34 +84,16 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="base">
-<h1>base<a class="headerlink" href="#base" title="Link to this heading"></a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">dtpr.base</span></code> module provides a collection of classes designed to simplify and enhance the manipulation
-of <strong>Event</strong> data extracted from ROOT TTrees of <strong>NTuples</strong>. These classes enable efficient extraction,
-transformation, and analysis of event information.</p>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>The base classes handle reading and processing data from input files using a central configuration
-file, such as <a class="reference download internal" download="" href="../../_downloads/f5460224d6fd97fc70da64df3fa38483/run_config.yaml"><code class="xref download docutils literal notranslate"><span class="pre">run_config.yaml</span></code></a>. Throughout the documentation,
-you will find details on the configurable parameters that allow support for various data formats.</p>
-</div>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="particle.html">Particle</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event.html">Event</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ntuple.html">NTuple</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event_list.html">EventList</a></li>
-</ul>
-</div>
+  <section id="segment">
+<h1>Segment<a class="headerlink" href="#segment" title="Link to this heading"></a></h1>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../analysis/inspect-event.html" class="btn btn-neutral float-left" title="inspect-event" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="particle.html" class="btn btn-neutral float-right" title="Particle" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="gen_muon.html" class="btn btn-neutral float-left" title="GenMuon" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="g4digi.html" class="btn btn-neutral float-right" title="G4Digi" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

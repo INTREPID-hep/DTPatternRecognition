@@ -34,7 +34,7 @@ const load = async () => {
     const mermaids_to_add_zoom = 1 === -1 ? all_mermaids.length : 1;
     const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
     if(mermaids_to_add_zoom > 0) {
-        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-2adc2641-8a5e-41e8-ade6-b202f19cbf88] svg");
+        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-3119ce0b-4018-4cce-8fd8-ffe52113d291] svg");
         if(all_mermaids.length !== mermaids_processed.length) {
             // try again in a sec, wait for mermaids to load
             setTimeout(load, 200);
@@ -168,7 +168,7 @@ If you specify a configuration file with <code class="docutils literal notransla
 The CLI knows which Python function to call for each subcommand (e.g.,
 <code class="docutils literal notranslate"><span class="pre">dtpr.analysis.fill_histograms.fill_histos</span></code>) and executes it, passing all relevant arguments.</p></li>
 </ol>
-<pre align="center" data-zoom-id="id-2adc2641-8a5e-41e8-ade6-b202f19cbf88" id="cli-view" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-3119ce0b-4018-4cce-8fd8-ffe52113d291" id="cli-view" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI

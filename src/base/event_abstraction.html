@@ -33,7 +33,7 @@ const load = async () => {
     const mermaids_to_add_zoom = 1 === -1 ? all_mermaids.length : 1;
     const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
     if(mermaids_to_add_zoom > 0) {
-        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-2ababcb9-ae87-43cd-aece-cd7b6cb3ba46] svg");
+        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-b1a36df4-4580-44dc-97a9-52ecea2176f5] svg");
         if(all_mermaids.length !== mermaids_processed.length) {
             // try again in a sec, wait for mermaids to load
             setTimeout(load, 200);
@@ -208,7 +208,7 @@ the <code class="docutils literal notranslate"><span class="pre">__getattr__</sp
 </div>
 <p class="rubric">How this Event is Built</p>
 <p>The process of building the <code class="docutils literal notranslate"><span class="pre">Event</span></code> and populating it with <code class="docutils literal notranslate"><span class="pre">Particle</span></code> objects can be visualized as follows:</p>
-<pre align="center" data-zoom-id="id-2ababcb9-ae87-43cd-aece-cd7b6cb3ba46" id="event-building-process" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-b1a36df4-4580-44dc-97a9-52ecea2176f5" id="event-building-process" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant Event

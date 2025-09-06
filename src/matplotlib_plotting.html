@@ -33,7 +33,7 @@ const load = async () => {
     const mermaids_to_add_zoom = 1 === -1 ? all_mermaids.length : 1;
     const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
     if(mermaids_to_add_zoom > 0) {
-        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-948c13b0-0c7d-4d39-ac80-4f90f42761ad] svg");
+        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-d671dd0b-ee28-42ca-b279-6c9cdcd0cc1a] svg");
         if(all_mermaids.length !== mermaids_processed.length) {
             // try again in a sec, wait for mermaids to load
             setTimeout(load, 200);
@@ -198,7 +198,7 @@ You can add your own artists by defining new functions and referencing them in t
 <p>DTPatternRecognition combines your configuration, the event data, and Matplotlib to create these visualizations.</p>
 <p>The plotting process involves the <code class="docutils literal notranslate"><span class="pre">dtpr</span></code> CLI dispatching to the <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> function, which then
 consults <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code> for plotting instructions and uses artist-builder functions to draw on Matplotlib axes.</p>
-<pre align="center" data-zoom-id="id-948c13b0-0c7d-4d39-ac80-4f90f42761ad" id="dtpr-plotting" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-d671dd0b-ee28-42ca-b279-6c9cdcd0cc1a" id="dtpr-plotting" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI

@@ -34,7 +34,7 @@ const load = async () => {
     const mermaids_to_add_zoom = 1 === -1 ? all_mermaids.length : 1;
     const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
     if(mermaids_to_add_zoom > 0) {
-        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-57fce05e-6d5f-49b9-b2db-530cf9b68756] svg");
+        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-1f650bc3-f4d4-4fac-892c-7b1143af3a30] svg");
         if(all_mermaids.length !== mermaids_processed.length) {
             // try again in a sec, wait for mermaids to load
             setTimeout(load, 200);
@@ -247,7 +247,7 @@ modifying the core analysis code.</p>
 <li><p>When running in parallel, temporary files are merged automatically at the end.</p></li>
 </ul>
 <p class="rubric">Advanced Usage</p>
-<pre align="center" data-zoom-id="id-57fce05e-6d5f-49b9-b2db-530cf9b68756" id="histogram-filling-diagram" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-1f650bc3-f4d4-4fac-892c-7b1143af3a30" id="histogram-filling-diagram" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI

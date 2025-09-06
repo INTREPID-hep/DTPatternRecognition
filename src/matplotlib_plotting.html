@@ -1,0 +1,430 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matplotlib Plotting &mdash; DTPatternRecognition 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+const load = async () => {
+    await mermaid.run();
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_to_add_zoom = 1 === -1 ? all_mermaids.length : 1;
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    if(mermaids_to_add_zoom > 0) {
+        var svgs = d3.selectAll(".mermaid[data-zoom-id=id-948c13b0-0c7d-4d39-ac80-4f90f42761ad] svg");
+        if(all_mermaids.length !== mermaids_processed.length) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else if(svgs.size() !== mermaids_to_add_zoom) {
+            // try again in a sec, wait for mermaids to load
+            setTimeout(load, 200);
+            return;
+        } else {
+            svgs.each(function() {
+                var svg = d3.select(this);
+                svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                var inner = svg.select("g");
+                var zoom = d3.zoom().on("zoom", function(event) {
+                    inner.attr("transform", event.transform);
+                });
+                svg.call(zoom);
+            });
+        }
+    }
+};
+
+window.addEventListener("load", load);
+</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Events Visualizer (GUI)" href="events_visualizer_gui.html" />
+    <link rel="prev" title="Event Inspection" href="events_inspection.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base/main.html">Base</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="histogram_filling.html">Histogram Filling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events_inspection.html">Event Inspection</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Matplotlib Plotting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#plot-dt">plot-dt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-dts">plot-dts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+      <li class="breadcrumb-item active">Matplotlib Plotting</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="matplotlib-plotting">
+<h1>Matplotlib Plotting<a class="headerlink" href="#matplotlib-plotting" title="Link to this heading"></a></h1>
+<p>This framework provides tools for visualizing DT chamber data at the drift cell level using Matplotlib,
+with full support for custom plotting functions and flexible configuration. The plotting tools (<code class="docutils literal notranslate"><span class="pre">plot-dt</span></code> and <code class="docutils literal notranslate"><span class="pre">plot-dts</span></code>)
+leverage a modular artist system and the <code class="docutils literal notranslate"><span class="pre">mpldts</span></code> package to create high-quality visualizations of detector data.</p>
+<p>The plotting system is highly configurable: you define which plotting <code class="docutils literal notranslate"><span class="pre">artists</span></code> (functions that draw specific features) to use, how to color the cells, and which event or chamber to visualize—all through your YAML configuration file. This enables you to easily switch between different visualization styles or add new features without changing the core plotting code.</p>
+<p class="rubric">Configuration Example</p>
+<p>In your <code class="docutils literal notranslate"><span class="pre">run_config.yaml</span></code>, you specify the plotting configuration under the <code class="docutils literal notranslate"><span class="pre">plot_configs</span></code> key. Here is a typical example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plot_configs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mplhep-style</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;CMS&#39;</span><span class="w">         </span><span class="c1"># Style to use for the plots</span>
+
+<span class="w">  </span><span class="nt">figure-configs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">figure.dpi</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w">             </span><span class="c1"># Dots per inch (resolution)</span>
+<span class="w">    </span><span class="nt">axes.titlesize</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;small&#39;</span><span class="w">     </span><span class="c1"># Axes title size</span>
+<span class="w">    </span><span class="nt">axes.labelsize</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;x-small&#39;</span><span class="w">   </span><span class="c1"># Axes label size</span>
+<span class="w">    </span><span class="nt">xtick.labelsize</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;x-small&#39;</span><span class="w">  </span><span class="c1"># X-axis tick label size</span>
+<span class="w">    </span><span class="nt">ytick.labelsize</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;x-small&#39;</span><span class="w">  </span><span class="c1"># Y-axis tick label size</span>
+<span class="w">    </span><span class="nt">legend.fontsize</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;small&#39;</span><span class="w">    </span><span class="c1"># Legend font size</span>
+
+<span class="w">  </span><span class="nt">artists</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">dt-station-global</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;dt-station-global</span>
+<span class="w">      </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.dt_plot_functions.embed_dts2axes&quot;</span>
+<span class="w">      </span><span class="nt">rep-info</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digis&#39;</span>
+<span class="w">        </span><span class="nt">cmap_var</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;time&#39;</span>
+<span class="w">      </span><span class="nt">bounds_kwargs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">facecolor</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;lightgray&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightyellow&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightpink&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;lightblue&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">edgecolor</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;k&quot;</span>
+<span class="w">        </span><span class="nt">alpha</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.3</span>
+<span class="w">        </span><span class="nt">linewidth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
+<span class="w">      </span><span class="nt">cells_kwargs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">edgecolor</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;k&quot;</span>
+<span class="w">        </span><span class="nt">linewidth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.025</span>
+<span class="w">        </span><span class="nt">cmap</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;viridis&#39;</span>
+<span class="w">        </span><span class="nt">norm</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Normalize&#39;</span>
+<span class="w">          </span><span class="nt">vmin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">299</span>
+<span class="w">          </span><span class="nt">vmax</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+
+<span class="w">    </span><span class="nt">dt-station-local</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="nv">*dt-station-global</span>
+<span class="w">      </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.dt_plot_functions.embed_dt2axes&quot;</span>
+
+<span class="w">    </span><span class="nt">dt-am-tps-global</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.dt_plot_functions.embed_segs2axes_glob&quot;</span>
+<span class="w">      </span><span class="nt">rep-info</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;tps&#39;</span>
+<span class="w">        </span><span class="nt">cmap_var</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;quality&#39;</span>
+<span class="w">      </span><span class="nt">segs_kwargs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">linewidth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.8</span>
+<span class="w">        </span><span class="nt">cmap</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;viridis&#39;</span>
+<span class="w">          </span><span class="nt">N</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9</span>
+<span class="w">        </span><span class="nt">norm</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;BoundaryNorm&#39;</span>
+<span class="w">          </span><span class="nt">boundaries</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">6</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">7</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">8</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">9</span><span class="p p-Indicator">]</span>
+<span class="w">          </span><span class="nt">ncolors</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9</span>
+<span class="w">          </span><span class="nt">clip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="c1"># ...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Each artist is a Python function (see <code class="docutils literal notranslate"><span class="pre">dtpr/utils/dt_plot_functions.py</span></code>) that receives the event
+and plotting axes, and draws a specific feature (e.g., digis, segments, showers, or detector outlines).
+You can add your own artists by defining new functions and referencing them in the configuration.</p>
+</div>
+<p class="rubric">How It Works</p>
+<p>DTPatternRecognition combines your configuration, the event data, and Matplotlib to create these visualizations.</p>
+<p>The plotting process involves the <code class="docutils literal notranslate"><span class="pre">dtpr</span></code> CLI dispatching to the <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> function, which then
+consults <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code> for plotting instructions and uses artist-builder functions to draw on Matplotlib axes.</p>
+<pre align="center" data-zoom-id="id-948c13b0-0c7d-4d39-ac80-4f90f42761ad" id="dtpr-plotting" class="mermaid align-center">
+        sequenceDiagram
+    participant User
+    participant dtpr CLI
+    participant RUN_CONFIG
+    participant plot_dt_chamber
+    participant Event
+    participant Artist Builder
+    participant Matplotlib
+
+    User-&gt;&gt;dtpr CLI: dtpr plot-dt ...
+    dtpr CLI-&gt;&gt;RUN_CONFIG: Load/Update config (plot_configs, artists)
+    dtpr CLI-&gt;&gt;plot_dt_chamber: Call plot_dt_chamber(inpath, ...)
+    plot_dt_chamber-&gt;&gt;Event: Load specific Event (e.g., event 11)
+    Event--&gt;&gt;plot_dt_chamber: Returns Event object
+
+    plot_dt_chamber-&gt;&gt;RUN_CONFIG: Request plot_configs, artist builders
+    RUN_CONFIG--&gt;&gt;plot_dt_chamber: Returns style, fig configs, artist_builders dict
+
+    plot_dt_chamber-&gt;&gt;Matplotlib: Set overall style (mplhep) and figure configs
+    plot_dt_chamber-&gt;&gt;Matplotlib: Create Figure and Axes (phi, eta views)
+
+    loop For each selected Artist (e.g., &quot;dt-station-local&quot;)
+        plot_dt_chamber-&gt;&gt;Artist Builder: Call embed_dt2axes(ev, wh, sc, st, ax_phi, ax_eta, ...)
+        Note over Artist Builder: Filters event for particles. Uses mpldts.patches.DTStationPatch
+        Artist Builder--&gt;&gt;Matplotlib: Adds patches/plots to axes
+    end
+
+    plot_dt_chamber-&gt;&gt;Matplotlib: Adjust layouts, add colorbar
+    plot_dt_chamber-&gt;&gt;Matplotlib: Show or Save plot
+    Matplotlib--&gt;&gt;plot_dt_chamber: Plot rendered
+    plot_dt_chamber--&gt;&gt;dtpr CLI: Done
+    dtpr CLI--&gt;&gt;User: Output messages / Image file
+    </pre><p><strong>Explanation of the Flow:</strong></p>
+<p>1.  <strong>CLI Invokes ``plot_dt_chamber``</strong>: You run the <code class="docutils literal notranslate"><span class="pre">dtpr</span> <span class="pre">plot-dt</span></code> command. The CLI (after configuring <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code>)
+calls the <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> function from <code class="docutils literal notranslate"><span class="pre">dtpr/analysis/plot_dt_chamber.py</span></code>.</p>
+<ol class="arabic simple" start="2">
+<li><p><strong>Load Event</strong>: The <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> function loads the specific <code class="docutils literal notranslate"><span class="pre">Event</span></code> object you requested (e.g., event 11) using the [NTuple Data Access](ntuple_data_access.html). This <code class="docutils literal notranslate"><span class="pre">Event</span></code> will have all its <code class="docutils literal notranslate"><span class="pre">Particle</span></code> objects and preprocessed data ready.</p></li>
+<li><p><strong>Parse Plot Configuration</strong>: It then calls <code class="docutils literal notranslate"><span class="pre">parse_plot_configs()</span></code> (from <code class="docutils literal notranslate"><span class="pre">dtpr/utils/functions.py</span></code>) which consults <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code> to get the <code class="docutils literal notranslate"><span class="pre">mplhep-style</span></code>, <code class="docutils literal notranslate"><span class="pre">figure-configs</span></code>, and a dictionary of all available <code class="docutils literal notranslate"><span class="pre">artist_builders</span></code> (Python functions linked to artist names).</p>
+<ul class="simple">
+<li><p><em>A note on ``artist_builders``</em>: <code class="docutils literal notranslate"><span class="pre">parse_plot_configs</span></code> doesn’t just return the function paths; it dynamically imports the functions and uses <code class="docutils literal notranslate"><span class="pre">functools.partial</span></code> to pre-fill them with the <code class="docutils literal notranslate"><span class="pre">rep-info</span></code> and styling <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> defined in <code class="docutils literal notranslate"><span class="pre">run_config.yaml</span></code>. This means the <code class="docutils literal notranslate"><span class="pre">artist_builder</span></code> functions receive all their specific configuration upfront.</p></li>
+</ul>
+</li>
+<li><p><strong>Setup Matplotlib</strong>: <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> uses the retrieved <code class="docutils literal notranslate"><span class="pre">mplhep-style</span></code> and <code class="docutils literal notranslate"><span class="pre">figure-configs</span></code> to set up Matplotlib’s global plotting style. It then creates a <code class="docutils literal notranslate"><span class="pre">matplotlib.figure.Figure</span></code> (the canvas) and <code class="docutils literal notranslate"><span class="pre">matplotlib.axes._axes.Axes</span></code> (the individual plots, one for phi view, one for eta view).</p></li>
+<li><p><strong>Build and Embed Artists</strong>: For each <code class="docutils literal notranslate"><span class="pre">artist-name</span></code> you specified in the CLI (e.g., <code class="docutils literal notranslate"><span class="pre">dt-station-local</span></code>), <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> retrieves the corresponding <code class="docutils literal notranslate"><span class="pre">artist_builder</span></code> function from its dictionary. It calls this <code class="docutils literal notranslate"><span class="pre">artist_builder</span></code> function, passing it the <code class="docutils literal notranslate"><span class="pre">Event</span></code> object, the chamber location (<code class="docutils literal notranslate"><span class="pre">wheel</span></code>, <code class="docutils literal notranslate"><span class="pre">sector</span></code>, <code class="docutils literal notranslate"><span class="pre">station</span></code>), and the Matplotlib <code class="docutils literal notranslate"><span class="pre">Axes</span></code> objects.</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">artist_builder</span></code> function (e.g., <code class="docutils literal notranslate"><span class="pre">embed_dt2axes</span></code> in <code class="docutils literal notranslate"><span class="pre">dtpr/utils/dt_plot_functions.py</span></code>) then performs the actual drawing. It filters the <code class="docutils literal notranslate"><span class="pre">Event</span></code>’s particles (e.g., <code class="docutils literal notranslate"><span class="pre">digis</span></code>) for the specific chamber, and uses specialized <code class="docutils literal notranslate"><span class="pre">mpldts</span></code> classes like <code class="docutils literal notranslate"><span class="pre">DTStationPatch</span></code> to create visual elements (patches) that represent the detector geometry and data. These patches are then added to the Matplotlib <code class="docutils literal notranslate"><span class="pre">Axes</span></code>.</p></li>
+</ul>
+</li>
+<li><p><strong>Final Touches and Output</strong>: After all artists are added, <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> adjusts the plot layout, adds a color bar (if needed), and then either displays the plot window (<code class="docutils literal notranslate"><span class="pre">plt.show()</span></code>) or saves it to a file (<code class="docutils literal notranslate"><span class="pre">save_mpl_canvas()</span></code>) as specified by the <code class="docutils literal notranslate"><span class="pre">--save</span></code> argument.</p></li>
+</ol>
+<p class="rubric">Usage</p>
+<p>To visualize a single DT chamber, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>plot-dt<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span><span class="w"> </span>-cf<span class="w"> </span><span class="o">[</span>CONFIG_FILE<span class="o">]</span><span class="w"> </span>-evn<span class="w"> </span><span class="m">0</span><span class="w"> </span>--wheel<span class="w"> </span><span class="m">2</span><span class="w"> </span>--sector<span class="w"> </span><span class="m">1</span><span class="w"> </span>--station<span class="w"> </span><span class="m">1</span><span class="w"> </span>--artist-names<span class="w"> </span><span class="o">[</span>ARTIST_NAMES<span class="w"> </span>...<span class="o">]</span>
+</pre></div>
+</div>
+<p>This will produce a plot for the specified chamber and event, using the artists and style defined in
+your configuration (use <code class="docutils literal notranslate"><span class="pre">--artist-names</span> <span class="pre">all</span></code> to include all available artists).</p>
+<p>To visualize all chambers in an event, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>plot-dts<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span><span class="w"> </span>-cf<span class="w"> </span><span class="o">[</span>CONFIG_FILE<span class="o">]</span><span class="w"> </span>-evn<span class="w"> </span><span class="m">0</span><span class="w"> </span>--artist-names<span class="w"> </span><span class="o">[</span>ARTIST_NAMES<span class="w"> </span>...<span class="o">]</span>
+</pre></div>
+</div>
+<p>This will generate a multi-panel plot showing all wheels for the selected event (if <code class="docutils literal notranslate"><span class="pre">--artist-names</span></code> ìs not specified at least the DT chambers are plotted).</p>
+<a class="reference internal image-reference" href="../_images/dt_plots_ev0.svg"><img alt="../_images/dt_plots_ev0.svg" class="align-center" src="../_images/dt_plots_ev0.svg" style="width: 800px;" />
+</a>
+<p class="rubric">Customization and Advanced Features</p>
+<ul class="simple">
+<li><p><strong>Custom Artists:</strong> You can define your own plotting functions in Python and add them to the <code class="docutils literal notranslate"><span class="pre">artists</span></code> section of your configuration. Each artist receives the event and axes, and can use any Matplotlib or mpldts features.</p></li>
+<li><p><strong>Flexible Colormaps:</strong> The <code class="docutils literal notranslate"><span class="pre">cmap_var</span></code> and <code class="docutils literal notranslate"><span class="pre">norm</span></code> options allow you to color cells by any numerical variable (e.g., time, BX, quality) and control the color scaling.</p></li>
+<li><p><strong>Multiple Overlays:</strong> You can combine multiple artists (e.g., digis, segments, showers, detector outlines) in a single plot by listing them in the configuration.</p></li>
+<li><p><strong>Styles:</strong> The <code class="docutils literal notranslate"><span class="pre">mplhep-style</span></code> and <code class="docutils literal notranslate"><span class="pre">figure-configs</span></code> options let you match the look and feel of HEP styles.</p></li>
+</ul>
+<p class="rubric">General Format for Custom Artists</p>
+<p>Each artist entry in your configuration should follow this general structure:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">artists</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">artist-name</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;path.to.your_function&quot;</span>
+<span class="w">    </span><span class="nt">rep-info</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your_particle_type&quot;</span>
+<span class="w">      </span><span class="nt">cmap_var</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your_variable_for_colormap&quot;</span><span class="w">   </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="c1"># kwargs_for_your_function</span>
+<span class="w">    </span><span class="nt">key1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value1</span>
+<span class="w">    </span><span class="nt">key2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value2</span>
+<span class="w">    </span><span class="c1"># ... more kwargs as needed</span>
+</pre></div>
+</div>
+<p><strong>Where:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">artist-name</span></code>: A unique name for your artist (used to reference it in plotting).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src</span></code>: The Python import path to your plotting function.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rep-info</span></code>: A dictionary of arguments that will be passed to your function (e.g., which particle type to plot, which variable to use for coloring).</p></li>
+<li><p>Additional keys (e.g., <code class="docutils literal notranslate"><span class="pre">cells_kwargs</span></code>, <code class="docutils literal notranslate"><span class="pre">bounds_kwargs</span></code>, etc.) are passed as keyword arguments to your function for further customization.</p></li>
+</ul>
+<p>Your Python artist function should have the following signature:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_artist_function</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">wheel</span><span class="p">,</span> <span class="n">sector</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">ax_phi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax_eta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">particle_type</span><span class="o">=</span><span class="s1">&#39;digis&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="c1"># ... implementation ...</span>
+    <span class="k">return</span> <span class="n">patch_phi</span><span class="p">,</span> <span class="n">patch_eta</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>It must return a tuple of Matplotlib objects (patches, lines, etc.) for the phi and eta views, or <code class="docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">None)</span></code> if not applicable.</p></li>
+<li><p>All returned objects should support the <code class="docutils literal notranslate"><span class="pre">.remove()</span></code> method for proper plot management.</p></li>
+</ul>
+<p class="rubric">Example: Adding a Custom Artist</p>
+<p>Suppose you want to overlay a scatter plot of simHits on top of your digis. First, define a function, for instance, in <code class="docutils literal notranslate"><span class="pre">dtpr/utils/dt_plot_functions.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">wheel</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">sector</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">station</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">ax_phi</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ax_eta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">particle_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;simhits&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">PathCollection</span><span class="p">]],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">PathCollection</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Embed simHits data into local phi and/or eta axes as scatter points.</span>
+
+<span class="sd">    :param ev: Event containing simhit data</span>
+<span class="sd">    :type ev: Event</span>
+<span class="sd">    :param wheel: Wheel identifier</span>
+<span class="sd">    :type wheel: int</span>
+<span class="sd">    :param sector: Sector identifier</span>
+<span class="sd">    :type sector: int</span>
+<span class="sd">    :param station: Station identifier</span>
+<span class="sd">    :type station: int</span>
+<span class="sd">    :param ax_phi: Matplotlib axes for phi view</span>
+<span class="sd">    :type ax_phi: Optional[Axes]</span>
+<span class="sd">    :param ax_eta: Matplotlib axes for eta view</span>
+<span class="sd">    :type ax_eta: Optional[Axes]</span>
+<span class="sd">    :param particle_type: Type of particles to plot</span>
+<span class="sd">    :type particle_type: str</span>
+<span class="sd">    :param kwargs: Additional arguments for scatter plots</span>
+<span class="sd">    :return: Tuple of (phi_patches, eta_patches)</span>
+<span class="sd">    :rtype: Tuple[Optional[List[PathCollection]], Optional[List[PathCollection]]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_validate_axes</span><span class="p">(</span><span class="n">ax_phi</span><span class="p">)</span>
+    <span class="n">_validate_axes</span><span class="p">(</span><span class="n">ax_eta</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ax_phi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ax_eta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one of &#39;ax_phi&#39; or &#39;ax_eta&#39; must be provided.&quot;</span><span class="p">)</span>
+
+    <span class="n">particles</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">filter_particles</span><span class="p">(</span><span class="n">particle_type</span><span class="p">,</span> <span class="n">wh</span><span class="o">=</span><span class="n">wheel</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="n">sector</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">station</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">particles</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">style_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">13</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">35</span><span class="p">,</span> <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span><span class="p">},</span>
+        <span class="mi">11</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;o&quot;</span><span class="p">},</span>
+        <span class="mi">22</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="n">_parent_station</span> <span class="o">=</span> <span class="n">stations_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">wheel</span><span class="p">,</span> <span class="n">sector</span><span class="p">,</span> <span class="n">station</span><span class="p">)</span>
+
+    <span class="n">patch_phi</span><span class="p">,</span> <span class="n">patch_eta</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">particles</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;sl&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;l&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Particle </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2"> does not have required attributes &#39;sl&#39;, &#39;l&#39;, and &#39;w&#39; for </span><span class="si">{</span><span class="n">particle_type</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">sl</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">particle_type</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">sl</span><span class="p">,</span> <span class="n">part</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="n">part</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">particle_type</span><span class="p">)</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">_parent_station</span><span class="o">.</span><span class="n">super_layer</span><span class="p">(</span><span class="n">sl</span><span class="p">)</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">local_center</span>
+        <span class="k">if</span> <span class="n">sl</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">patch_eta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">patch_eta</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">patch_eta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">ax_eta</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">**</span><span class="n">style_map</span><span class="p">[</span><span class="n">particle_type</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">patch_phi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">patch_phi</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">patch_phi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+</pre></div>
+</div>
+<p>Then, add it to your configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">dt-simhits-local</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.dt_plot_functions.embed_simhits2axes_loc&quot;</span><span class="w">  </span><span class="c1"># Source of the artist</span>
+<span class="w">    </span><span class="nt">rep-info</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;simhits&#39;</span><span class="w">  </span><span class="c1"># Particle type to use</span>
+</pre></div>
+</div>
+<p>Now, include <code class="docutils literal notranslate"><span class="pre">dt-simhits-local</span></code> in your list of artists to use for plotting.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Notes</p>
+<ul class="simple">
+<li><p>You can use any <code class="docutils literal notranslate"><span class="pre">particle</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">digis</span></code>, <code class="docutils literal notranslate"><span class="pre">simhits</span></code>, <code class="docutils literal notranslate"><span class="pre">tps</span></code>, etc.) that can be represented in a DT cell, as long as the required attributes (<code class="docutils literal notranslate"><span class="pre">sl</span></code>, <code class="docutils literal notranslate"><span class="pre">l</span></code>, <code class="docutils literal notranslate"><span class="pre">w</span></code>) are present.</p></li>
+<li><p>All artist functions must return Matplotlib objects (patches, lines, etc.) that support the <code class="docutils literal notranslate"><span class="pre">.remove()</span></code> method for proper plot management. (This is mainly used by the event visualizer GUI tool.)</p></li>
+<li><p>The configuration-driven approach makes it easy to adapt your plots to new data types or visualization needs without changing the plotting code.</p></li>
+</ul>
+</div>
+<section id="plot-dt">
+<h2>plot-dt<a class="headerlink" href="#plot-dt" title="Link to this heading"></a></h2>
+</section>
+<section id="plot-dts">
+<h2>plot-dts<a class="headerlink" href="#plot-dts" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="events_inspection.html" class="btn btn-neutral float-left" title="Event Inspection" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="events_visualizer_gui.html" class="btn btn-neutral float-right" title="Events Visualizer (GUI)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

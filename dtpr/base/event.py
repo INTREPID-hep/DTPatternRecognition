@@ -28,7 +28,7 @@ class Event:
         (e.g., `event.genmuons`).
     """
 
-    def __init__(self, ev=None, index=None, use_config=False):
+    def __init__(self, ev=None, index=None, use_config=False, CONFIG=None):
         """
         Initialize an Event instance.
 
@@ -41,13 +41,13 @@ class Event:
         self.index = index
         self.number = index
         self._particles = {}  # Initialize an empty dictionary for particles
-
+        CONFIG_ = CONFIG if CONFIG is not None else RUN_CONFIG
         if ev is not None:
             # Default to the index if the event number is not found
             self.number = getattr(ev, "event_eventNumber", self.number)
 
-        if use_config and hasattr(RUN_CONFIG, "particle_types"):
-            for ptype, pinfo in getattr(RUN_CONFIG, "particle_types", {}).items():
+        if use_config and hasattr(CONFIG_, "particle_types"):
+            for ptype, pinfo in getattr(CONFIG_, "particle_types", {}).items():
                 self._build_particles(ev, ptype, pinfo)
         else:
             warnings.warn(

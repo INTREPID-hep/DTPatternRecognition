@@ -1,4 +1,5 @@
 from .event import Event
+from .config import RUN_CONFIG
 
 
 class EventList:
@@ -6,7 +7,7 @@ class EventList:
     A class to manage events such as a list, but without loading all events in memory.
     """
 
-    def __init__(self, tree, processor=None):
+    def __init__(self, tree, processor=None, CONFIG=None):
         """
         Initialize an EventList instance.
 
@@ -20,6 +21,7 @@ class EventList:
         self._tree = tree
         self._processor = processor
         self._length = tree.GetEntries()
+        self.CONFIG = CONFIG if CONFIG is not None else RUN_CONFIG
 
     def __len__(self):
         """
@@ -50,7 +52,7 @@ class EventList:
 
             for iev, ev in enumerate(self._tree):
                 if iev == index:
-                    event = Event(ev, iev, use_config=True)
+                    event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
                     if self._processor:
                         return self._processor(event)
                     else:
@@ -73,7 +75,7 @@ class EventList:
         """
         for iev, ev in enumerate(self._tree):
             if getattr(ev, "event_eventNumber", None) == number:
-                event = Event(ev, iev, use_config=True)
+                event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
                 return self._processor(event)
         raise ValueError(f"No event found with number: {number}")
 
@@ -82,7 +84,7 @@ class EventList:
         Iterate over the events in the EventList.
         """
         for iev, ev in enumerate(self._tree):
-            event = Event(ev, iev, use_config=True)
+            event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
             yield self._processor(event)
 
     def __repr__(self):

@@ -21,7 +21,7 @@ class NTuple(object):
         The list of events created from the TTree.
     """
 
-    def __init__(self, inputFolder, selectors=[], preprocessors=[], maxfiles=-1):
+    def __init__(self, inputFolder, selectors=None, preprocessors=None, maxfiles=-1, CONFIG=None):
         """
         Initialize an NTuple instance.
 
@@ -36,15 +36,15 @@ class NTuple(object):
         :param tree_name: The name of the TTree to load. Defaults to "/TTREE".
         :type tree_name: str, optional
         """
-        # Save in attributes
-        self._selectors = selectors
-        self._preprocessors = preprocessors
+        # Save in attributes (avoid sharing mutable defaults)
+        self._selectors = list(selectors) if selectors is not None else []
+        self._preprocessors = list(preprocessors) if preprocessors is not None else []
         self._maxfiles = maxfiles
         self.tree = r.TChain()
-
-        _tree_name = getattr(RUN_CONFIG, "ntuple_tree_name", None)
+        self.CONFIG = CONFIG if CONFIG is not None else RUN_CONFIG
+        _tree_name = getattr(self.CONFIG, "ntuple_tree_name", None)
         if _tree_name is None:
-            warnings.warn(f"No tree name provided in RUN_CONFIG. Defaulting to '/TTREE'.")
+            warnings.warn(f"No tree name provided in CONFIG. Defaulting to '/TTREE'.")
             self._tree_name = "/TTREE"
         else:
             self._tree_name = _tree_name
@@ -56,7 +56,7 @@ class NTuple(object):
         # Load preprocessors from config
         self._load_from_config("ntuple_preprocessors")
 
-        self.events = EventList(self.tree, self.event_processor)
+        self.events = EventList(self.tree, self.event_processor, CONFIG=self.CONFIG)
 
     def event_processor(self, ev: Event):
         """
@@ -101,7 +101,7 @@ class NTuple(object):
         """
         Load items (selectors or preprocessors) from the configuration file.
 
-        :param config_key: The key in the RUN_CONFIG to look for items.
+        :param config_key: The key in the CONFIG to look for items.
         :type config_key: str
         """
         if "selector" in config_key:
@@ -116,7 +116,7 @@ class NTuple(object):
             )
 
         items = []
-        for name, item_info in getattr(RUN_CONFIG, config_key, {}).items():
+        for name, item_info in getattr(self.CONFIG, config_key, {}).items():
             src = item_info.get("src", None)
             if src is None:
                 raise ValueError(

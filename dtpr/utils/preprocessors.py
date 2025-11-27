@@ -1,5 +1,5 @@
-from dtpr.base import Event
-from dtpr.utils.functions import deltaR
+from ..base import Event
+from .functions import deltaR
 from typing import Optional
 
 

@@ -1,4 +1,4 @@
-from dtpr.base import Event
+from .event import Event
 
 
 class EventList:

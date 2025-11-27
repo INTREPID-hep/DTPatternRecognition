@@ -3,9 +3,9 @@ import importlib
 import warnings
 import ROOT as r
 from tqdm import tqdm
-from dtpr.base import NTuple
-from dtpr.base.config import RUN_CONFIG
-from dtpr.utils.functions import (
+from ..base import NTuple
+from ..base.config import RUN_CONFIG
+from ..utils.functions import (
     color_msg,
     error_handler,
     create_outfolder,

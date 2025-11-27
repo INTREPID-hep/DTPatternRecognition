@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from mplhep import style
 from mpldts.patches import DTRelatedPatch
-from dtpr.utils.functions import parse_plot_configs
+from ..functions import parse_plot_configs
 from typing import Any, Dict, List, Optional
 
 

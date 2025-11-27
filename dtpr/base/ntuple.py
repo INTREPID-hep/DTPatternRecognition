@@ -1,9 +1,10 @@
 import ROOT as r
 import os
 from functools import partial
-from dtpr.base import Event, EventList
-from dtpr.base.config import RUN_CONFIG
-from dtpr.utils.functions import color_msg, get_callable_from_src
+from .event import Event
+from .event_list import EventList
+from .config import RUN_CONFIG
+from ..utils.functions import color_msg, get_callable_from_src
 from natsort import natsorted
 import warnings
 

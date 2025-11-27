@@ -1,8 +1,8 @@
 import os
 import gc
-from dtpr.base import Event, NTuple
-from dtpr.utils.functions import color_msg, save_mpl_canvas
-from dtpr.utils.functions import parse_plot_configs
+from ..base import Event, NTuple
+from ..utils.functions import color_msg, save_mpl_canvas
+from ..utils.functions import parse_plot_configs
 from mplhep import style
 import matplotlib.pyplot as plt
 from typing import Optional, List, Dict, Union, Callable

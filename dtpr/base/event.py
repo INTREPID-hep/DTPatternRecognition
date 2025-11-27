@@ -1,8 +1,8 @@
 import os
 import warnings
-from dtpr.base.config import RUN_CONFIG
-from dtpr.base.particle import Particle  # Import the base Particle class
-from dtpr.utils.functions import (
+from .config import RUN_CONFIG
+from .particle import Particle  # Import the base Particle class
+from ..utils.functions import (
     color_msg,
     get_callable_from_src,
     format_event_attribute_str,

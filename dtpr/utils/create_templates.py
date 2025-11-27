@@ -1,7 +1,7 @@
 import os
 import shutil
 from datetime import datetime
-from dtpr.utils.functions import color_msg
+from .functions import color_msg
 
 
 def create_particle_class_template(name, outfolder):

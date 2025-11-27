@@ -1,4 +1,4 @@
-from dtpr.utils.functions import color_msg, get_callable_from_src
+from ..utils.functions import color_msg, get_callable_from_src
 from copy import deepcopy
 
 

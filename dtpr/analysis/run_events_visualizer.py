@@ -1,6 +1,6 @@
 import os
-from dtpr.utils.functions import color_msg
-from dtpr.utils.gui.events_visualizer import launch_visualizer
+from ..utils.functions import color_msg
+from ..utils.gui.events_visualizer import launch_visualizer
 import subprocess as bash
 from typing import Optional
 

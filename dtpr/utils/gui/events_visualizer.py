@@ -14,11 +14,11 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.uic import loadUi
 from PyQt5.QtGui import QCursor, QKeySequence
-from dtpr.utils.gui.local_plotter import LocalPlotter
-from dtpr.utils.gui.artist_gui_manager import ArtistManager
-from dtpr.utils.functions import parse_filter_text_4gui
-from dtpr.utils.gui.progressbar_manager import ProgressBarManager
-from dtpr.base import NTuple
+from .local_plotter import LocalPlotter
+from .artist_gui_manager import ArtistManager
+from ..functions import parse_filter_text_4gui
+from .progressbar_manager import ProgressBarManager
+from ...base import NTuple
 
 WHEEL_UPDATE_DELAY_MS = 500
 SECTOR_UPDATE_DELAY_MS = 500

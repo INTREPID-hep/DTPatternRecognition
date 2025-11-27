@@ -1,6 +1,6 @@
-from dtpr.base import NTuple
-from dtpr.base.config import RUN_CONFIG
-from dtpr.utils.functions import color_msg, get_callable_from_src
+from ..base import NTuple
+from ..base.config import RUN_CONFIG
+from ..utils.functions import color_msg, get_callable_from_src
 from functools import partial
 from tqdm import tqdm
 

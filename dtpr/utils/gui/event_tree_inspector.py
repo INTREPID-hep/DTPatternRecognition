@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget, QHeaderView
 from PyQt5.QtCore import Qt
-from dtpr.utils.functions import parse_filter_text_4gui
+from ..functions import parse_filter_text_4gui
 
 
 class EventTreeInspector(QWidget):

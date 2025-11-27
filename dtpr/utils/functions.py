@@ -8,7 +8,6 @@ from copy import deepcopy
 from importlib import import_module
 import numpy as np
 from mpldts.geometry import Station
-from dtpr.base.config import RUN_CONFIG
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 
@@ -392,6 +391,8 @@ def parse_plot_configs() -> Dict[str, Any]:
     :return: A dictionary containing plot configuration elements
     :rtype: Dict[str, Any]
     """
+    from ..base.config import RUN_CONFIG
+
     if not hasattr(RUN_CONFIG, "plot_configs"):
         raise ValueError("RUN_CONFIG does not contain 'plot_configs'.")
 

@@ -4,7 +4,7 @@ import re
 from PyQt5.QtWidgets import QApplication, QDialog, QCheckBox
 from PyQt5.QtCore import Qt
 from PyQt5.uic import loadUi
-from dtpr.utils.gui.artist_gui_manager import ArtistManager
+from .artist_gui_manager import ArtistManager
 
 
 class LocalPlotter(QDialog):

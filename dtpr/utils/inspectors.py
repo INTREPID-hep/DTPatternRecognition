@@ -1,5 +1,5 @@
-from dtpr.base import Event
-from dtpr.utils.functions import color_msg
+from ..base import Event
+from .functions import color_msg
 from tqdm import tqdm
 from typing import Optional
 

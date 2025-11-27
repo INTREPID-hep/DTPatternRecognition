@@ -28,8 +28,8 @@ import matplotlib.lines as mlines
 from numpy import array, percentile, sqrt
 from pandas import DataFrame
 
-from dtpr.base import Event, Particle
-from dtpr.utils.functions import color_msg
+from ..base import Event, Particle
+from .functions import color_msg
 from mpldts.geometry import AMDTSegments, StationsCache
 from mpldts.patches import DTStationPatch, MultiDTSegmentsPatch
 

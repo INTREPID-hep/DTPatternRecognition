@@ -1,4 +1,4 @@
-from dtpr.base import Event
+from ..base import Event
 
 
 def test_selector(event: Event) -> bool:

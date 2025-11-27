@@ -6,8 +6,8 @@ import argparse
 import warnings
 import inspect
 from copy import deepcopy
-from dtpr.base.config import RUN_CONFIG, CLI_CONFIG
-from dtpr.utils.functions import (
+from .base.config import RUN_CONFIG, CLI_CONFIG
+from .utils.functions import (
     color_msg,
     warning_handler,
     error_handler,

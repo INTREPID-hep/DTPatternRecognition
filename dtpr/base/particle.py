@@ -1,4 +1,4 @@
-from ..utils.functions import color_msg, get_callable_from_src
+from ..utils.functions import color_msg, build_attribute_from_config
 from copy import deepcopy
 
 
@@ -30,78 +30,10 @@ class Particle:
 
         for key, value in kwargs.items():
             if isinstance(value, dict):
-                self._init_from_dict(key, value, event=ev)
+                value = build_attribute_from_config(key, value, instance=self, event=ev)
             else:
-                setattr(self, key, deepcopy(value))
-
-    def _init_from_dict(self, attr, attr_info, event=None):
-        """
-        Initialize the particle attributes from a dictionary containing evaluable expressions, callable method, or branch names.
-
-        :param attr: The attribute name to set.
-        :param attr_info: A dictionary containing the information to set the attribute.
-        """
-        branch = attr_info.get("branch", None)
-        expr = attr_info.get("expr", None)
-        src = attr_info.get("src", None)
-        _type = attr_info.get("type", None)
-
-        # Ensure exactly one of 'branch', 'expr', or 'src' is provided
-        provided = [x for x in [branch, expr, src] if x is not None]
-        if len(provided) != 1:
-            raise ValueError(
-                f"'attributes' field must specify exactly one of 'branch', 'expr', or 'src' for attribute definition : '{attr}'."
-            )
-
-        if branch:
-            # If a branch is provided, set the attribute to the value from the event
-            if event is None:
-                raise ValueError(
-                    f"Event must be provided to set attribute '{attr}' from branch '{branch}'."
-                )
-            value = getattr(event, branch, None)
-            if value is None:
-                raise ValueError(f"Branch '{branch}' not found in the event entry.")
-
-            # elif not isinstance(value, Number):
-            type_name = type(value).__name__.lower()
-            if "vector" in type_name or "array" in type_name:
-                if "vector<vector<" in type_name:
-                    # If the branch is a nested vector, set the attribute to the value at the current index
-                    value = list(value[self.index])
-                else:
-                    # If the branch is a vector, set the attribute to the value at the current index
-                    value = value[self.index]
-
-        if expr:
-            try:
-                # Validate the expression by compiling it
-                compile(expr, "<string>", "eval")
-                value = eval(expr, {}, self.__dict__)
-            except SyntaxError as e:
-                raise ValueError(f"Invalid expression '{expr}' for attribute '{attr}'. Error: {e}")
-        elif src:
-            method = get_callable_from_src(src)
-            if method is None:
-                raise ImportError(f"Method '{src}' not found in module.")
-            value = method(self)
-
-        if _type:
-            try:
-                _type = eval(_type)
-                if not isinstance(value, list):
-                    value = _type(value)
-                else:
-                    value = map(_type, value)
-            except NameError as e:
-                raise ValueError(f"Invalid type '{_type}' for attribute '{attr}'. Error: {e}")
-            except TypeError as e:
-                raise ValueError(
-                    f"Cannot convert value '{value}' to type '{_type}' for attribute '{attr}'. Error: {e}"
-                )
-
-        # Set the attribute to the value
-        setattr(self, attr, value)
+                value = deepcopy(value)
+            setattr(self, key, value)
 
     def __str__(self, indentLevel=0, include=None, exclude=None, **kwargs):
         """

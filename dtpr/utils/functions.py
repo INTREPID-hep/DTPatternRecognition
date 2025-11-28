@@ -189,6 +189,103 @@ def get_callable_from_src(src_str: str) -> Callable:
     return callable
 
 
+def build_attribute_from_config(attr_name: str, attr_info: dict, instance: Any, event: Any = None) -> Any:
+    """
+    Build an attribute value from configuration dictionary.
+    
+    Supports three methods:
+    - 'branch': Read directly from TTree branch
+    - 'expr': Evaluate Python expression
+    - 'src': Call external function with signature (instance, event)
+    
+    :param attr_name: Name of the attribute to build
+    :type attr_name: str
+    :param attr_info: Configuration dict with 'branch'/'expr'/'src' and optional 'type'
+    :type attr_info: dict
+    :param instance: Particle or Event instance (provides context for expr, receives attribute)
+    :type instance: Any
+    :param event: ROOT TTree entry (for branch access)
+    :type event: Any
+    :return: Computed attribute value
+    :rtype: Any
+    """
+    from dtpr.base import Particle  # Import here to avoid circular imports
+    
+    branch = attr_info.get("branch", None)
+    expr = attr_info.get("expr", None)
+    src = attr_info.get("src", None)
+    _type = attr_info.get("type", None)
+
+    # Validate: exactly one of branch/expr/src
+    provided = [x for x in [branch, expr, src] if x is not None]
+    if len(provided) != 1:
+        raise ValueError(
+            f"Attribute '{attr_name}' must specify exactly one of 'branch', 'expr', or 'src'."
+        )
+
+    # === BRANCH ===
+    if branch:
+        if event is None:
+            raise ValueError(f"Event required to read branch '{branch}' for attribute '{attr_name}'.")
+        
+        value = getattr(event, branch, None)
+        if value is None:
+            raise ValueError(f"Branch '{branch}' not found in event entry.")
+        
+        # Handle vector branches for particles (need indexing)
+        if isinstance(instance, Particle):
+            type_name = type(value).__name__.lower()
+            if "vector" in type_name or "array" in type_name:
+                if "vector<vector<" in type_name:
+                    value = list(value[instance.index])
+                else:
+                    value = value[instance.index]
+    
+    # === EXPR ===
+    elif expr:
+        try:
+            compile(expr, "<string>", "eval")
+            # Build evaluation context
+            context = {'ev': event}
+            if isinstance(instance, Particle):
+                # Particle: add particle reference and its attributes
+                context['p'] = instance
+                context.update(instance.__dict__)
+            else:
+                # Event: add event instance
+                context['event'] = instance
+            
+            value = eval(expr, {}, context)
+        except SyntaxError as e:
+            raise ValueError(f"Invalid expression '{expr}' for attribute '{attr_name}'. Error: {e}")
+    
+    # === SRC (Callable) ===
+    elif src:
+        method = get_callable_from_src(src)
+        if method is None:
+            raise ImportError(f"Callable '{src}' not found for attribute '{attr_name}'.")
+        
+        # Standardized signature: (instance, event)
+        value = method(instance, event)
+    
+    # === TYPE CONVERSION ===
+    if _type:
+        try:
+            type_callable = eval(_type)
+            if not isinstance(value, list):
+                value = type_callable(value)
+            else:
+                value = list(map(type_callable, value))
+        except NameError as e:
+            raise ValueError(f"Invalid type '{_type}' for attribute '{attr_name}'. Error: {e}")
+        except TypeError as e:
+            raise ValueError(
+                f"Cannot convert value to type '{_type}' for attribute '{attr_name}'. Error: {e}"
+            )
+    
+    return value
+
+
 def create_outfolder(outname: str) -> None:
     """
     Creates an output directory if it does not exist.
@@ -434,6 +531,26 @@ def parse_filter_text_4gui(filter_text: Optional[str]) -> Dict[str, Any]:
         except:
             pass
     return filter_kwargs
+
+def singularize_pname(word: str) -> str:
+    w = word.lower()
+    if w.endswith("ies"):
+        return w[:-3] + "y"
+    if w.endswith(("ses", "xes", "zes", "ches", "shes", "oes")):
+        return w[:-2]
+    if w.endswith("s") and not w.endswith("ss"):
+        return w[:-1]
+    return w
+
+def pluralize_pname(word: str) -> str:
+    w = word.lower()
+    if w.endswith("y"):
+        return w[:-1] + "ies"
+    if w.endswith(("ses", "xes", "zes", "ches", "shes", "oes")):
+        return w[:-2]
+    if not w.endswith("s"):
+        return w + "s"
+    return w
 
 
 def deltaPhi(phi1: float, phi2: float) -> float:

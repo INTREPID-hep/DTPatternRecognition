@@ -7,6 +7,7 @@ from ..utils.functions import (
     get_callable_from_src,
     format_event_attribute_str,
     format_event_particles_str,
+    singularize_pname,
 )
 
 
@@ -41,18 +42,49 @@ class Event:
         self.index = index
         self.number = index
         self._particles = {}  # Initialize an empty dictionary for particles
+        self._passes_filter = True  # Flag to indicate if event passes filter
         CONFIG_ = CONFIG if CONFIG is not None else RUN_CONFIG
         if ev is not None:
             # Default to the index if the event number is not found
             self.number = getattr(ev, "event_eventNumber", self.number)
 
-        if use_config and hasattr(CONFIG_, "particle_types"):
-            for ptype, pinfo in getattr(CONFIG_, "particle_types", {}).items():
-                self._build_particles(ev, ptype, pinfo)
-        else:
-            warnings.warn(
-                "No particle types defined in the configuration file. Initializing an empty Event instance."
-            )
+        if use_config:
+            # Build event-level attributes from config
+            if hasattr(CONFIG_, "event"):
+                event_config = getattr(CONFIG_, "event", {})
+                
+                # Build attributes
+                if "attributes" in event_config:
+                    from ..utils.functions import build_attribute_from_config
+                    for attr_name, attr_info in event_config["attributes"].items():
+                        value = build_attribute_from_config(attr_name, attr_info, instance=self, event=ev)
+                        setattr(self, attr_name, value)
+                
+                # Apply event filter (if defined) - after attributes are built
+                if "filter" in event_config:
+                    filter_expr = event_config["filter"]
+                    if not isinstance(filter_expr, str):
+                        raise ValueError(
+                            f"Event 'filter' must be a string, got {type(filter_expr)} instead."
+                        )
+                    try:
+                        compile(filter_expr, "<string>", "eval")
+                    except SyntaxError as e:
+                        raise ValueError(f"Invalid event filter expression: {filter_expr}. Error: {e}")
+                    
+                    self._passes_filter = eval(filter_expr, {}, {"ev": ev, "event": self})
+                    if not self._passes_filter:
+                        # Don't build particles if event doesn't pass filter
+                        return
+            
+            # Build particles from config (only if event passes filter)
+            if hasattr(CONFIG_, "particle_types"):
+                for ptype, pinfo in getattr(CONFIG_, "particle_types", {}).items():
+                    self._build_particles(ev, ptype, pinfo)
+            else:
+                warnings.warn(
+                    "No particle types defined in the configuration file. Initializing an empty Event instance."
+                )
 
     def __getattr__(self, name):
         """
@@ -161,7 +193,8 @@ class Event:
             )
             if _particle.name == "Particle":
                 # If the name is not set, set it to the particle type
-                _particle.name = ptype.capitalize()[:-1]
+
+                _particle.name = singularize_pname(ptype).capitalize()
 
             if "filter" in pinfo:  # Only keep the particles that pass the filter, if defined
                 filter_expr = pinfo["filter"]

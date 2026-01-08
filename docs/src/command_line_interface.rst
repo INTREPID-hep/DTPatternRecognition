@@ -97,6 +97,7 @@ The following analyses and utilities are available via the CLI:
     events_inspection
     matplotlib_plotting
     events_visualizer_gui
+    dump_events_guide
 
 For a full list of commands and options, run:
 

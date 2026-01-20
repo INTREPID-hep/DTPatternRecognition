@@ -67,6 +67,10 @@ class NTuple(object):
         :returns: The preprocessed event if it passes the selection criteria, otherwise None.
         :rtype: Event
         """
+        # Check if event passes config-based filter (if defined)
+        if not getattr(ev, '_passes_filter', True):
+            return None
+        
         if self._preprocessors:  # Apply preprocessors if they exist
             self._preprocess_event(ev)
         if self._selectors:  # Apply global selection if selectors exist

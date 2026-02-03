@@ -21,5 +21,5 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 html_show_sourcelink=False
 rst_prolog = """
-:github_url: https://github.com/DanielEstrada971102/DTPatternRecognition
+:github_url: https://github.com/INTREPID-hep/DTPatternRecognition
 """

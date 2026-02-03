@@ -9,7 +9,7 @@ authors = [
 maintainers = [
   { name = "Daniel Estrada", email = "destrada@cern.ch" }
 ]
-documentation = "https://danielestrada971102.github.io/DTPatternRecognition"
+documentation = "https://intrepid-hep.github.io/DTPatternRecognition"
 requires-python = ">=3.9"
 
 dependencies = [
@@ -23,7 +23,7 @@ dependencies = [
     "natsort>=8.4",
     "multiprocess>=0.7",
     "more-itertools>=10.0",
-    "mplDTs @ git+https://github.com/DanielEstrada971102/mplDTs.git@v2.2.0-beta"
+    "mplDTs @ git+https://github.com/INTREPID-hep/mplDTs.git@v2.2.0-beta"
 ]
 
 [project.optional-dependencies]
@@ -60,7 +60,7 @@ tqdm = ">=4.6"
 natsort = ">=8.4"
 multiprocess = ">=0.7"
 more-itertools = ">=10.0"
-mplDTs = { git = "https://github.com/DanielEstrada971102/mplDTs.git", rev = "v2.2.0-beta" }
+mplDTs = { git = "https://github.com/INTREPID-hep/mplDTs.git", rev = "v2.2.0-beta" }
 
 [tool.poetry.group.docs]
 optional = true

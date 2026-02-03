@@ -16,7 +16,7 @@ Take a look at the [Contributors](CONTRIBUTING.md) and [Developers](DEVELOPERS.m
 You can install any version of the package directly from GitHub using pip:
 
 ```shell
-pip install "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
+pip install "git+https://github.com/INTREPID-hep/DTPatternRecognition.git@[TAG_VERSION]"
 # To check if the package was installed successfully, run:
 pip show DTPatternRecognition
 ```
@@ -24,7 +24,7 @@ pip show DTPatternRecognition
 Or, if you prefer to use Poetry for dependency and environment management, you can add the package to your existing Poetry project using:
 
 ```shell
-poetry add "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git#[TAG_VERSION]"
+poetry add "git+https://github.com/INTREPID-hep/DTPatternRecognition.git#[TAG_VERSION]"
 # To check if the package was installed successfully, run:
 poetry show DTPatternRecognition
 ```

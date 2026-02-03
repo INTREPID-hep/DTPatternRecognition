@@ -12,7 +12,7 @@ The recommended way of development is under a virtual environment. Bear in mind 
 
 1. Clone the repository:
     ```shell
-    git clone https://github.com/DanielEstrada971102/DTPatternRecognition.git && cd DTPatternRecognition
+    git clone https://github.com/INTREPID-hep/DTPatternRecognition.git && cd DTPatternRecognition
     ```
 2. Create and activate a virtual environment (with access to system-wide ROOT):
     ```shell
@@ -24,7 +24,7 @@ The recommended way of development is under a virtual environment. Bear in mind 
     pip install -e .
     ```
     > The auxiliary package `mplDTs` is listed as a dependency in `pyproject.toml` and will be installed from GitHub automatically.
-    > If you need to work with it in editable mode as well, you can clone it from [here](https://github.com/DanielEstrada971102/mplDTs) and install it in editable mode similarly.
+    > If you need to work with it in editable mode as well, you can clone it from [here](https://github.com/INTREPID-hep/mplDTs) and install it in editable mode similarly.
 
 4. If you also want to install development dependencies (for testing, linting, etc.), run:
     ```shell
@@ -35,7 +35,7 @@ The recommended way of development is under a virtual environment. Bear in mind 
 
 1. Clone the repository:
     ```shell
-    git clone https://github.com/DanielEstrada971102/DTPatternRecognition.git && cd DTPatternRecognition
+    git clone https://github.com/INTREPID-hep/DTPatternRecognition.git && cd DTPatternRecognition
     ```
 2. Install dependencies and activate the environment:
     ```shell
@@ -44,7 +44,7 @@ The recommended way of development is under a virtual environment. Bear in mind 
     ```
     > If you don't need to activate the Poetry environment, you can prefix commands with `poetry run`, e.g., `poetry run pytest`.
     > The auxiliary package `mplDTs` is listed as a dependency in `pyproject.toml` and will be installed from GitHub automatically.
-    > If you need to work with it in editable mode as well, you can clone it from [here](https://github.com/DanielEstrada971102/mplDTs) and ensure to replace in the `pyproject.toml` file the dependency line with `mplDTs = {path = "PATH_TO_MPLDTS_FOLDER", develop = true}`.
+    > If you need to work with it in editable mode as well, you can clone it from [here](https://github.com/INTREPID-hep/mplDTs) and ensure to replace in the `pyproject.toml` file the dependency line with `mplDTs = {path = "PATH_TO_MPLDTS_FOLDER", develop = true}`.
    > If you need PyROOT, make sure it is available in your environment. You may need to install ROOT system-wide or ensure your Poetry environment can access it. For this, the easiest way is to enable system site packages before installing with the command `poetry config virtualenvs.options.system-site-packages true`.
 
 ## Development guidelines

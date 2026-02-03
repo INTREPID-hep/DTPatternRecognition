@@ -495,7 +495,6 @@ window.addEventListener("load", load);</script>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dump_events_guide.html">Dumping Events to ROOT Ntuples</a></li>
 </ul>
 </li>
 </ul>
@@ -518,7 +517,7 @@ window.addEventListener("load", load);</script>
       <li class="breadcrumb-item active">Matplotlib Plotting</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
-              <a href="https://github.com/DanielEstrada971102/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/INTREPID-hep/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -597,7 +596,7 @@ You can add your own artists by defining new functions and referencing them in t
 <p>DTPatternRecognition combines your configuration, the event data, and Matplotlib to create these visualizations.</p>
 <p>The plotting process involves the <code class="docutils literal notranslate"><span class="pre">dtpr</span></code> CLI dispatching to the <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> function, which then
 consults <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code> for plotting instructions and uses artist-builder functions to draw on Matplotlib axes.</p>
-<pre align="center" data-zoom-id="id-00ee6a1c-562f-4dac-a243-110823a777e5" id="dtpr-plotting" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-3909e116-5298-440c-9d35-d9c158ddce18" id="dtpr-plotting" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI
@@ -771,10 +770,10 @@ your configuration (use <code class="docutils literal notranslate"><span class="
 </pre></div>
 </div>
 <p>Then, add it to your configuration:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">dt-segment-local</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="nv">*dt-segment-global</span>
-
-<span class="w">  </span><span class="nt">dt-am-tps-global</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;dt-am-tps-global</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">dt-simhits-local</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.dt_plot_functions.embed_simhits2axes_loc&quot;</span><span class="w">  </span><span class="c1"># Source of the artist</span>
+<span class="w">    </span><span class="nt">rep-info</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;simhits&#39;</span><span class="w">  </span><span class="c1"># Particle type to use</span>
 </pre></div>
 </div>
 <p>Now, include <code class="docutils literal notranslate"><span class="pre">dt-simhits-local</span></code> in your list of artists to use for plotting.</p>

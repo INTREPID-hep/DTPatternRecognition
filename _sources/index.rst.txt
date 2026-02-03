@@ -34,8 +34,8 @@ the information from the input files into the respective classes are handled
 by central classes, just go around the :doc:`src/base/main` section to know more about them.
 
 Bear in mind that the package is under development, so feel free to contribute, report bugs, or suggest improvements.
-Take a look at the `Contributors <https://github.com/DanielEstrada971102/DTPatternRecognition/blob/main/CONTRIBUTING.md>`_ 
-and `Developers <https://github.com/DanielEstrada971102/DTPatternRecognition/blob/main/DEVELOPERS.md>`_ guides.
+Take a look at the `Contributors <https://github.com/INTREPID-hep/DTPatternRecognition/blob/main/CONTRIBUTING.md>`_ 
+and `Developers <https://github.com/INTREPID-hep/DTPatternRecognition/blob/main/DEVELOPERS.md>`_ guides.
 
 .. toctree::
    :maxdepth: 2

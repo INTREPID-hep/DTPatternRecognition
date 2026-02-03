@@ -4,7 +4,7 @@ Installation
 You can install the latest version of the package directly from GitHub using pip or Poetry.
 
 .. note::
-    Take a look at the available `tagged versions <https://github.com/DanielEstrada971102/DTPatternRecognition/tags>`_.
+    Take a look at the available `tagged versions <https://github.com/INTREPID-hep/DTPatternRecognition/tags>`_.
 
 .. tab-set::
 
@@ -12,7 +12,7 @@ You can install the latest version of the package directly from GitHub using pip
 
         .. code-block:: shell
 
-            pip install "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
+            pip install "git+https://github.com/INTREPID-hep/DTPatternRecognition.git@[TAG_VERSION]"
 
         To check if the package was installed successfully, run:
 
@@ -26,7 +26,7 @@ You can install the latest version of the package directly from GitHub using pip
 
         .. code-block:: shell
 
-            git clone https://github.com/DanielEstrada971102/DTPatternRecognition -b [TAG_VERSION]
+            git clone https://github.com/INTREPID-hep/DTPatternRecognition -b [TAG_VERSION]
             cd DTPatternRecognition
             pip install -e .
 
@@ -34,7 +34,7 @@ You can install the latest version of the package directly from GitHub using pip
 
         .. code-block:: shell
 
-            poetry add "git+https://github.com/DanielEstrada971102/DTPatternRecognition.git@[TAG_VERSION]"
+            poetry add "git+https://github.com/INTREPID-hep/DTPatternRecognition.git@[TAG_VERSION]"
 
         To check if the package was installed successfully, run:
 
@@ -48,7 +48,7 @@ You can install the latest version of the package directly from GitHub using pip
 
         .. code-block:: shell
 
-            git clone https://github.com/DanielEstrada971102/DTPatternRecognition -b [TAG_VERSION]
+            git clone https://github.com/INTREPID-hep/DTPatternRecognition -b [TAG_VERSION]
             cd DTPatternRecognition
             poetry install
             poetry shell

@@ -166,7 +166,7 @@ def get_shower_segment(
 # --------------------------------------------------------------------------------------------------
 
 
-def map_seg_attrs(particle: Particle, particle_type: Optional[str] = "tps") -> Dict[str, Any]:
+def map_seg_attrs(particle: Particle, particle_type: Optional[str] = "tps", pos_argname: Optional[str] = "posLoc_x", angle_argname: Optional[str] = "dirLoc_phi") -> Dict[str, Any]:
     """
     Map the attributes of segment like particle to the format required by mpldts.geometry.AMDTSegments.
 
@@ -185,14 +185,14 @@ def map_seg_attrs(particle: Particle, particle_type: Optional[str] = "tps") -> D
                 "parent": stations_cache.get(particle.wh, particle.sc, particle.st),
                 "index": getattr(particle, "index", -1),
                 "sl": getattr(particle, "sl", None),
-                "angle": -1 * getattr(particle, "dirLoc_phi", None),
-                "position": getattr(particle, "posLoc_x", None),
+                "angle": getattr(particle, angle_argname, None),
+                "position": getattr(particle, pos_argname, None),
             }
         )
     elif particle_type == "segments":
         warnings.warn("'segments' particle type is not yet implemented")
     else:
-        raise ValueError(f"Unknown particle type: {particle_type}")
+        raise ValueError(f"Unknown particle type for this plotting: {particle_type}")
 
     for key, val in info.items():
         if val is None:
@@ -354,6 +354,9 @@ def embed_segs2axes_glob(
     ax_eta: Optional[Axes] = None,
     particle_type: str = "tps",
     cmap_var: str = "quality",
+    pos_argname: Optional[str] = "posLoc_x",
+    angle_argname: Optional[str] = "dirLoc_phi",
+    reference_frame: Optional[str] = "Station",
     **kwargs,
 ) -> Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]:
     """
@@ -373,6 +376,12 @@ def embed_segs2axes_glob(
     :type particle_type: str
     :param cmap_var: Variable for color mapping
     :type cmap_var: str
+    :param pos_argname: Name of the position argument in the particle attributes
+    :type pos_argname: Optional[str]
+    :param angle_argname: Name of the angle argument in the particle attributes
+    :type angle_argname: Optional[str]
+    :param reference_frame: Reference frame for the segments (e.g., "Station", "SL13Center")
+    :type reference_frame: Optional[str]
     :param kwargs: Additional arguments for patches
     :return: Tuple of (phi_patches, eta_patches)
     :rtype: Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]
@@ -385,10 +394,10 @@ def embed_segs2axes_glob(
     ) -> Optional[Dict[int, List[Patch]]]:
         if not particles:
             return None
-        segs_info = [map_seg_attrs(part, particle_type=particle_type) for part in particles]
+        segs_info = [map_seg_attrs(part, particle_type=particle_type, pos_argname=pos_argname, angle_argname=angle_argname) for part in particles]
         if not segs_info:
             return None
-        am_segs = AMDTSegments(segs_info)
+        am_segs = AMDTSegments(segs_info, reference_frame=reference_frame)
         seg_patches = MultiDTSegmentsPatch(
             segments=am_segs, axes=ax, local=False, faceview=faceview, vmap=cmap_var, **kwargs
         ).patches
@@ -420,6 +429,9 @@ def embed_segs2axes_loc(
     ax_eta: Optional[Axes] = None,
     particle_type: str = "tps",
     cmap_var: str = "quality",
+    pos_argname: Optional[str] = "posLoc_x",
+    angle_argname: Optional[str] = "dirLoc_phi",
+    reference_frame: str = "SL13Center",
     **kwargs,
 ) -> Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]:
     """
@@ -441,6 +453,12 @@ def embed_segs2axes_loc(
     :type particle_type: str
     :param cmap_var: Variable for color mapping
     :type cmap_var: str
+    :param pos_argname: Name of the position argument in the particle attributes
+    :type pos_argname: Optional[str]
+    :param angle_argname: Name of the angle argument in the particle attributes
+    :type angle_argname: Optional[str]
+    :param reference_frame: Reference frame for the segments (e.g., "Station", "SL13Center")
+    :type reference_frame: str
     :param kwargs: Additional arguments for patches
     :return: Tuple of (phi_patches, eta_patches)
     :rtype: Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]
@@ -455,11 +473,11 @@ def embed_segs2axes_loc(
     if not particles:
         return None, None
 
-    segs_info = [map_seg_attrs(part, particle_type=particle_type) for part in particles]
+    segs_info = [map_seg_attrs(part, particle_type=particle_type, pos_argname=pos_argname, angle_argname=angle_argname) for part in particles]
     if not segs_info:
         return None, None
 
-    am_segs = AMDTSegments(segs_info)
+    am_segs = AMDTSegments(segs_info, reference_frame=reference_frame)
     phi_patch, eta_patch = None, None
 
     if ax_phi is not None:

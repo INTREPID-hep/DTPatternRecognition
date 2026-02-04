@@ -185,7 +185,7 @@ def map_seg_attrs(particle: Particle, particle_type: Optional[str] = "tps") -> D
                 "parent": stations_cache.get(particle.wh, particle.sc, particle.st),
                 "index": getattr(particle, "index", -1),
                 "sl": getattr(particle, "sl", None),
-                "angle": -1 * getattr(particle, "dirLoc_phi", None),
+                "angle": getattr(particle, "dirLoc_phi", None),
                 "position": getattr(particle, "posLoc_x", None),
             }
         )

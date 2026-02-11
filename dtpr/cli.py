@@ -83,6 +83,7 @@ def main():
             "plot-dt",
             "inspect-events",
             "events-visualizer",
+            "dump-events",
             # ---- config commands ----
             "create-particle",
             "create-config",

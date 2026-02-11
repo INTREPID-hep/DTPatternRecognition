@@ -4,17 +4,40 @@
 # from the ROOT TTree branches. It also includes configuration for NTuple access, preprocessors, selectors,
 # histogram sources, plotting, and event inspectors.
 
+# Event-level configuration (optional):
+# event:
+#   attributes:
+#     attr_name:
+#       branch: 'branch_name'        # Directly from a TTree branch
+#       expr: 'expression'           # Python expression using 'ev' (TTree entry) and 'event' (Event instance)
+#       src: 'path.to.function'      # Callable with signature (event_instance, ttree_entry)
+#       type: 'int'                  # Optional: type conversion
+#   filter: 'expression'             # Optional: filter events using 'ev' (TTree entry) and 'event' (Event instance)
+
+# Example event configuration (uncomment to use):
+# event:
+#   attributes:
+#     run_number:
+#       branch: 'event_runNumber'
+#     lumi_section:
+#       branch: 'event_lumiBlock'
+#     has_muons:
+#       expr: 'ev.gen_nGenParts > 0'
+#       type: 'bool'
+#   filter: 'event.has_muons'  # Only keep events with muons
+
 # Particle types and their construction rules:
 # particle_types:
 #   ...
 #   particle_name:
-#     class: 'path.to.particle_class'  # Optional: custom class, defaults to 'dtpr.particles.Particle'
+#     class: 'path.to.particle_class'  # Optional: custom class, defaults to 'dtpr.base.Particle'
 #     amount: (int, TBranch<int> or TBranch<vector>)  # How many particles to build per event
 #     attributes:
 #       attr_name:
-#         branch: 'branch_name'        # Directly from a TTree branch
-#         expr: 'expression'           # Python expression using other attributes
-#         src: 'path.to.function'      # Callable, receives the particle as input
+#         branch: 'branch_name'        # Directly from a TTree branch (indexed for particles)
+#         expr: 'expression'           # Python expression using particle attributes ('p') and event ('ev')
+#         src: 'path.to.function'      # Callable with signature (particle_instance, ttree_entry)
+#         type: 'int'                  # Optional: type conversion
 #     filter: 'expression'             # Optional: filter particles using 'p' (particle) and 'ev' (event)
 #     sorter:
 #       by: 'expression'               # Sorting key, can use 'p' and 'ev'

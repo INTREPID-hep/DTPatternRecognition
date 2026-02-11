@@ -92,6 +92,18 @@ opt_args:
         dest: "use_executable"
         action: "store_true"
         help: "Use the pre-built executable. Default is False."
+    tree-name: &tree_name
+        flags: ["--tree-name"]
+        dest: "tree_name"
+        type: str
+        default: "EVENTS"
+        help: "Name of the output TTree for dumped events. Default is 'EVENTS'."
+    particle-types: &particle_types
+        flags: ["--particle-types"]
+        dest: "particle_types"
+        type: str
+        nargs: "*"
+        help: "Particle type(s) to dump. If not specified, all particle types will be dumped."
 
 # ---------------------------------- posible analysis ---------------------------------------- #
 pos_args:
@@ -156,6 +168,19 @@ pos_args:
             input-path: *input_path
             max-files: *max_files
             use-executable: *use_executable
+    dump-events:
+        name: "dump-events"
+        help: "Dump/snapshot processed events back into a flat ROOT ntuple for later analysis."
+        func: "dtpr.analysis.dump_events_v2.dump_events"
+        opt_args:
+            config-path: *config_path
+            input-path: *input_path
+            output-path: *output_path
+            tag: *tag
+            max-files: *max_files
+            max-events: *max_events
+            tree-name: *tree_name
+            particle-types: *particle_types
     # -------------------------------- posible create-templates ---------------------------------- #
     create-particle:
         name: "create-particle"

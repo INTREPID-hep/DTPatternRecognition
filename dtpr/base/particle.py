@@ -1,5 +1,6 @@
 from ..utils.functions import color_msg, get_callable_from_src
 from copy import deepcopy
+from functools import partial
 
 
 class Particle:
@@ -44,6 +45,7 @@ class Particle:
         branch = attr_info.get("branch", None)
         expr = attr_info.get("expr", None)
         src = attr_info.get("src", None)
+        kwargs = attr_info.get("kwargs", None)
         _type = attr_info.get("type", None)
 
         # Ensure exactly one of 'branch', 'expr', or 'src' is provided
@@ -84,6 +86,8 @@ class Particle:
             method = get_callable_from_src(src)
             if method is None:
                 raise ImportError(f"Method '{src}' not found in module.")
+            if kwargs:
+                method = partial(method, **kwargs)
             value = method(self)
 
         if _type:

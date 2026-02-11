@@ -3,6 +3,44 @@ import warnings
 import yaml
 
 
+class DTPRIncludeLoader(yaml.SafeLoader):
+    """YAML loader that supports !include with paths relative to the parent file."""
+
+    def __init__(self, stream):
+        self._root = os.path.dirname(getattr(stream, "name", os.getcwd()))
+        super().__init__(stream)
+
+
+def _construct_include(loader, node):
+    if isinstance(node, yaml.ScalarNode):
+        filenames = [loader.construct_scalar(node)]
+    elif isinstance(node, yaml.SequenceNode):
+        filenames = loader.construct_sequence(node)
+    else:
+        raise TypeError("!include must be a scalar or a sequence")
+
+    merged = None
+    for name in filenames:
+        path = os.path.join(loader._root, name)
+        with open(path, "r") as file:
+            data = yaml.load(file, DTPRIncludeLoader)
+
+        if merged is None:
+            merged = data
+        else:
+            if isinstance(merged, dict) and isinstance(data, dict):
+                merged.update(data)
+            elif isinstance(merged, list) and isinstance(data, list):
+                merged.extend(data)
+            else:
+                raise TypeError("Included file types do not match for merge")
+
+    return merged
+
+
+DTPRIncludeLoader.add_constructor("!include", _construct_include)
+
+
 class Config:
     """
     Configuration class to handle loading and setting up configurations from a YAML file.
@@ -23,6 +61,8 @@ class Config:
         Sets up the configuration by loading the config file and setting attributes.
         """
         config_dict = self._load_config(self.path)
+        if not config_dict:
+            config_dict = {}
         for key in config_dict.keys():
             setattr(self, key, config_dict[key])
             # Evaluate types of opt_args
@@ -69,7 +109,7 @@ class Config:
         """
         with open(config_path, "r") as file:
             try:
-                config = yaml.safe_load(file)
+                config = yaml.load(file, DTPRIncludeLoader)
                 return config
             except yaml.YAMLError as exc:
                 raise exc

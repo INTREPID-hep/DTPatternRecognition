@@ -123,6 +123,7 @@ class ArtistManager:
         """
         if axes is not None:
             axes.autoscale()
+            axes.set_aspect("equal", adjustable="datalim")
             axes.figure.canvas.draw()
 
     def _add_patches_to_included_list(self, patches: Any, faceview: str, artist_name: str) -> None:

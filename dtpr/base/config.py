@@ -1,44 +1,88 @@
 import os
 import warnings
 import yaml
+import re
 
 
-class DTPRIncludeLoader(yaml.SafeLoader):
-    """YAML loader that supports !include with paths relative to the parent file."""
-
-    def __init__(self, stream):
-        self._root = os.path.dirname(getattr(stream, "name", os.getcwd()))
-        super().__init__(stream)
-
-
-def _construct_include(loader, node):
-    if isinstance(node, yaml.ScalarNode):
-        filenames = [loader.construct_scalar(node)]
-    elif isinstance(node, yaml.SequenceNode):
-        filenames = loader.construct_sequence(node)
-    else:
-        raise TypeError("!include must be a scalar or a sequence")
-
-    merged = None
-    for name in filenames:
-        path = os.path.join(loader._root, name)
-        with open(path, "r") as file:
-            data = yaml.load(file, DTPRIncludeLoader)
-
-        if merged is None:
-            merged = data
-        else:
-            if isinstance(merged, dict) and isinstance(data, dict):
-                merged.update(data)
-            elif isinstance(merged, list) and isinstance(data, list):
-                merged.extend(data)
+def _resolve_includes(content, base_dir, visited=None):
+    """
+    Recursively resolves !include directives in YAML content.
+    
+    The !include directive inlines the content from the referenced file at the same
+    indentation level, allowing merging with sibling keys.
+    
+    Examples:
+      parent:
+        !include file.yaml    # Content of file.yaml is inlined here
+        extra_key: value      # This merges with included content
+    
+    :param content: The YAML content as a string.
+    :param base_dir: The base directory for resolving relative paths.
+    :param visited: Set of already visited files to prevent circular includes.
+    :return: The content with all includes resolved.
+    :raises ValueError: If circular includes are detected.
+    :raises FileNotFoundError: If an included file cannot be found.
+    :raises IOError: If an included file cannot be read.
+    """
+    if visited is None:
+        visited = set()
+    
+    # Pattern to match !include directives (standalone or after key:)
+    pattern = r'^(\s*)(?:(\w+):\s*)?!include\s+(.+)$'
+    
+    lines = content.split('\n')
+    processed_lines = []
+    
+    for line in lines:
+        match = re.match(pattern, line)
+        if match:
+            indent = match.group(1)
+            key_part = match.group(2)  # Just the key name (no colon)
+            include_path = match.group(3).split('#')[0].strip()  # Remove comments and strip whitespace
+            
+            full_path = os.path.abspath(os.path.join(base_dir, include_path))
+            
+            # Check for circular includes
+            if full_path in visited:
+                raise ValueError(f"Circular include detected: {full_path}")
+            
+            visited.add(full_path)
+            
+            try:
+                with open(full_path, 'r') as inc_file:
+                    included_content = inc_file.read()
+            except FileNotFoundError as e:
+                raise FileNotFoundError(
+                    f"Cannot find included file '{include_path}' (resolved to: {full_path})"
+                ) from e
+            except IOError as e:
+                raise IOError(
+                    f"Cannot read included file '{include_path}' (resolved to: {full_path})"
+                ) from e
+            
+            included_dir = os.path.dirname(full_path)
+            resolved_content = _resolve_includes(included_content, included_dir, visited)
+            
+            if key_part:
+                # Case: key: !include file.yaml
+                # Add the key line, then indent the content
+                processed_lines.append(f"{indent}{key_part}:")
+                nested_indent = indent + "  "
+                indented_lines = [nested_indent + line if line.strip() else line 
+                                 for line in resolved_content.split('\n')]
+                processed_lines.extend(indented_lines)
             else:
-                raise TypeError("Included file types do not match for merge")
-
-    return merged
-
-
-DTPRIncludeLoader.add_constructor("!include", _construct_include)
+                # Case: !include file.yaml (standalone)
+                # Inline the content at the same indentation level
+                indented_lines = [indent + line if line.strip() else line 
+                                 for line in resolved_content.split('\n')]
+                processed_lines.extend(indented_lines)
+            
+            visited.remove(full_path)
+        else:
+            processed_lines.append(line)
+    
+    return '\n'.join(processed_lines)
 
 
 class Config:
@@ -100,19 +144,44 @@ class Config:
     @staticmethod
     def _load_config(config_path):
         """
-        Loads the configuration from a YAML file.
+        Loads the configuration from a YAML file supporting !include directives.
+        
+        All !include directives (both top-level and nested) are resolved before
+        parsing the YAML, with paths relative to the file containing the directive.
 
         :param config_path: The path to the configuration file.
         :type config_path: str
         :return: The loaded configuration dictionary.
         :rtype: dict
+        :raises FileNotFoundError: If the config file or any included file is not found.
+        :raises yaml.YAMLError: If there's an error parsing the YAML.
+        :raises ValueError: If circular includes are detected.
         """
-        with open(config_path, "r") as file:
-            try:
-                config = yaml.load(file, DTPRIncludeLoader)
-                return config
-            except yaml.YAMLError as exc:
-                raise exc
+        config_dir = os.path.dirname(os.path.abspath(config_path))
+        
+        try:
+            with open(config_path, "r") as file:
+                content = file.read()
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Configuration file not found: {config_path}") from e
+        except IOError as e:
+            raise IOError(f"Cannot read configuration file: {config_path}") from e
+        
+        # Recursively resolve all !include directives
+        try:
+            resolved_content = _resolve_includes(content, config_dir)
+        except (FileNotFoundError, ValueError, IOError) as e:
+            raise type(e)(f"Error processing includes in {config_path}: {e}") from e
+        
+        # Parse the final YAML with standard loader
+        try:
+            config = yaml.safe_load(resolved_content)
+        except yaml.YAMLError as e:
+            raise yaml.YAMLError(
+                f"Error parsing YAML configuration from {config_path}: {e}"
+            ) from e
+        
+        return config if config else {}
 
 
 # ------- create CLI_CONFIG -------

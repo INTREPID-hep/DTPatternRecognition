@@ -1,6 +1,6 @@
 [project]
 name = "DTPatternRecognition"
-version = "3.2.0"
+version = "3.3.0-beta"
 description = "Set of tools to implement pattern recognition algorithms on CMS DTs"
 readme = "README.md"
 authors = [

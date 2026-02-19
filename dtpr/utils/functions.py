@@ -167,20 +167,30 @@ def error_handler(exc_type: type, exc_value: Exception, exc_traceback: Any) -> N
     )
 
 
+# Cache for callable functions to avoid repeated imports
+_CALLABLE_CACHE = {}
+
 def get_callable_from_src(src_str: str) -> Callable:
     """
     Returns the callable object from the given source string.
+    Uses a cache to avoid repeated imports of the same callable.
 
     :param src_str: The source string containing the callable.
     :type src_str: str
     :return: The callable object.
     :rtype: Callable
     """
+    # Check cache first
+    if src_str in _CALLABLE_CACHE:
+        return _CALLABLE_CACHE[src_str]
+    
     callable = None
     try:
         _module_name, _callable_name = src_str.rsplit(".", 1)
         _module = import_module(_module_name)
         callable = getattr(_module, _callable_name)
+        # Cache the callable
+        _CALLABLE_CACHE[src_str] = callable
     except AttributeError as e:
         raise AttributeError(f"{_callable_name} callable not found: {e}")
     except ImportError as e:

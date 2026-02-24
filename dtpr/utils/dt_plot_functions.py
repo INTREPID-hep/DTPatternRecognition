@@ -179,7 +179,7 @@ def map_seg_attrs(particle: Particle, particle_type: Optional[str] = "tps", pos_
     :raises ValueError: If required attributes are missing or particle type is unknown
     """
     info = {}
-    if particle_type == "tps":
+    if particle_type == "tps" or particle_type == "segments":
         info.update(
             {
                 "parent": stations_cache.get(particle.wh, particle.sc, particle.st),
@@ -189,8 +189,8 @@ def map_seg_attrs(particle: Particle, particle_type: Optional[str] = "tps", pos_
                 "position": getattr(particle, pos_argname, None),
             }
         )
-    elif particle_type == "segments":
-        warnings.warn("'segments' particle type is not yet implemented")
+    # elif particle_type == "segments":
+    #     warnings.warn("'segments' particle type is not yet implemented")
     else:
         raise ValueError(f"Unknown particle type for this plotting: {particle_type}")
 
@@ -431,7 +431,7 @@ def embed_segs2axes_loc(
     cmap_var: str = "quality",
     pos_argname: Optional[str] = "posLoc_x",
     angle_argname: Optional[str] = "dirLoc_phi",
-    reference_frame: str = "SL13Center",
+    reference_frame: str = "Station",
     **kwargs,
 ) -> Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]:
     """

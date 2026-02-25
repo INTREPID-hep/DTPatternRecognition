@@ -41,9 +41,9 @@ particle_types:
       time: 
         branch: 'digi_time'
       BX:
-        expr: 'time // 25 if time is not None else None'
+        expr: 'time // 25'  # columnar: integer-floor-divide the time array
     sorter:
-      by: 'p.BX'
+      by: 'BX'
   segments:
     amount: 'seg_nSegments'
     attributes:
@@ -101,7 +101,7 @@ particle_types:
       matched_segments: []
       matched_genmuons: []
       matched_showers: []
-    filter: 'p.quality >= 0'
+    filter: 'quality >= 0'
   genmuons:
     amount: 'gen_nGenParts'
     attributes:
@@ -113,12 +113,14 @@ particle_types:
         branch: 'gen_phi'
       charge: 
         branch: 'gen_charge'
+      pdgId:
+        branch: 'gen_pdgId'
       matched_segments: []
       matched_tps: []
       showered: False
-    filter: 'abs(ev.gen_pdgId[p.index]) == 13'
+    filter: 'abs(pdgId) == 13'
     sorter:
-      by: 'p.pt'
+      by: 'pt'
       reverse: True
   fwshowers:
     amount: 'ph2Shower_station'

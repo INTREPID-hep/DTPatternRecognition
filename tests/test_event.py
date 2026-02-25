@@ -1,7 +1,7 @@
 import os
 import pytest
-from dtpr.base.event import Event
-from dtpr.base.particle import Particle
+from dtpr.base.old_event import Event
+from dtpr.base.old_particle import Particle
 
 # ---------- UNIT TESTS WITH SYNTHETIC DATA ----------
 
@@ -104,6 +104,6 @@ def test_event_from_real_root_file():
                 assert isinstance(particles, list)
                 # If not empty, check that each is a Particle or subclass
                 if particles:
-                    from dtpr.base.particle import Particle
+                    from dtpr.base.old_particle import Particle
                     assert all(isinstance(p, Particle) for p in particles)
             break  # Only test the first event for speed

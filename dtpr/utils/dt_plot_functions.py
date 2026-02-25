@@ -78,7 +78,7 @@ def get_dt_info(ev: Event, particle_type: str = "digis", **filter_kwargs) -> Dat
     :rtype: DataFrame
     """
     info = DataFrame(
-        [particle.__dict__ for particle in ev.filter_particles(particle_type, **filter_kwargs)]
+        [particle.to_dict() for particle in ev.filter_particles(particle_type, **filter_kwargs)]
     )
 
     if not info.empty:

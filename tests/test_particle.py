@@ -1,6 +1,6 @@
 import os
 import pytest
-from dtpr.base.particle import Particle
+from dtpr.base.old_particle import Particle
 from numpy import array
 
 class DummyEvent:

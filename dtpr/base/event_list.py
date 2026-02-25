@@ -1,94 +1,82 @@
-from .event import Event
-from .config import RUN_CONFIG
+"""
+EventList — thin proxy over an Awkward Array of EventRecord objects.
+
+Maintains backward-compatible interface:
+  len(ntuple.events)            → number of events
+  ntuple.events[0]              → EventRecord (single event)
+  ntuple.events[2:5]            → ak.Array slice (iterable of EventRecord)
+  for ev in ntuple.events       → iterates EventRecord items
+  ntuple.events.get_by_number() → lookup by event_eventNumber field
+"""
+
+import awkward as ak
 
 
 class EventList:
     """
-    A class to manage events such as a list, but without loading all events in memory.
+    Proxy wrapper over an ``ak.Array`` of :class:`~dtpr.base.event.EventRecord`
+    objects produced by :class:`~dtpr.base.ntuple.NTuple`.
+
+    The underlying array is accessible via ``._events`` if needed for advanced
+    columnar operations.
     """
 
-    def __init__(self, tree, processor=None, CONFIG=None):
+    def __init__(self, ak_events: ak.Array):
         """
-        Initialize an EventList instance.
+        Parameters
+        ----------
+        ak_events : ak.Array
+            The full events array returned by ``NanoEventsFactory.events()``,
+            after enrichment has been applied.
+        """
+        self._events = ak_events
 
-        :param tree: The ROOT TTree containing the events information.
-        :type tree: ROOT.TChain
-        :param processor: The methods to preprocess the events.
-        :type processor: function, optional
-        :param use_config: Flag to indicate if configuration file should be used to build events (default is False).
-        :type use_config: bool, optional
-        """
-        self._tree = tree
-        self._processor = processor
-        self._length = tree.GetEntries()
-        self.CONFIG = CONFIG if CONFIG is not None else RUN_CONFIG
+    # ------------------------------------------------------------------
+    # Core sequence interface
+    # ------------------------------------------------------------------
 
-    def __len__(self):
-        """
-        Get the number of events in the EventList.
-        """
-        return self._length
+    def __len__(self) -> int:
+        return len(self._events)
 
     def __getitem__(self, index):
         """
-        Retrieve an event or a generator of events by index.
-
-        :param index: The index or slice to retrieve the event(s). If an integer is provided, a single
-            event is returned. If a slice is provided, a generator of events is returned.
-        :type index: int or slice
-        :returns: Event or generator of Event: The event(s) corresponding to the given index.
-        :rtype: Event or generator of Event
-
-        :raises: IndexError: If the index is out of range.
-        :raises: TypeError: If the index type is invalid.
+        Return a single :class:`~dtpr.base.event.EventRecord` (int index) or
+        an ``ak.Array`` slice (slice index, iterable of EventRecord).
         """
-        if isinstance(index, slice):
-            return (self[i] for i in range(*index.indices(self._length)))  # Return a generator
-        elif isinstance(index, int):
-            if abs(index) >= self._length:
-                raise IndexError("Event index out of range")
-            if index < 0:
-                index += self._length
-
-            for iev, ev in enumerate(self._tree):
-                if iev == index:
-                    event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
-                    if self._processor:
-                        return self._processor(event)
-                    else:
-                        return event
-            raise IndexError("Event index out of range")
-        else:
-            raise TypeError("Invalid argument type")
-
-    def get_by_number(self, number):
-        """
-        Retrieve an event by its number attribute. Becareful, this method requires to instantiate events one by one
-        and can be slow for large datasets.
-
-        :param number: The number attribute of the event to retrieve.
-        :type number: int
-        :returns: Event: The event with the specified number.
-        :rtype: Event
-
-        :raises: ValueError: If no event with the specified number is found.
-        """
-        for iev, ev in enumerate(self._tree):
-            if getattr(ev, "event_eventNumber", None) == number:
-                event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
-                return self._processor(event)
-        raise ValueError(f"No event found with number: {number}")
+        if isinstance(index, (int, slice, ak.Array)):
+            return self._events[index]
+        raise TypeError(f"Invalid index type: {type(index)}")
 
     def __iter__(self):
-        """
-        Iterate over the events in the EventList.
-        """
-        for iev, ev in enumerate(self._tree):
-            event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
-            yield self._processor(event)
+        """Iterate over individual EventRecord objects."""
+        yield from self._events
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        return f"<EventList with {len(self._events)} events>"
+
+    # ------------------------------------------------------------------
+    # Named lookup
+    # ------------------------------------------------------------------
+
+    def get_by_number(self, number: int):
         """
-        Return a string representation of the EventList.
+        Return the event whose ``event_eventNumber`` equals *number*.
+
+        Uses vectorised Awkward filtering — much faster than the old
+        per-event iteration approach.
+
+        Parameters
+        ----------
+        number : int
+            The event number to look up.
+
+        Raises
+        ------
+        ValueError
+            If no event with the given number is found.
         """
-        return f"<EventList with {self._length} events>"
+        mask = self._events["event_eventNumber"] == number
+        result = self._events[mask]
+        if len(result) == 0:
+            raise ValueError(f"No event found with event_eventNumber == {number}")
+        return result[0]

@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'dtpr/**'
+      - 'ydana/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'dtpr/**'
+      - 'ydana/**'
 
 jobs:
   black:
@@ -28,7 +28,7 @@ jobs:
         run: pip install black
 
       - name: Check code formatting with black
-        run: black --check -l 100 dtpr
+        run: black --check -l 100 ydana
 
   pytest: # NEED TO BE FIXED - DISABLE AT THE MOMENT
     runs-on: ubuntu-latest
@@ -39,14 +39,14 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install ROOT
-        run: |
-          sudo apt update
-          sudo apt install -y binutils cmake dpkg-dev g++ gcc libssl-dev git libx11-dev libxext-dev libxft-dev libxpm-dev python3 libtbb-dev libvdt-dev libgif-dev
-          wget https://root.cern/download/root_v6.32.16.Linux-ubuntu24.04-x86_64-gcc13.3.tar.gz
-          tar -xzvf root_v6.32.16.Linux-ubuntu24.04-x86_64-gcc13.3.tar.gz
-          source root/bin/thisroot.sh >> .bashrc
-          python -c "import ROOT; print(ROOT.__version__)"
+      # - name: Install ROOT
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install -y binutils cmake dpkg-dev g++ gcc libssl-dev git libx11-dev libxext-dev libxft-dev libxpm-dev python3 libtbb-dev libvdt-dev libgif-dev
+      #     wget https://root.cern/download/root_v6.32.16.Linux-ubuntu24.04-x86_64-gcc13.3.tar.gz
+      #     tar -xzvf root_v6.32.16.Linux-ubuntu24.04-x86_64-gcc13.3.tar.gz
+      #     source root/bin/thisroot.sh >> .bashrc
+      #     python -c "import ROOT; print(ROOT.__version__)"
 
       - name: Checkout code
         uses: actions/checkout@v4

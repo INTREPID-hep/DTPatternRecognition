@@ -171,6 +171,17 @@ particle_types:
 # -------------------------------- configuration for NTuple --------------------------------------#
 ntuple_tree_name: '/dtNtupleProducer/DTTREE'
 
+# Event-level branches to load from the TTree.
+# These replace the old auto-discovery (opening a file to find all "event_*" branches).
+# Add or remove branches here as needed — only listed branches will be read.
+event_branches:
+  - event_eventNumber
+  # - event_runNumber
+  # - event_lumiBlock
+  # - event_bunchCrossing
+  # - event_orbitNumber
+  # - event_time
+
 # =============== preprocessors - dtntuple ================= #
 # define the preprocessors to be used in the ntuple, follow the format:
 # preprocessor_name: Any name, not relevant to the codes

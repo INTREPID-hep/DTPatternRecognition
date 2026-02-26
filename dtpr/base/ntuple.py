@@ -1,30 +1,36 @@
 """
 NTuple — columnar ROOT file loader using coffea + Awkward Arrays.
 
-Replaces the old ``ROOT.TChain`` row-wise approach with a lazy two-pass pipeline:
+Two-pass pipeline:
 
 Pass 1 (structural): :class:`~dtpr.base.schema.PatternSchema` maps flat ROOT
   branches into nested Awkward particle records.
 
 Pass 2 (enrichment): :func:`~dtpr.base.enrichment.enrich` applies ``expr`` /
   ``src`` computed attributes, sorters, and filters declared in the YAML config.
-  (Wired in Step 4 — stub only in this revision.)
 
-Public interface is unchanged:
+Public interface:
   ``ntuple.events[i]``           → single :class:`~dtpr.base.event.EventRecord`
   ``len(ntuple.events)``         → total event count
   ``for ev in ntuple.events``    → iteration over EventRecords
   ``ntuple.events.get_by_number(n)``
+
+Input formats (passed straight to ``uproot`` / ``coffea``):
+  - ``"file.root"``                              single file
+  - ``"/dir/*.root"``                            glob pattern
+  - ``"/dir/"``                                  directory (expands to ``/dir/*.root``)
+  - ``["a.root", "b.root"]``                     list of files
+  - ``{"/dir/*.root": "tree", ...}``             dict (uproot-native, treepath explicit)
+  - ``{"/f.root": {"object_path": "t", "steps": [...]}, ...}``  chunked dict
 """
 
 from __future__ import annotations
 
-import glob
+import glob as _glob
 import os
 import warnings
 from functools import partial
 
-import uproot
 from coffea.nanoevents import NanoEventsFactory
 from natsort import natsorted
 
@@ -35,59 +41,20 @@ from ..utils.functions import color_msg, get_callable_from_src
 
 
 # ---------------------------------------------------------------------------
-# File-collection helpers
+# Helpers
 # ---------------------------------------------------------------------------
 
-def _collect_files(input_path: str, maxfiles: int = -1) -> list[str]:
-    """Return a sorted list of absolute ``.root`` file paths.
+def _extract_allowed_branches(config) -> set[str]:
+    """Build the branch allow-list purely from config — no file I/O.
 
-    Accepts a single file, a directory (searched recursively), or a glob
-    pattern.
-
-    Parameters
-    ----------
-    input_path : str
-        Path to a single ``.root`` file, a directory, or a glob pattern.
-    maxfiles : int
-        Maximum number of files to return.  ``-1`` means all.
-    """
-    if os.path.isfile(input_path):
-        files = [os.path.abspath(input_path)]
-    elif os.path.isdir(input_path):
-        found: list[str] = []
-        for entry in os.scandir(input_path):
-            if entry.is_file() and entry.name.endswith(".root"):
-                found.append(entry.path)
-            elif entry.is_dir():
-                found.extend(_collect_files(entry.path, maxfiles=-1))
-        files = natsorted(found)
-    else:
-        files = natsorted(
-            os.path.abspath(p) for p in glob.glob(input_path) if p.endswith(".root")
-        )
-
-    if maxfiles > 0:
-        files = files[:maxfiles]
-    return files
-
-
-def _build_allow_list(config, files: list[str], treepath: str) -> set[str]:
-    """Assemble the branch allow-list from config + event-level branches.
-
-    Parameters
-    ----------
-    config : Config
-        A :class:`~dtpr.base.config.Config` instance.
-    files : list[str]
-        The resolved list of ROOT files.  Only the first file is opened to
-        sample the available branch names.
-    treepath : str
-        TTree path inside the ROOT file (leading ``/`` is stripped for uproot).
+    Collects:
+    1. Every ``branch:`` value declared under ``particle_types`` attributes.
+    2. Every entry in the ``event_branches`` list in the config.
+    3. Every entry in the optional ``extra_branches`` list in the config.
     """
     allowed: set[str] = set()
 
-    # 1. All branch: values declared in particle_types attributes
-    for ptype, pinfo in getattr(config, "particle_types", {}).items():
+    for ptype, pinfo in (getattr(config, "particle_types", None) or {}).items():
         if not isinstance(pinfo, dict):
             continue
         for attr_name, attr_info in (pinfo.get("attributes") or {}).items():
@@ -96,20 +63,68 @@ def _build_allow_list(config, files: list[str], treepath: str) -> set[str]:
                 if branch:
                     allowed.add(branch)
 
-    # 2. All event_* branches present in the first file
-    clean_treepath = treepath.lstrip("/")
-    try:
-        with uproot.open(files[0]) as f:
-            tree_keys: set[str] = set(f[clean_treepath].keys())
-        allowed |= {b for b in tree_keys if b.startswith("event_")}
-    except Exception as exc:
-        warnings.warn(f"Could not read branch list from {files[0]}: {exc}")
+    for branch in (getattr(config, "event_branches", None) or []):
+        allowed.add(branch)
 
-    # 3. Optional extra_branches from config
-    extra = getattr(config, "extra_branches", None) or []
-    allowed |= set(extra)
+    for branch in (getattr(config, "extra_branches", None) or []):
+        allowed.add(branch)
 
     return allowed
+
+
+def _preprocess_input(input_path, treepath: str, maxfiles: int = -1):
+    """Normalise *input_path* into an uproot-native form.
+
+    Handles two special cases that uproot does not handle natively:
+    - A bare directory string → expanded to a ``{file: treepath}`` dict
+      (with optional ``maxfiles`` slicing and natural-sort ordering).
+    - A list of file paths → converted to a ``{file: treepath}`` dict.
+
+    Everything else (single file str, glob str, explicit dict) is passed
+    through after injecting the treepath into plain strings that lack one.
+    """
+    if isinstance(input_path, dict):
+        # Already fully specified by the caller, pass through as-is.
+        return input_path
+
+    if isinstance(input_path, list):
+        files = input_path
+        if maxfiles > 0:
+            files = files[:maxfiles]
+        return {f: treepath for f in files}
+
+    if isinstance(input_path, str):
+        if os.path.isdir(input_path):
+            # Expand directory → natural-sorted list of .root files.
+            files = natsorted(_glob.glob(os.path.join(input_path, "*.root")))
+            if not files:
+                raise FileNotFoundError(f"No .root files found in directory: {input_path}")
+            if maxfiles > 0:
+                files = files[:maxfiles]
+            return {f: treepath for f in files}
+
+        # Glob pattern (contains * or ?): expand to individual file paths.
+        # Handles both "/path/*.root" and "/path/*.root:TREENAME" forms.
+        if "*" in input_path or "?" in input_path:
+            if ":" in input_path:
+                # Strip an embedded treepath suffix (last colon-separated segment).
+                glob_part, _embedded_tree = input_path.rsplit(":", 1)
+            else:
+                glob_part = input_path
+            files = natsorted(_glob.glob(glob_part))
+            if not files:
+                raise FileNotFoundError(f"No .root files matched glob: {glob_part}")
+            if maxfiles > 0:
+                files = files[:maxfiles]
+            return {f: treepath for f in files}
+
+        # Single file — inject treepath if not already present.
+        if ":" not in input_path:
+            return f"{input_path}:{treepath}"
+        return input_path
+
+    # pathlib.Path or already-opened uproot object — pass through unchanged.
+    return input_path
 
 
 # ---------------------------------------------------------------------------
@@ -119,22 +134,27 @@ def _build_allow_list(config, files: list[str], treepath: str) -> set[str]:
 class NTuple:
     """
     Columnar NTuple loader.  Loads one or more ROOT files lazily via
-    ``coffea.NanoEventsFactory`` + :class:`~dtpr.base.schema.PatternSchema`.
+    ``coffea.NanoEventsFactory`` + :class:`~dtpr.base.schema.PatternSchema`
+    using ``uproot.dask`` as the backend (handles any number of files natively).
 
     Parameters
     ----------
-    inputFolder : str
-        Path to a single ROOT file, a folder of ROOT files, or a glob pattern.
+    inputFolder : str, list, or dict
+        Passed directly to ``NanoEventsFactory.from_root`` after minimal
+        normalisation (see :func:`_preprocess_input`).  Accepted formats:
+
+        * ``"path/to/file.root"``              — single file
+        * ``"/path/to/dir/"``                  — directory (glob-expanded)
+        * ``"/path/*.root"``                   — glob pattern
+        * ``["a.root", "b.root", ...]``        — list of paths
+        * ``{"/path/*.root": "treepath", ...}`` — uproot-native dict
     selectors : list of callables, optional
-        Columnar selector functions ``(ak.Array) → bool array``.  Applied after
-        enrichment; events where the mask is ``False`` are dropped.
-        *(Step 5 — stub in this revision.)*
+        Columnar selector functions ``(ak.Array) → bool array``.
     preprocessors : list of callables, optional
-        Columnar preprocessor functions ``(ak.Array) → ak.Array``.  Applied
-        after enrichment; return value replaces the events array.
-        *(Step 5 — stub in this revision.)*
+        Columnar preprocessor functions ``(ak.Array) → ak.Array``.
     maxfiles : int, optional
-        Maximum number of ROOT files to load.  ``-1`` loads all.
+        Maximum number of files when *inputFolder* is a directory or list.
+        ``-1`` (default) loads all files.
     CONFIG : Config, optional
         A :class:`~dtpr.base.config.Config` instance.  Defaults to the global
         ``RUN_CONFIG``.
@@ -142,7 +162,7 @@ class NTuple:
 
     def __init__(
         self,
-        inputFolder: str,
+        inputFolder,
         selectors=None,
         preprocessors=None,
         maxfiles: int = -1,
@@ -162,7 +182,6 @@ class NTuple:
             self._tree_name = _tree_name
 
         # Load selectors / preprocessors declared in the config YAML.
-        # NOTE: application is columnar (Step 5). For now they are stored only.
         self._load_from_config("ntuple_selectors")
         self._load_from_config("ntuple_preprocessors")
 
@@ -173,31 +192,39 @@ class NTuple:
     # Internal loading pipeline
     # ------------------------------------------------------------------
 
-    def _load_events(self, input_path: str) -> EventList:
-        """Run the two-pass loading pipeline and return an :class:`EventList`."""
-        files = _collect_files(input_path, self._maxfiles)
-        if not files:
-            raise FileNotFoundError(f"No ROOT files found at: {input_path}")
+    def _load_events(self, input_path) -> EventList:
+        """Run the two-pass loading pipeline and return an :class:`EventList`.
 
-        color_msg(f"Loading {len(files)} file(s) from: {input_path}", "blue", 1)
-        for f in files:
-            color_msg(os.path.basename(f), indentLevel=2)
+        Uses ``mode='dask'`` exclusively, which delegates to ``uproot.dask``
+        internally and therefore handles 1 or N files natively without any
+        per-file loop or ``ak.concatenate``.
 
-        # Update maxfiles to reflect actual count
-        self._maxfiles = len(files)
+        Branch filtering must be passed via ``uproot_options["filter_name"]``
+        (not ``iteritems_options``) because dask mode bypasses the
+        ``tree.iteritems`` path used by virtual/eager modes.
 
-        # Build branch allow-list and schema
-        allowed = _build_allow_list(self.CONFIG, files, self._tree_name)
+        After the full pipeline the array's partition sizes are materialised
+        with ``eager_compute_divisions()`` so that ``len()`` works without a
+        full compute.  Individual event access (``events[i]``) is handled
+        lazily by ``EventList.__getitem__``.
+        """
+        clean_treepath = self._tree_name.lstrip("/")
+
+        # Normalise input → dict {file: treepath} or a plain "file:treepath" string.
+        processed = _preprocess_input(input_path, clean_treepath, self._maxfiles)
+        color_msg(f"Loading events from: {input_path}", "blue", 1)
+
+        # Build branch allow-list purely from config (no file I/O).
+        allowed = _extract_allowed_branches(self.CONFIG)
         schema_cls = PatternSchema.with_config(self.CONFIG)
 
-        # Pass 1 — structural via NanoEventsFactory
-        clean_treepath = self._tree_name.lstrip("/")
-        file_map = {f: clean_treepath for f in files}
-
+        # uproot.dask handles multiple files natively.
+        # filter_name goes into uproot_options (not iteritems_options).
         raw_events = NanoEventsFactory.from_root(
-            file_map,
+            processed,
             schemaclass=schema_cls,
-            iteritems_options={"filter_name": allowed},
+            mode="dask",
+            uproot_options={"filter_name": list(allowed)},
         ).events()
 
         # Pass 2 — enrichment (computed fields, sorters, filters)
@@ -211,6 +238,9 @@ class NTuple:
         # Apply columnar selectors
         for sel in self._selectors:
             raw_events = raw_events[sel(raw_events)]
+
+        # Materialise partition sizes so that len() works without a full compute.
+        raw_events.eager_compute_divisions()
 
         return EventList(raw_events)
 
@@ -248,14 +278,16 @@ class NTuple:
 
 if __name__ == "__main__":
     import os as _os
-    _input = _os.path.abspath(
-        _os.path.join(
-            _os.path.dirname(__file__),
-            "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
-        )
-    )
+    _input = "/mnt/c/Users/estradadaniel/cernbox/ZprimeToMuMu_M-6000_TuneCP5_14TeV-pythia8/ZprimeToMuMu_M-6000_PU200/v1/0000/"
+    # _os.path.abspath(
+    #     _os.path.join(
+    #         _os.path.dirname(__file__),
+    #         "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+    #     )
+    # )
     ntuple = NTuple(_input)
     print(f"Loaded {len(ntuple.events)} events")
     ev0 = ntuple.events[0]
     print(ev0)
     print("digis[0]:", ev0["digis"][0])
+

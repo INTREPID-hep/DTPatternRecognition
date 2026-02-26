@@ -42,14 +42,26 @@ class EventList:
         """
         Return a single :class:`~dtpr.base.event.EventRecord` (int index) or
         an ``ak.Array`` slice (slice index, iterable of EventRecord).
+
+        When the underlying array is a dask array (``mode='dask'``), integer
+        indexing returns a dask Record that is computed on the spot so that
+        callers always receive a concrete ``EventRecord``.
         """
-        if isinstance(index, (int, slice, ak.Array)):
+        if isinstance(index, int):
+            result = self._events[index]
+            # dask_awkward Records have a .compute() method; materialise them
+            # so callers always receive a concrete EventRecord.
+            if hasattr(result, "compute"):
+                result = result.compute()
+            return result
+        if isinstance(index, (slice, ak.Array)):
             return self._events[index]
         raise TypeError(f"Invalid index type: {type(index)}")
 
     def __iter__(self):
         """Iterate over individual EventRecord objects."""
-        yield from self._events
+        for i in range(len(self._events)):
+            yield self[i]
 
     def __repr__(self) -> str:
         return f"<EventList with {len(self._events)} events>"
@@ -79,4 +91,7 @@ class EventList:
         result = self._events[mask]
         if len(result) == 0:
             raise ValueError(f"No event found with event_eventNumber == {number}")
-        return result[0]
+        item = result[0]
+        if hasattr(item, "compute"):
+            item = item.compute()
+        return item

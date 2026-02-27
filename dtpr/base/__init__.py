@@ -1,4 +1,3 @@
-from .old_event import Event
-from .event_list import EventList
-from .ntuple import NTuple
-from .old_particle import Particle
+from .event    import EventRecord as Event
+from .particle import ParticleRecord as Particle
+from .ntuple   import NTuple

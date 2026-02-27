@@ -9,9 +9,11 @@ The class and behavior key names are intentionally generic so this package is
 reusable beyond the CMS DT detector context.
 """
 
+import re
+from functools import cached_property
 import awkward as ak
 
-from ..utils.functions import color_msg
+from ..utils.functions import color_msg, find_field_by_pattern
 
 
 class ParticleRecord(ak.Record):
@@ -24,9 +26,20 @@ class ParticleRecord(ak.Record):
     Awkward slice rather than in-memory Python attributes.
     """
 
+    _IDX_PATTERN = re.compile(r"\b(idx|id|index|num(ber)?)\b", re.IGNORECASE)
+
+    @cached_property
+    def _particle_label(self) -> str:
+        """Collection name (from schema) + optional index field value."""
+        collection = self.layout.parameter("__collection__") or "Particle"
+        idx_field = find_field_by_pattern(self.fields, self._IDX_PATTERN)
+        if idx_field is not None:
+            return f"{collection} {self[idx_field]}"
+        return collection
+
     def __repr__(self) -> str:
         parts = ", ".join(f"{f}={self[f]!r}" for f in self.fields)
-        return f"<Particle {parts}>"
+        return f"<{self._particle_label} {parts}>"
 
     def __str__(self, indentLevel: int = 0, include=None, exclude=None, **kwargs) -> str:
         """Human-readable summary, compatible with the old ``Particle.__str__`` style."""
@@ -36,7 +49,7 @@ class ParticleRecord(ak.Record):
             if (include is None or f in include) and (exclude is None or f not in exclude)
         ]
         header = color_msg(
-            "Particle info -->",
+            f"{self._particle_label} -->",
             color=kwargs.pop("color", "yellow"),
             indentLevel=indentLevel,
             return_str=True,
@@ -49,47 +62,14 @@ class ParticleRecord(ak.Record):
         )
         return "\n".join([header, body])
 
-    # ------------------------------------------------------------------
-    # Equality helpers (mirrors old Particle.__eq__ / __hash__ semantics)
-    # ------------------------------------------------------------------
-    def __eq__(self, other) -> bool:
-        if not isinstance(other, ParticleRecord):
-            return NotImplemented
-        return self.fields == other.fields and all(
-            self[f] == other[f] for f in self.fields
-        )
-
-    def __hash__(self) -> int:  # type: ignore[override]
-        try:
-            return hash(tuple((f, self[f]) for f in self.fields))
-        except TypeError:
-            return id(self)
-
-    def to_dict(self) -> dict:
-        """Return a plain-Python dict of all field values.
-
-        Values are scalars (int/float/bool) converted from NumPy where necessary.
-        Useful for building DataFrames::
-
-            pd.DataFrame([p.to_dict() for p in particles])
-        """
-        result = {}
-        for f in self.fields:
-            v = self[f]
-            try:
-                result[f] = v.item()  # numpy scalar → Python scalar
-            except AttributeError:
-                result[f] = v
-        return result
 
 
 class ParticleArray(ak.Array):
     """Collection of particle records.
 
-    Dispatched automatically by Awkward when the outer array's ``__record__``
-    resolves to ``"*Particle"`` via the behavior dict.
-
-    Equivalent to the old ``list[Particle]`` stored in ``Event._particles``.
+    Dispatched automatically by Awkward for columnar collection access
+    (``events["digis"]``).  Single-event slices (``events[0]["digis"]``)
+    return a plain ``ak.Array`` — use columnar access for best results.
     """
 
     def __repr__(self) -> str:
@@ -105,3 +85,4 @@ behavior: dict = {
     "Particle": ParticleRecord,
     "*Particle": ParticleArray,
 }
+

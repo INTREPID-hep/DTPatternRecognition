@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import PyQt5
 from functools import cache
 from typing import Optional, Any, List
 from PyQt5.QtWidgets import (
@@ -19,6 +20,12 @@ from .artist_gui_manager import ArtistManager
 from ..functions import parse_filter_text_4gui
 from .progressbar_manager import ProgressBarManager
 from ...base import NTuple
+
+
+pyqt_plugin_path = os.path.join(
+    os.path.dirname(PyQt5.__file__), 'Qt5', 'plugins', 'platforms'
+)
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = pyqt_plugin_path
 
 WHEEL_UPDATE_DELAY_MS = 500
 SECTOR_UPDATE_DELAY_MS = 500

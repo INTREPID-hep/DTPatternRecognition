@@ -1,9 +1,9 @@
 """Columnar selectors — functions with signature
-``(events: ak.Array) -> ak.Array``.
+``fn(events: ak.Array) -> ak.Array``.
 
-Each function receives the full event array and must return a boolean
-``ak.Array`` of the same length.  Events where the mask is ``False`` are
-dropped by :class:`~dtpr.base.ntuple.NTuple`.
+Event-level selectors return a boolean ``ak.Array`` of length ``nevents``.
+Particle-level selectors (used with a ``target:`` in the pipeline) return
+a variable-length boolean array matching the collection shape.
 """
 
 from __future__ import annotations
@@ -11,6 +11,11 @@ from __future__ import annotations
 import awkward as ak
 
 
-def test_selector(events: ak.Array) -> ak.Array:
-    """Keep only events that contain at least two gen-muons."""
-    return ak.num(events["genmuons"]) > 1
+def has_genmuons(events: ak.Array) -> ak.Array:
+    """Keep only events that contain at least one gen-muon."""
+    return ak.num(events["genmuons"]) > 0
+
+
+def filter_genmuons_pdgid(events: ak.Array) -> ak.Array:
+    """Particle-level mask: keep only muons/anti-muons (|pdgId| == 13)."""
+    return abs(events["genmuons"]["pdgId"]) == 13

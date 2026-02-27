@@ -7,18 +7,15 @@ the data).
 
 What it does
 ------------
-For each ``particle_types`` entry in the config it:
+Reads the ``Schema`` mapping from the YAML config.  For each collection entry
+(dict-valued key) it calls :func:`~coffea.nanoevents.schemas.base.zip_forms`
+to group the individual branch forms into a single **jagged record** with
+``__record__ = "Particle"`` so Awkward dispatches to
+:class:`~dtpr.base.particle.ParticleRecord`.
 
-1. Collects all attributes that carry a ``branch:`` key (skips ``expr:`` and
-   ``src:`` — those are handled later by the enrichment pass).
-2. Calls :func:`~coffea.nanoevents.schemas.base.zip_forms` to group the
-   individual branch forms into a single **jagged record** named after the
-   particle type, with ``__record__ = "Particle"`` so Awkward dispatches to
-   :class:`~dtpr.base.particle.ParticleRecord`.
-3. Leaves every other branch (event-level scalars, unrecognised names) *flat*
-   at the top level.
-4. Wraps everything in a top-level ``RecordArray`` with
-   ``__record__ = "Event"`` for :class:`~dtpr.base.event.EventRecord`.
+Top-level string-valued entries become flat event-level scalar fields.
+Numeric-valued entries are *constants* — injected after the factory returns
+the dask array (see :func:`_inject_constants` in ``ntuple.py``).
 
 Config injection
 ----------------
@@ -27,11 +24,8 @@ arguments, config injection is done via :meth:`PatternSchema.with_config`:
 
 .. code-block:: python
 
-    schema_cls = PatternSchema.with_config(my_config_instance)
+    schema_cls = PatternSchema.with_config(schema_map)        # schema_map = config["Schema"] dict
     factory = NanoEventsFactory.from_root(files, schemaclass=schema_cls, ...)
-
-The returned class is a proper subclass with the correct ``__dask_capable__``
-and ``behavior()`` attributes, so coffea handles it transparently.
 """
 
 from __future__ import annotations
@@ -39,6 +33,51 @@ from __future__ import annotations
 from warnings import warn
 from coffea.nanoevents.schemas.base import BaseSchema, zip_forms
 
+
+# ---------------------------------------------------------------------------
+# Module-level helpers (also imported by ntuple.py)
+# ---------------------------------------------------------------------------
+
+def _branches_from_schema(schema_map: dict) -> set[str]:
+    """Return every ROOT branch name referenced in *schema_map*.
+
+    Called by ``ntuple.py`` before creating the schema class so the branch
+    allow-list can be passed to ``NanoEventsFactory.from_root``.
+    """
+    branches: set[str] = set()
+    for key, val in schema_map.items():
+        if isinstance(val, str):
+            branches.add(val)           # event-level scalar alias
+        elif isinstance(val, dict):
+            for attr, v in val.items():
+                if isinstance(v, str):
+                    branches.add(v)     # particle-level attribute
+    return branches
+
+
+def _inject_constants(events, schema_map: dict):
+    """Inject numeric constant fields declared in *schema_map* into *events*.
+
+    Called after ``NanoEventsFactory.from_root(...).events()`` returns the
+    dask array.  Numeric values have no ROOT branch behind them — they are
+    added as virtual constant columns directly into the dask graph.
+    """
+    import awkward as ak
+    for key, val in schema_map.items():
+        if isinstance(val, (int, float)):
+            events = ak.with_field(events, val, key)        # event-level constant
+        elif isinstance(val, dict):
+            col = events[key]
+            for attr, v in val.items():
+                if isinstance(v, (int, float)):
+                    col = ak.with_field(col, v, attr)       # particle-level constant
+            events = ak.with_field(events, col, key)
+    return events
+
+
+# ---------------------------------------------------------------------------
+# Schema class
+# ---------------------------------------------------------------------------
 
 class PatternSchema(BaseSchema):
     """Groups flat DT-NTuple branches into nested Awkward particle records.
@@ -48,95 +87,156 @@ class PatternSchema(BaseSchema):
     base_form : dict
         The Awkward form dict produced by uproot/coffea (already pre-filtered
         to the allow-listed branches before this class is instantiated).
-    config : Config or None
-        A :class:`~dtpr.base.config.Config` instance.  Defaults to the global
-        ``RUN_CONFIG`` when ``None``.
+
+    The *schema_map* (the value of the ``Schema:`` key in the YAML) is bound
+    at the class level via :meth:`with_config` before this constructor is
+    called by coffea.
     """
 
-    # Inherited from BaseSchema; kept explicit for clarity.
     __dask_capable__ = True
 
-    # Default config — overridden by with_config()
-    _config = None
+    # Bound by with_config(); None means "not yet configured"
+    _schema_map: dict | None = None
 
-    def __init__(self, base_form: dict, *args, config=None, **kwargs):
-        # Resolve config: explicit arg > class-level attr > global RUN_CONFIG
-        if config is None:
-            config = self.__class__._config
-        if config is None:
-            from .config import RUN_CONFIG
-            config = RUN_CONFIG
+    # ------------------------------------------------------------------
+    # Constructor — high-level orchestration only
+    # ------------------------------------------------------------------
 
-        # ------------------------------------------------------------------
-        # Build a flat lookup: branch_name → form dict
-        # ------------------------------------------------------------------
-        branch_forms: dict = dict(
-            zip(base_form.get("fields", []), base_form.get("contents", []))
+    def __init__(self, base_form: dict, version: str = "latest"):
+        schema_map = self.__class__._schema_map
+        if schema_map is None:
+            raise RuntimeError(
+                "PatternSchema has no schema_map. "
+                "Use PatternSchema.with_config(schema_map) before passing to NanoEventsFactory."
+            )
+
+        branch_forms = dict(zip(base_form.get("fields", []), base_form.get("contents", [])))
+        consumed: set[str] = set()
+
+        collection_forms = self._build_collections(schema_map, branch_forms, consumed)
+        scalar_forms     = self._build_scalars(schema_map, branch_forms, consumed)
+        remaining_forms  = {k: v for k, v in branch_forms.items() if k not in consumed}
+
+        self._form = self._assemble_form(
+            collection_forms, scalar_forms, remaining_forms, base_form
         )
 
-        particle_types: dict = getattr(config, "particle_types", {}) or {}
+    # ------------------------------------------------------------------
+    # Private helpers — each does one thing
+    # ------------------------------------------------------------------
 
-        consumed_branches: set[str] = set()
-        collection_forms: dict[str, dict] = {}
+    @staticmethod
+    def _build_collection(
+        key: str,
+        attr_map: dict,
+        branch_forms: dict,
+        consumed: set[str],
+    ) -> dict | None:
+        """Try to build a zip_forms collection for one dict-valued schema entry.
 
-        for ptype, pinfo in particle_types.items():
-            if not isinstance(pinfo, dict):
+        Branches are only marked as consumed if ``zip_forms`` succeeds.
+        Returns the collection form dict, or ``None`` if nothing could be built.
+        """
+        member_forms: dict[str, dict] = {}
+        local_consumed: set[str] = set()
+
+        for attr_name, v in attr_map.items():
+            if attr_name == "name":
+                continue               # metadata key — not a branch
+            if not isinstance(v, str):
+                continue                # numeric constant — no branch form exists
+            branch = v
+            if branch not in branch_forms:
+                warn(
+                    f"Branch '{branch}' for collection '{key}.{attr_name}' "
+                    "not found in schema; skipping."
+                )
                 continue
-            attrs: dict = pinfo.get("attributes", {}) or {}
+            member_forms[attr_name] = branch_forms[branch]
+            local_consumed.add(branch)
 
-            # Collect attr_name → form for branch-based attributes only
-            member_forms: dict[str, dict] = {}
-            for attr_name, attr_info in attrs.items():
-                if not isinstance(attr_info, dict):
-                    # e.g.  matched_genmuons: []  — a default list value
-                    continue
-                branch = attr_info.get("branch", None)
-                if branch is None:
-                    # expr: or src: — enrichment pass handles these
-                    continue
-                if branch not in branch_forms:
-                    # Branch absent from this file — skip gracefully
-                    warn(f"Branch '{branch}' for {ptype}.{attr_name} not found in schema; skipping.")
-                    continue
-                member_forms[attr_name] = branch_forms[branch]
-                consumed_branches.add(branch)
+        if not member_forms:
+            return None                 # all attributes are constants, nothing to zip
 
-            if not member_forms:
-                # All attributes are computed — nothing structural to zip
+        try:
+            form = zip_forms(member_forms, key, record_name="Particle")
+            consumed |= local_consumed  # commit only on success
+            # Embed the collection name so ParticleRecord can display it.
+            display_name = attr_map.get("name", key)
+            inner = form.get("content", form)  # ListOffsetArray → content; RecordArray → self
+            inner.setdefault("parameters", {})["__collection__"] = display_name
+            return form
+        except (NotImplementedError, ValueError, KeyError) as exc:
+            warn(
+                f"zip_forms failed for collection '{key}': {exc}. "
+                "Leaving branches flat."
+            )
+            return None
+
+    @staticmethod
+    def _build_collections(
+        schema_map: dict,
+        branch_forms: dict,
+        consumed: set[str],
+    ) -> dict[str, dict]:
+        """Build one collection form per dict-valued entry in *schema_map*."""
+        forms: dict[str, dict] = {}
+        for key, val in schema_map.items():
+            if not isinstance(val, dict):
+                # Not a collection entry — skip.  Scalar aliases (string-valued) are handled 
+                # separately in _build_scalars.
                 continue
+            form = PatternSchema._build_collection(key, val, branch_forms, consumed)
+            if form is not None:
+                forms[key] = form
+        return forms
 
-            try:
-                coll_form = zip_forms(member_forms, ptype, record_name="Particle")
-                collection_forms[ptype] = coll_form
-            except (NotImplementedError, ValueError, KeyError):
-                # Incompatible form types (shouldn't happen for jagged branches,
-                # but be safe); leave the individual branches flat.
-                consumed_branches -= set(member_forms.values())  # un-consume
+    @staticmethod
+    def _build_scalars(
+        schema_map: dict,
+        branch_forms: dict,
+        consumed: set[str],
+    ) -> dict[str, dict]:
+        """Return ``{alias: form}`` for every string-valued top-level entry."""
+        forms: dict[str, dict] = {}
+        for key, val in schema_map.items():
+            if not isinstance(val, str):
+                # Not a scalar alias entry — skip.  numeric constants (int/float-valued) are not 
+                # expected to have branch forms and are handled separately in _inject_constants.
+                continue
+            branch = val
+            if branch not in branch_forms:
+                warn(
+                    f"Event-level branch '{branch}' (key '{key}') "
+                    "not found in schema; skipping."
+                )
+                continue
+            forms[key] = branch_forms[branch]
+            consumed.add(branch)
+        return forms
 
-        # ------------------------------------------------------------------
-        # Pass-through: every branch not consumed by a particle collection
-        # (event_* scalars, environment_*, unrecognised, etc.)
-        # ------------------------------------------------------------------
-        remaining_forms: dict[str, dict] = {
-            name: form
-            for name, form in branch_forms.items()
-            if name not in consumed_branches
-        }
-
-        # ------------------------------------------------------------------
-        # Assemble top-level Event RecordArray
-        # ------------------------------------------------------------------
-        all_fields = list(collection_forms) + list(remaining_forms)
-        all_contents = list(collection_forms.values()) + list(remaining_forms.values())
+    @staticmethod
+    def _assemble_form(
+        collection_forms: dict,
+        scalar_forms: dict,
+        remaining_forms: dict,
+        base_form: dict,
+    ) -> dict:
+        """Combine all partial forms into the final top-level Event RecordArray."""
+        all_fields   = list(collection_forms) + list(scalar_forms) + list(remaining_forms)
+        all_contents = (
+            list(collection_forms.values())
+            + list(scalar_forms.values())
+            + list(remaining_forms.values())
+        )
 
         params: dict = dict(base_form.get("parameters", {}))
-        # coffea convention: drop explicit None metadata key
         if params.get("metadata") is None:
             params.pop("metadata", None)
         params.setdefault("metadata", {})
         params["__record__"] = "Event"
 
-        self._form = {
+        return {
             "class": "RecordArray",
             "fields": all_fields,
             "contents": all_contents,
@@ -147,27 +247,25 @@ class PatternSchema(BaseSchema):
     # ------------------------------------------------------------------
     # Config injection helper
     # ------------------------------------------------------------------
-    @classmethod
-    def with_config(cls, config) -> type:
-        """Return a subclass of *PatternSchema* pre-bound to *config*.
 
-        Use this when creating a schema for a specific :class:`~dtpr.base.ntuple.NTuple`
-        instance that may carry a non-global config:
+    @classmethod
+    def with_config(cls, schema_map: dict) -> type:
+        """Return a subclass of *PatternSchema* pre-bound to *schema_map*.
+
+        *schema_map* is the value of the ``Schema:`` key in the YAML config
+        (a plain dict — not the whole config object).
 
         .. code-block:: python
 
-            schema_cls = PatternSchema.with_config(ntuple.CONFIG)
+            schema_cls = PatternSchema.with_config(config["Schema"])
             events = NanoEventsFactory.from_root(..., schemaclass=schema_cls)
-
-        The returned class is a fully valid ``BaseSchema`` subclass — coffea
-        will accept it transparently.
         """
 
         class _BoundSchema(cls):  # type: ignore[valid-type]
-            _config = config
+            _schema_map = schema_map
 
-            def __init__(self, base_form: dict, *args, **kwargs):
-                super().__init__(base_form, *args, config=config, **kwargs)
+            def __init__(self, base_form: dict, version: str = "latest"):
+                super().__init__(base_form, version)
 
         _BoundSchema.__name__ = cls.__name__
         _BoundSchema.__qualname__ = f"{cls.__qualname__}[bound]"
@@ -176,6 +274,7 @@ class PatternSchema(BaseSchema):
     # ------------------------------------------------------------------
     # Behavior — combine Event + Particle behaviors
     # ------------------------------------------------------------------
+
     @classmethod
     def behavior(cls) -> dict:
         """Return the combined Event + Particle behavior dict."""

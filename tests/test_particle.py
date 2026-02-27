@@ -1,90 +1,146 @@
-import os
+"""
+Unit tests for dtpr.base.particle.ParticleRecord and ParticleArray.
+
+Pure awkward-Array construction — no ROOT file needed.
+Run with:  pytest tests/test_particle.py -v
+"""
+
+import re
 import pytest
-from dtpr.base.old_particle import Particle
-from numpy import array
+import awkward as ak
+from dtpr.base.particle import ParticleRecord, ParticleArray, behavior
 
-class DummyEvent:
-    gen_pt = array([10.0, 20.0])
-    gen_eta = array([1.1, -1.2])
-    gen_phi = array([0.5, -0.5])
-    gen_charge = array([1, -1])
 
-def test_particle_direct_attributes():
-    p = Particle(index=0, wh=-2, sc=1, st=1)
-    assert p.index == 0
-    assert p.wh == -2
-    assert p.sc == 1
-    assert p.st == 1
-    assert p.name == "Particle"
+# ---------------------------------------------------------------------------
+# Shared fixtures
+# ---------------------------------------------------------------------------
 
-def test_particle_expr_attribute():
-    p = Particle(index=0, wh=2, detector_side={"expr": "'+z' if wh > 0 else '-z'"})
-    assert hasattr(p, "detector_side")
-    assert p.detector_side == "+z"
-
-def test_particle_init_from_dict_branch():
-    ev = DummyEvent()
-    attributes = {
-        'pt': {'branch': 'gen_pt'},
-        'eta': {'branch': 'gen_eta'},
-        'phi': {'branch': 'gen_phi'},
-        'charge': {'branch': 'gen_charge'},
-    }
-    p = Particle(index=1, ev=ev, **attributes)
-    print(p)
-    assert p.pt == ev.gen_pt[1]
-    assert p.eta == ev.gen_eta[1]
-    assert p.phi == ev.gen_phi[1]
-    assert p.charge == ev.gen_charge[1]
-
-def test_particle_equality_and_hash():
-    p1 = Particle(index=0, wh=1, sc=2)
-    p2 = Particle(index=1, wh=1, sc=2)
-    p3 = Particle(index=2, wh=2, sc=2)
-    assert p1 == p2
-    assert p1 != p3
-    assert hash(p1) == hash(p2)
-    assert hash(p1) != hash(p3)
-
-def test_particle_str():
-    p = Particle(index=0, wh=1, sc=2)
-    s = p.__str__()
-    assert "Particle" in s
-    assert "Wh" in s
-    assert "Sc" in s
-
-def test_particle_from_real_root_file():
-    try:
-        import ROOT
-    except ImportError:
-        pytest.skip("ROOT is not installed")
-
-    # Path to your test ROOT file
-    test_file = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            "ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"
-        )
+@pytest.fixture(scope="module")
+def digis():
+    """Jagged array: 2 events with variable-length particle collections."""
+    return ak.with_name(
+        ak.Array([
+            [{"wh": 1, "sl": 1, "time": 100}, {"wh": 1, "sl": 2, "time": 200}],
+            [{"wh": 2, "sl": 1, "time": 300}],
+        ]),
+        name="Particle",
+        behavior=behavior,
     )
-    if not os.path.exists(test_file):
-        pytest.skip(f"Test ROOT file not found: {test_file}")
 
-    attributes = {
-        'pt': {'branch': 'gen_pt'},
-        'eta': {'branch': 'gen_eta'},
-        'phi': {'branch': 'gen_phi'},
-        'charge': {'branch': 'gen_charge'},
-    }
-    from ROOT import TFile
-    with TFile(test_file, "read") as ntuple:
-        tree = ntuple["dtNtupleProducer/DTTREE;1"]
-        for iev, ev in enumerate(tree):
-            # In this ntuple, each event contains ~2 genmuons
-            for idx in range(len(ev.gen_pt)):
-                particle = Particle(index=idx, ev=ev, name="GenMuon", **attributes)
-                # Validate values match those in the ROOT event
-                assert particle.pt == ev.gen_pt[idx]
-                assert particle.eta == ev.gen_eta[idx]
-                assert particle.phi == ev.gen_phi[idx]
-                assert particle.charge == ev.gen_charge[idx]
-            break  # Only test the first event for speed
+
+def _strip_ansi(s: str) -> str:
+    return re.sub(r"\033\[[^m]*m", "", s)
+
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+class TestParticleRecordDispatch:
+
+    def test_leaf_dispatch_fires(self, digis):
+        assert isinstance(digis[0][0], ParticleRecord)
+        assert isinstance(digis[1][0], ParticleRecord)
+
+    def test_behavior_keys_present(self):
+        assert "Particle"  in behavior
+        assert "*Particle" in behavior
+
+    def test_behavior_values(self):
+        assert behavior["Particle"]  is ParticleRecord
+        assert behavior["*Particle"] is ParticleArray
+
+    def test_fields(self, digis):
+        assert set(digis[0][0].fields) == {"wh", "sl", "time"}
+
+
+class TestParticleArrayDispatch:
+
+    def test_outer_array_is_plain_ak_array(self, digis):
+        """In awkward 2.x *Particle dispatch does not fire on plain jagged arrays
+        — expected behavior, ParticleArray is reserved for coffea NanoEventsFactory output."""
+        assert not isinstance(digis,    ParticleArray)
+        assert not isinstance(digis[0], ParticleArray)
+
+
+class TestParticleRecordRepr:
+
+    def test_repr_format(self, digis):
+        r = repr(digis[0][0])
+        assert r.startswith("<Particle ")
+        assert r.endswith(">")
+
+    def test_repr_contains_fields(self, digis):
+        r = repr(digis[0][0])
+        assert "wh=1"    in r
+        assert "sl=1"    in r
+        assert "time=100" in r
+
+
+class TestParticleRecordStr:
+
+    def test_str_full(self, digis):
+        plain = _strip_ansi(str(digis[0][0]))
+        assert "Particle" in plain
+        assert "Wh"   in plain
+        assert "Sl"   in plain
+        assert "Time" in plain
+
+    def test_str_include(self, digis):
+        plain = _strip_ansi(digis[0][0].__str__(include=["wh", "time"]))
+        assert "Wh"   in plain
+        assert "Time" in plain
+        assert "Sl"   not in plain
+
+    def test_str_exclude(self, digis):
+        plain = _strip_ansi(digis[0][0].__str__(exclude=["sl"]))
+        assert "Wh"   in plain
+        assert "Time" in plain
+        assert "Sl"   not in plain
+
+
+class TestToList:
+
+    def test_returns_dict(self, digis):
+        assert isinstance(digis[0][0].to_list(), dict)
+
+    def test_correct_values(self, digis):
+        assert digis[0][0].to_list() == {"wh": 1, "sl": 1, "time": 100}
+        assert digis[1][0].to_list() == {"wh": 2, "sl": 1, "time": 300}
+
+    def test_equality_via_to_list(self, digis):
+        p0 = digis[0][0]
+        p2 = digis[1][0]
+        assert p0.to_list() == p0.to_list()
+        assert p0.to_list() != p2.to_list()
+
+
+class TestParticleLabel:
+
+    def test_label_defaults_to_particle_when_no_collection(self, digis):
+        """No __collection__ parameter set → label falls back to 'Particle'."""
+        assert digis[0][0]._particle_label == "Particle"
+
+    def test_label_uses_collection_name(self):
+        """__collection__ injected via ak.with_parameter → label uses it."""
+        records = ak.with_parameter(
+            ak.with_name(ak.Array([{"wh": 1}]), name="Particle", behavior=behavior),
+            "__collection__", "digis",
+        )
+        assert records[0]._particle_label == "digis"
+
+    def test_label_includes_idx_field(self):
+        """When a field matches _IDX_PATTERN, label appends its value."""
+        raw = ak.with_name(
+            ak.Array([[{"idx": 7, "wh": 1}]]),
+            name="Particle", behavior=behavior,
+        )
+        assert raw[0][0]._particle_label == "Particle 7"
+
+    def test_repr_reflects_label(self):
+        """__repr__ uses _particle_label as the prefix."""
+        raw = ak.with_name(
+            ak.Array([[{"idx": 3, "wh": 2}]]),
+            name="Particle", behavior=behavior,
+        )
+        assert repr(raw[0][0]).startswith("<Particle 3 ")

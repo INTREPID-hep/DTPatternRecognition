@@ -1,31 +1,25 @@
 """Columnar preprocessors — functions with signature
-``(events: ak.Array, **kwargs) -> ak.Array``.
+``fn(events: ak.Array) -> ak.Array``.
 
 Each function receives the full event array and must return a (possibly
-modified) event array.  Fields can be added via ``ak.with_field``.
+modified) event array.  Fields are added via ``ak.with_field``.
+Note: ``ak.with_field`` is immutable — always reassign the result.
 """
 
 from __future__ import annotations
-
-import math
-from typing import Optional
 
 import awkward as ak
 import numpy as np
 
 
-def test_preprocessor(
-    events: ak.Array,
-    dummy_val: Optional[float] = -999.0,
-) -> ak.Array:
+def add_genmuon_dR(events: ak.Array) -> ak.Array:
     """Add a per-event ``dR`` field between the first two gen-muons.
 
-    Events with fewer than two gen-muons get ``dR = dummy_val``.
+    Events with fewer than two gen-muons get ``dR = -999.0``.
     """
     genmuons = events["genmuons"]
     has_two = ak.num(genmuons) >= 2
 
-    # Pad ragged genmuon arrays to at least 2 entries (extras become None)
     eta = ak.pad_none(genmuons["eta"], 2, axis=1)
     phi = ak.pad_none(genmuons["phi"], 2, axis=1)
 
@@ -36,11 +30,10 @@ def test_preprocessor(
 
     d_eta = eta1 - eta0
     d_phi = phi1 - phi0
-    # Wrap d_phi to [-pi, pi]
-    d_phi = ak.where(d_phi > np.pi, d_phi - 2.0 * np.pi, d_phi)
+    d_phi = ak.where(d_phi > np.pi,  d_phi - 2.0 * np.pi, d_phi)
     d_phi = ak.where(d_phi < -np.pi, d_phi + 2.0 * np.pi, d_phi)
 
     dR = np.sqrt(d_eta**2 + d_phi**2)
-    dR = ak.where(has_two, dR, float(dummy_val))
+    dR = ak.where(has_two, dR, -999.0)
 
     return ak.with_field(events, dR, "dR")

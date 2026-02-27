@@ -1,6 +1,7 @@
 """Miscelaneous"""
 
-from functools import partial
+import re
+from functools import partial, lru_cache
 import os
 import math
 import matplotlib.pyplot as plt
@@ -167,9 +168,7 @@ def error_handler(exc_type: type, exc_value: Exception, exc_traceback: Any) -> N
     )
 
 
-# Cache for callable functions to avoid repeated imports
-_CALLABLE_CACHE = {}
-
+@lru_cache(maxsize=256)
 def get_callable_from_src(src_str: str) -> Callable:
     """
     Returns the callable object from the given source string.
@@ -180,23 +179,34 @@ def get_callable_from_src(src_str: str) -> Callable:
     :return: The callable object.
     :rtype: Callable
     """
-    # Check cache first
-    if src_str in _CALLABLE_CACHE:
-        return _CALLABLE_CACHE[src_str]
-    
-    callable = None
+    if not isinstance(src_str, str):
+        raise TypeError(f"src_str must be a string, got {type(src_str).__name__}")
+
+    if "." not in src_str:
+        raise ValueError(
+            f"Invalid callable path '{src_str}'. Expected dotted path 'module.callable'."
+        )
+
+    loaded_callable = None
     try:
         _module_name, _callable_name = src_str.rsplit(".", 1)
+        if not _module_name or not _callable_name:
+            raise ValueError(
+                f"Invalid callable path '{src_str}'. Expected dotted path 'module.callable'."
+            )
         _module = import_module(_module_name)
-        callable = getattr(_module, _callable_name)
-        # Cache the callable
-        _CALLABLE_CACHE[src_str] = callable
+        loaded_callable = getattr(_module, _callable_name)
     except AttributeError as e:
         raise AttributeError(f"{_callable_name} callable not found: {e}")
     except ImportError as e:
         raise ImportError(f"Error importing {src_str}: {e}")
 
-    return callable
+    if not callable(loaded_callable):
+        raise TypeError(
+            f"Resolved object '{src_str}' is not callable (type: {type(loaded_callable).__name__})."
+        )
+
+    return loaded_callable
 
 
 def create_outfolder(outname: str) -> None:
@@ -493,3 +503,8 @@ def deltaR(p1: Any, p2: Any) -> float:
     dEta = deltaEta(p1.eta, p2.eta)
     dPhi = deltaPhi(p1.phi, p2.phi)
     return math.sqrt(dEta * dEta + dPhi * dPhi)
+
+
+def find_field_by_pattern(fields: list[str], pattern: re.Pattern) -> str | None:
+    """Return the first field in *fields* whose name matches *pattern*, or None."""
+    return next((f for f in fields if pattern.search(f)), None)

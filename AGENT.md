@@ -645,3 +645,158 @@ The dynamic mixin is non-trivial but feasible via `type()` factory or
 Named subtypes (`Muon`, `Jet`) could be supported by letting YAML declare
 `record_name: Muon` per collection, which would register `behavior["Muon"]`
 dynamically at schema-build time — still fully declarative, no hardcoded classes.
+
+---
+
+## 📊 Analysis Design — Exploiting coffea / dask / awkward
+
+> **Status:** Planned — not yet implemented.  This section describes the
+> recommended architecture for analysis programs such as `fill-histos`.
+
+### Core idea
+
+After `NTuple` loads and pipelines the events into a lazy `dask_awkward.Array`,
+the analysis layer should exploit three complementary tools:
+
+| Layer | Role |
+|---|---|
+| **awkward-array** | Columnar, JIT-friendly operations on the ragged event structure |
+| **dask-awkward** | Lazy graph — defer all compute; partition parallelism is free |
+| **coffea `Hist` / `hist`** | Accumulator-friendly histograms that merge across partitions |
+
+---
+
+### Recommended pattern: `map_partitions` + `Hist` accumulators
+
+The idiomatic way to fill histograms without leaving the dask graph:
+
+```python
+import dask_awkward as dak
+import hist
+
+# 1. Define a histogram (boost-histogram / hist)
+h = hist.Hist(
+    hist.axis.Regular(50, 0, 200, name="pt", label="pT [GeV]"),
+    hist.axis.Regular(50, -2.5, 2.5, name="eta", label="η"),
+    storage=hist.storage.Double(),
+)
+
+# 2. Pure function that fills from one partition
+def fill_partition(events, h):
+    mu = events["genmuons"]
+    h.fill(pt=ak.to_numpy(ak.flatten(mu["pt"])),
+           eta=ak.to_numpy(ak.flatten(mu["eta"])))
+    return h
+
+# 3. Build the lazy graph — one histogram per partition
+partial_hists = dak.map_partitions(fill_partition, ntuple.events, h)
+
+# 4. Compute + reduce
+final_hist = sum(partial_hists.compute())
+```
+
+---
+
+### Recommended architecture for `fill-histos`
+
+```
+dtpr fill-histos -i data.root -c run_config.yaml
+```
+
+```
+NTuple(input, config)                         →  lazy dak.Array
+  └─ execute_pipeline(events, config.pipeline)    selectors + preprocessors
+           │
+           ▼
+Histogram definitions (config.histo_names)    →  one Hist per name
+           │
+           ▼
+dak.map_partitions(fill_fn, events, h)        →  lazy fill graph
+           │
+           ▼  .compute()  ← single trigger
+sum(partial_hists)  →  final Hist objects
+save / plot
+```
+
+#### Histogram module contract
+
+Each histogram definition is a `(template_hist, fill_fn)` tuple importable by name:
+
+```python
+# dtpr/utils/histograms.py
+import hist, awkward as ak
+
+LeadingMuon_pt = (
+    hist.Hist(hist.axis.Regular(50, 0, 200, name="pt"), storage=hist.storage.Double()),
+    lambda events: {"pt": ak.to_numpy(ak.flatten(events["genmuons"]["pt"][:, :1]))},
+)
+```
+
+`fill-histos` workflow:
+1. Import each named definition from `config.histo_sources`.
+2. Build a `dak.map_partitions` call per histogram.
+3. `.compute()` once — all partitions fill in parallel.
+4. `sum(...)` across partitions per histogram.
+5. Save / plot results.
+
+---
+
+### Why `dak.map_partitions` and not a Python event loop
+
+| | Python event loop | `map_partitions` |
+|---|---|---|
+| Speed | Slow — Python overhead per event | Fast — awkward operates on full arrays |
+| Parallelism | None | Free — dask schedules partitions in parallel |
+| Memory | Loads all events | Streams one partition at a time |
+| Combines with pipeline | Manual | Seamless — events already a `dak.Array` |
+
+---
+
+### Key awkward idioms for histogram filling
+
+```python
+# Leading object (first muon per event)
+pt = ak.flatten(events["genmuons"]["pt"][:, :1])
+
+# All objects (every muon in every event)
+pt_all = ak.flatten(events["genmuons"]["pt"])
+
+# Multiplicity
+n_tps = ak.num(events["tps"])
+
+# Cross-referenced quantity (after matching preprocessor)
+n_matched = ak.num(events["tps"]["matched_showers"])
+
+# Event-level scalar
+run = events["run"]
+```
+
+All zero-copy and lazy when `events` is a `dak.Array`.
+
+---
+
+### Multi-file parallelism — no extra code needed
+
+`NanoEventsFactory.from_root` with `mode="dask"` creates one partition per file.
+100 files look identical to 1 file — dask schedules them automatically.
+
+```python
+ntuple = NTuple(["file1.root", "file2.root", ...], config=cfg)
+results = partial_hists.compute()   # dask handles all files
+```
+
+---
+
+### Relation to existing `fill-histos` CLI command
+
+The current `fill-histos` in `dtpr/cli.py` uses an older event-loop implementation.
+The re-wired version should:
+
+1. Construct `NTuple` with the config (schema + pipeline already done).
+2. Resolve histogram definitions from `config.histo_sources` + `config.histo_names`.
+3. Build one combined `dak.map_partitions` fill function (one pass per partition).
+4. Call `.compute()` once.
+5. Save results (ROOT via `uproot`, pickle, or direct plot).
+
+**The CLI wiring is not yet done** — it is the next major implementation step
+after the current schema/pipeline/io refactor is complete.

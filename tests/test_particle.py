@@ -67,7 +67,7 @@ class TestParticleRecordRepr:
 
     def test_repr_format(self, digis):
         r = repr(digis[0][0])
-        assert r.startswith("<Particle ")
+        assert r.startswith("<Particle[")
         assert r.endswith(">")
 
     def test_repr_contains_fields(self, digis):
@@ -115,32 +115,32 @@ class TestToList:
         assert p0.to_list() != p2.to_list()
 
 
-class TestParticleLabel:
+class TestParticleId:
 
-    def test_label_defaults_to_particle_when_no_collection(self, digis):
-        """No __collection__ parameter set → label falls back to 'Particle'."""
-        assert digis[0][0]._particle_label == "Particle"
+    def test_id_fallback_to_positional_index_when_no_idx_field(self, digis):
+        """No idx-like field → _id falls back to layout.at (positional index)."""
+        assert digis[0][0]._id == 0
 
-    def test_label_uses_collection_name(self):
-        """__collection__ injected via ak.with_parameter → label uses it."""
+    def test_id_fallback_ignores_collection_name(self):
+        """__collection__ parameter does not affect _id — only field values do."""
         records = ak.with_parameter(
             ak.with_name(ak.Array([{"wh": 1}]), name="Particle", behavior=behavior),
             "__collection__", "digis",
         )
-        assert records[0]._particle_label == "digis"
+        assert records[0]._id == 0  # positional fallback
 
-    def test_label_includes_idx_field(self):
-        """When a field matches _IDX_PATTERN, label appends its value."""
+    def test_id_uses_idx_field_value(self):
+        """When a field matches _IDX_PATTERN, _id returns that field's value."""
         raw = ak.with_name(
             ak.Array([[{"idx": 7, "wh": 1}]]),
             name="Particle", behavior=behavior,
         )
-        assert raw[0][0]._particle_label == "Particle 7"
+        assert raw[0][0]._id == 7
 
-    def test_repr_reflects_label(self):
-        """__repr__ uses _particle_label as the prefix."""
+    def test_repr_uses_id_in_brackets(self):
+        """__repr__ formats as <Collection[id] ...>."""
         raw = ak.with_name(
             ak.Array([[{"idx": 3, "wh": 2}]]),
             name="Particle", behavior=behavior,
         )
-        assert repr(raw[0][0]).startswith("<Particle 3 ")
+        assert repr(raw[0][0]).startswith("<Particle[3] ")

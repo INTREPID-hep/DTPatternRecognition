@@ -29,17 +29,44 @@ class ParticleRecord(ak.Record):
     _IDX_PATTERN = re.compile(r"\b(idx|id|index|num(ber)?)\b", re.IGNORECASE)
 
     @cached_property
-    def _particle_label(self) -> str:
-        """Collection name (from schema) + optional index field value."""
-        collection = self.layout.parameter("__collection__") or "Particle"
+    def _id(self):
+        """Numeric identifier for this particle within its collection.
+
+        Computed once and cached.  Scans the particle fields for one whose
+        name matches a common index pattern (``idx``, ``id``, ``index``,
+        ``num``, …) and returns its value directly.  Falls back to the
+        positional index within the parent array (``layout.at``) when no
+        such field is present.
+
+        The raw value is returned — not a string.
+        """
         idx_field = find_field_by_pattern(self.fields, self._IDX_PATTERN)
         if idx_field is not None:
-            return f"{collection} {self[idx_field]}"
-        return collection
+            return self[idx_field]
+        return self.layout.at
+
+    @staticmethod
+    def _ids_from_array(array) -> ak.Array:
+        """Return the ``_id`` column for an array of ``ParticleRecord`` elements.
+
+        Array-level equivalent of :attr:`_id`, used when operating on a full
+        (possibly doubly-jagged) array rather than a single record:
+
+        * If any field in the array matches :attr:`_IDX_PATTERN`, return that
+          column (``array[id_field]``).
+        * Otherwise fall back to ``ak.local_index(array, axis=-1)``, which
+          produces the positional index of each element — identical to
+          ``layout.at`` used by :attr:`_id` on a single record.
+        """
+        id_field = find_field_by_pattern(list(ak.fields(array)), ParticleRecord._IDX_PATTERN)
+        if id_field is not None:
+            return array[id_field]
+        return ak.local_index(array, axis=-1)
 
     def __repr__(self) -> str:
+        collection = self.layout.parameter("__collection__") or "Particle"
         parts = ", ".join(f"{f}={self[f]!r}" for f in self.fields)
-        return f"<{self._particle_label} {parts}>"
+        return f"<{collection}[{self._id}] {parts}>"
 
     def __str__(self, indentLevel: int = 0, include=None, exclude=None, **kwargs) -> str:
         """Human-readable summary, compatible with the old ``Particle.__str__`` style."""
@@ -48,8 +75,9 @@ class ParticleRecord(ak.Record):
             for f in self.fields
             if (include is None or f in include) and (exclude is None or f not in exclude)
         ]
+        collection = self.layout.parameter("__collection__") or "Particle"
         header = color_msg(
-            f"{self._particle_label} -->",
+            f"{collection}[{self._id}] -->",
             color=kwargs.pop("color", "yellow"),
             indentLevel=indentLevel,
             return_str=True,

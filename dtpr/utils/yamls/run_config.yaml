@@ -12,7 +12,7 @@ ntuple_tree_name: '/dtNtupleProducer/DTTREE'
 #
 Schema:
   # event-level scalars
-  run: "event_eventNumber"
+  number: "event_eventNumber"
 
   # ---- particle collections ----
   digis:
@@ -23,7 +23,6 @@ Schema:
     l:    "digi_layer"
     w:    "digi_wire"
     time: "digi_time"
-    # BX is computed in the pipeline (time // 25)
 
   segments:
     wh:           "seg_wheel"
@@ -48,8 +47,7 @@ Schema:
     dirLoc_phi: "ph2TpgPhiEmuAm_dirLoc_phi"
     quality:   "ph2TpgPhiEmuAm_quality"
     rpcFlag:   "ph2TpgPhiEmuAm_rpcFlag"
-    _BX:       "ph2TpgPhiEmuAm_BX"
-    # BX (centered = _BX - 20) is computed in the pipeline
+    BX:       "ph2TpgPhiEmuAm_BX"
 
   genmuons:
     pt:    "gen_pt"
@@ -82,12 +80,19 @@ Schema:
 
 # pipeline: ordered transformations applied to the loaded event array.
 #
-# Step keys:
-#   name       — unique identifier (used in depends_on)
+# The pipeline: value must be a mapping — each key IS the step name
+#
+# Step body keys:
 #   type       — "selector" or "preprocessor"
 #   target     — (selector only) collection name for particle-level filtering; absent = event-level
-#   expr       — inline Python; scope has {events, ak}
-#   src        — dotted import path to fn(events) -> ak.Array
+#   expr       — inline Python with {events, ak} in scope.
+#                  selector    : must be an expression returning bool[nevents] or bool[nevents×nparticles]
+#                  preprocessor: must be a statement that mutates events in-place,
+#                                e.g. events['field'] = value
+#                                For nested collections: events['col'] = ak.with_field(events['col'], value, 'key')
+#   src        — dotted import path to a callable:
+#                  selector    : fn(events) -> ak.Array[bool]   (bool mask, not applied yet)
+#                  preprocessor: fn(events) -> None             (mutates events in-place)
 #   depends_on — list of step names that must run first (default [])
 #
 pipeline:
@@ -97,35 +102,25 @@ pipeline:
   compute-digi-BX:
     type: preprocessor
     expr: "events['digis'] = ak.with_field(events['digis'], events['digis']['time'] // 25, 'BX')"
-    depends_on: []
 
   # Compute centered TP BX (_BX - 20)
   compute-tp-BX:
     type: preprocessor
-    expr: "events['tps'] = ak.with_field(events['tps'], events['tps']['_BX'] - 20, 'BX')"
-    depends_on: []
-
-  # Filter genmuons to muons only (pdgId == ±13)
-  filter-genmuons-pdgid:
-    type: selector
-    target: genmuons
-    expr: "abs(events['genmuons']['pdgId']) == 13"
-    depends_on: []
+    expr: "events['tps'] = ak.with_field(events['tps'], events['tps']['BX'] - 20, 'BX')"
 
   # ---- level 1: depend on level-0 preprocessors ----
 
-  # Filter TPs: quality >= 0 (requires BX to be centred first)
-  filter-tp-quality:
+  # Filter TPs: quality >= 0
+  filter-tps:
     type: selector
     target: tps
-    expr: "events['tps']['quality'] >= 0"
+    expr: "(events['tps']['quality'] >= 0)"
     depends_on: [compute-tp-BX]
 
-  # ---- level 1: keep only events with ≥1 genmuon after pdgId filter ----
+  # ---- level 1: keep only events with ≥2 genmuon ----
   select-has-genmuons:
     type: selector
-    expr: "ak.num(events['genmuons']) > 0"
-    depends_on: [filter-genmuons-pdgid]
+    expr: "ak.num(events['genmuons']) > 1"
 
 # -------------------------------- configuration for histograms -----------------------------------#
 histo_sources:

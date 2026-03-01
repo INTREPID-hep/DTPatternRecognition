@@ -30,33 +30,31 @@ class EventRecord(ak.Record):
 
     _ID_PATTERN = re.compile(r"(ev(ent)?|num(ber)?|index|idx)", re.IGNORECASE)
 
-    @staticmethod
-    def _find_id_field(fields: list[str]) -> str | None:
-        """Return the first field whose name looks like an event identifier, or None."""
-        return find_field_by_pattern(fields, EventRecord._ID_PATTERN)
-
     @cached_property
-    def _event_label(self) -> str:
-        """Best human-readable identifier for this event.
+    def _id(self):
+        """Numeric identifier for this event.
 
-        Computed once and cached on the instance.  Tries to find a scalar
-        field whose name matches a common event-ID pattern (event, number,
-        index, …).  Falls back to the positional index within the parent
-        array (``layout.at``).
+        Computed once and cached.  Scans the event fields for one whose name
+        matches a common event-ID pattern (``event``, ``run``, ``number``,
+        ``index``, ``idx``, …) and returns its value directly.  Falls back
+        to the positional index within the parent array (``layout.at``) when
+        no such field is present.
+
+        The raw value (int, numpy scalar, …) is returned — not a string —
+        so callers can compare, format, or log it as needed.
         """
-        id_field = self._find_id_field(self.fields)
+        id_field = find_field_by_pattern(self.fields, self._ID_PATTERN)
         if id_field is not None:
             val = self[id_field]
-            # only use it if it's a plain scalar, not a collection
             if not (hasattr(val, "fields") and val.fields):
-                return f"{val}"
-        return f"{self.layout.at}"
+                return val
+        return self.layout.at
 
     # ------------------------------------------------------------------
     # Representation
     # ------------------------------------------------------------------
     def __repr__(self) -> str:
-        return f"<Event {self._event_label}>"
+        return f"<Event {self._id}>"
 
     def __str__(self, indentLevel: int = 0) -> str:
         """Verbose summary of all fields in this event record.
@@ -71,7 +69,7 @@ class EventRecord(ak.Record):
         """
         lines = [
             color_msg(
-                f"------ Event {self._event_label} ------",
+                f"------ Event {self._id} ------",
                 color="yellow",
                 indentLevel=indentLevel,
                 return_str=True,

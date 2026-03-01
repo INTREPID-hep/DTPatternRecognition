@@ -9,6 +9,7 @@ import re
 import pytest
 import awkward as ak
 from dtpr.base.event import EventRecord, behavior
+from dtpr.utils.functions import find_field_by_pattern
 
 
 # ---------------------------------------------------------------------------
@@ -71,44 +72,47 @@ class TestEventRecordDispatch:
 
 
 class TestFindIdField:
+    """Tests for the _ID_PATTERN + find_field_by_pattern used by EventRecord._id."""
 
     def test_matches_num(self):
-        assert EventRecord._find_id_field(["num", "digis"]) == "num"
+        assert find_field_by_pattern(["num", "digis"], EventRecord._ID_PATTERN) == "num"
 
     def test_matches_compound_name(self):
-        assert EventRecord._find_id_field(["event_number", "digis"]) == "event_number"
+        assert find_field_by_pattern(["event_number", "digis"], EventRecord._ID_PATTERN) == "event_number"
 
     def test_no_match_returns_none(self):
-        assert EventRecord._find_id_field(["wh", "time"]) is None
+        assert find_field_by_pattern(["wh", "time"], EventRecord._ID_PATTERN) is None
 
     def test_case_insensitive(self):
         """_ID_PATTERN uses re.IGNORECASE — uppercase variants must match."""
-        assert EventRecord._find_id_field(["INDEX", "digis"])  == "INDEX"
-        assert EventRecord._find_id_field(["Event_ID"])        == "Event_ID"
-        assert EventRecord._find_id_field(["NUMBER"])          == "NUMBER"
-        assert EventRecord._find_id_field(["Idx"])             == "Idx"
-        assert EventRecord._find_id_field(["ev"])              == "ev"
-        assert EventRecord._find_id_field(["evnum"])           == "evnum"
+        pat = EventRecord._ID_PATTERN
+        assert find_field_by_pattern(["INDEX", "digis"], pat)  == "INDEX"
+        assert find_field_by_pattern(["Event_ID"],       pat)  == "Event_ID"
+        assert find_field_by_pattern(["NUMBER"],         pat)  == "NUMBER"
+        assert find_field_by_pattern(["Idx"],            pat)  == "Idx"
+        assert find_field_by_pattern(["ev"],             pat)  == "ev"
+        assert find_field_by_pattern(["evnum"],          pat)  == "evnum"
 
     def test_first_match_wins(self):
         """When multiple candidates exist, the first field in order is returned."""
-        assert EventRecord._find_id_field(["num", "event_id"]) == "num"
+        assert find_field_by_pattern(["num", "event_id"], EventRecord._ID_PATTERN) == "num"
 
 
-class TestEventLabel:
+class TestEventId:
 
-    def test_label_uses_id_field_value(self, events):
-        assert events[0]._event_label == "42"
-        assert events[1]._event_label == "43"
+    def test_id_uses_id_field_value(self, events):
+        """_id returns the raw field value, not a string."""
+        assert events[0]._id == 42
+        assert events[1]._id == 43
 
-    def test_label_fallback_to_positional_index(self, events_no_id):
-        assert events_no_id[0]._event_label == "0"
-        assert events_no_id[1]._event_label == "1"
+    def test_id_fallback_to_positional_index(self, events_no_id):
+        assert events_no_id[0]._id == 0
+        assert events_no_id[1]._id == 1
 
-    def test_label_is_cached(self, events):
+    def test_id_is_cached(self, events):
         """cached_property must return the same object on repeated access."""
         ev = events[0]
-        assert ev._event_label is ev._event_label
+        assert ev._id is ev._id
 
 
 class TestRepresentation:

@@ -38,30 +38,44 @@ def _resolve_includes(content, base_dir, visited=None):
         if match:
             indent = match.group(1)
             key_part = match.group(2)  # Just the key name (no colon)
-            include_path = match.group(3).split('#')[0].strip()  # Remove comments and strip whitespace
-            
-            full_path = os.path.abspath(os.path.join(base_dir, include_path))
-            
-            # Check for circular includes
-            if full_path in visited:
-                raise ValueError(f"Circular include detected: {full_path}")
-            
-            visited.add(full_path)
-            
-            try:
-                with open(full_path, 'r') as inc_file:
-                    included_content = inc_file.read()
-            except FileNotFoundError as e:
-                raise FileNotFoundError(
-                    f"Cannot find included file '{include_path}' (resolved to: {full_path})"
-                ) from e
-            except IOError as e:
-                raise IOError(
-                    f"Cannot read included file '{include_path}' (resolved to: {full_path})"
-                ) from e
-            
-            included_dir = os.path.dirname(full_path)
-            resolved_content = _resolve_includes(included_content, included_dir, visited)
+            raw_path = match.group(3).split('#')[0].strip()  # Remove comments and strip whitespace
+
+            # Detect list form: !include [file_a.yaml, file_b.yaml]
+            if raw_path.startswith('[') and raw_path.endswith(']'):
+                include_paths = [p.strip() for p in raw_path[1:-1].split(',')]
+            else:
+                include_paths = [raw_path]
+
+            merged_resolved = ''
+            for include_path in include_paths:
+                full_path = os.path.abspath(os.path.join(base_dir, include_path))
+
+                # Check for circular includes
+                if full_path in visited:
+                    raise ValueError(f"Circular include detected: {full_path}")
+
+                visited.add(full_path)
+
+                try:
+                    with open(full_path, 'r') as inc_file:
+                        included_content = inc_file.read()
+                except FileNotFoundError as e:
+                    raise FileNotFoundError(
+                        f"Cannot find included file '{include_path}' (resolved to: {full_path})"
+                    ) from e
+                except IOError as e:
+                    raise IOError(
+                        f"Cannot read included file '{include_path}' (resolved to: {full_path})"
+                    ) from e
+
+                included_dir = os.path.dirname(full_path)
+                merged_resolved += _resolve_includes(included_content, included_dir, visited)
+                if not merged_resolved.endswith('\n'):
+                    merged_resolved += '\n'
+
+                visited.remove(full_path)
+
+            resolved_content = merged_resolved.rstrip('\n')
             
             if key_part:
                 # Case: key: !include file.yaml
@@ -77,8 +91,6 @@ def _resolve_includes(content, base_dir, visited=None):
                 indented_lines = [indent + line if line.strip() else line 
                                  for line in resolved_content.split('\n')]
                 processed_lines.extend(indented_lines)
-            
-            visited.remove(full_path)
         else:
             processed_lines.append(line)
     

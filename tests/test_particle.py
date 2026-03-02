@@ -119,7 +119,7 @@ class TestParticleId:
 
     def test_id_fallback_to_positional_index_when_no_idx_field(self, digis):
         """No idx-like field → _id falls back to layout.at (positional index)."""
-        assert digis[0][0]._id == 0
+        assert digis[0][0].id == 0
 
     def test_id_fallback_ignores_collection_name(self):
         """__collection__ parameter does not affect _id — only field values do."""
@@ -127,7 +127,7 @@ class TestParticleId:
             ak.with_name(ak.Array([{"wh": 1}]), name="Particle", behavior=behavior),
             "__collection__", "digis",
         )
-        assert records[0]._id == 0  # positional fallback
+        assert records[0].id == 0  # positional fallback
 
     def test_id_uses_idx_field_value(self):
         """When a field matches _IDX_PATTERN, _id returns that field's value."""
@@ -135,7 +135,7 @@ class TestParticleId:
             ak.Array([[{"idx": 7, "wh": 1}]]),
             name="Particle", behavior=behavior,
         )
-        assert raw[0][0]._id == 7
+        assert raw[0][0].id == 7
 
     def test_repr_uses_id_in_brackets(self):
         """__repr__ formats as <Collection[id] ...>."""

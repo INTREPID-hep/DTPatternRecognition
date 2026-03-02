@@ -29,7 +29,7 @@ class ParticleRecord(ak.Record):
     _IDX_PATTERN = re.compile(r"\b(idx|id|index|num(ber)?)\b", re.IGNORECASE)
 
     @cached_property
-    def _id(self):
+    def id(self):
         """Numeric identifier for this particle within its collection.
 
         Computed once and cached.  Scans the particle fields for one whose
@@ -46,17 +46,17 @@ class ParticleRecord(ak.Record):
         return self.layout.at
 
     @staticmethod
-    def _ids_from_array(array) -> ak.Array:
-        """Return the ``_id`` column for an array of ``ParticleRecord`` elements.
+    def ids_from_array(array) -> ak.Array:
+        """Return the ``id`` column for an array of ``ParticleRecord`` elements.
 
-        Array-level equivalent of :attr:`_id`, used when operating on a full
+        Array-level equivalent of :attr:`id`, used when operating on a full
         (possibly doubly-jagged) array rather than a single record:
 
         * If any field in the array matches :attr:`_IDX_PATTERN`, return that
           column (``array[id_field]``).
         * Otherwise fall back to ``ak.local_index(array, axis=-1)``, which
           produces the positional index of each element — identical to
-          ``layout.at`` used by :attr:`_id` on a single record.
+          ``layout.at`` used by :attr:`id` on a single record.
         """
         id_field = find_field_by_pattern(list(ak.fields(array)), ParticleRecord._IDX_PATTERN)
         if id_field is not None:
@@ -66,7 +66,7 @@ class ParticleRecord(ak.Record):
     def __repr__(self) -> str:
         collection = self.layout.parameter("__collection__") or "Particle"
         parts = ", ".join(f"{f}={self[f]!r}" for f in self.fields)
-        return f"<{collection}[{self._id}] {parts}>"
+        return f"<{collection}[{self.id}] {parts}>"
 
     def __str__(self, indentLevel: int = 0, include=None, exclude=None, **kwargs) -> str:
         """Human-readable summary, compatible with the old ``Particle.__str__`` style."""
@@ -77,7 +77,7 @@ class ParticleRecord(ak.Record):
         ]
         collection = self.layout.parameter("__collection__") or "Particle"
         header = color_msg(
-            f"{collection}[{self._id}] -->",
+            f"{collection}[{self.id}] -->",
             color=kwargs.pop("color", "yellow"),
             indentLevel=indentLevel,
             return_str=True,

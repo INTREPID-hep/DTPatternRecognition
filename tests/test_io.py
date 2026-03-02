@@ -1,4 +1,4 @@
-"""Tests for dtpr.utils.io — dump_to_root and _collect_branches."""
+"""Tests for dtpr.utils.io — dump_to_root, dump_to_parquet and _collect_branches."""
 
 import os
 import tempfile
@@ -7,7 +7,7 @@ import pytest
 import awkward as ak
 import uproot
 
-from dtpr.utils.io import dump_to_root, _collect_branches
+from dtpr.utils.io import dump_to_root, dump_to_parquet, _collect_branches
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -73,6 +73,16 @@ def output_path():
         os.remove(path)
 
 
+@pytest.fixture
+def parquet_path():
+    """Temporary file path for Parquet output; cleaned up after the test."""
+    with tempfile.NamedTemporaryFile(suffix=".parquet", delete=False) as f:
+        path = f.name
+    yield path
+    if os.path.exists(path):
+        os.remove(path)
+
+
 # ---------------------------------------------------------------------------
 # _collect_branches unit tests
 # ---------------------------------------------------------------------------
@@ -104,7 +114,7 @@ class TestCollectBranches:
     def test_nested_without_idx_uses_local_index(self, nested_events):
         branches = _collect_branches(nested_events)
         # No id-like field in raw_hits — fallback is ak.local_index (== layout.at),
-        # mirroring ParticleRecord._id behaviour.
+        # mirroring ParticleRecord.id behaviour.
         assert "tps_raw_hits_ids" in branches
         assert "tps_raw_hits_n" not in branches
         assert branches["tps_raw_hits_ids"].tolist() == [[[0, 1], [0]], [[0]]]
@@ -149,31 +159,24 @@ class TestDumpToRootEager:
         with uproot.open(output_path) as f:
             assert f["DTPR/TREE"]["digis_wh"].array().tolist() == [[-1, 2], [1]]
 
-    def test_default_format_is_ttree(self, simple_events, output_path):
+    def test_default_format_is_rntuple(self, simple_events, output_path):
         dump_to_root(simple_events, output_path)
-        with uproot.open(output_path) as f:
-            assert any(v == "TTree" for v in f.classnames().values())
-
-    def test_rntuple_format(self, simple_events, output_path):
-        dump_to_root(simple_events, output_path, format="RNTuple")
         with uproot.open(output_path) as f:
             assert any(v == "ROOT::RNTuple" for v in f.classnames().values())
 
     def test_nested_idx_roundtrip(self, nested_events, output_path):
-        # TTree: doubly-jagged ids split into flat + _n branches
+        # RNTuple: doubly-jagged ids stored natively as var * var * int
         dump_to_root(nested_events, output_path)
         with uproot.open(output_path) as f:
-            tree = f["DTPR/TREE"]
-            assert tree["tps_matched_showers_ids"].array().tolist() == [[5], [2, 7]]
-            assert tree["tps_matched_showers_ids_n"].array().tolist() == [[1, 0], [2]]
+            assert f["DTPR/TREE"]["tps_matched_showers_ids"].array().tolist() == \
+                [[[5], []], [[2, 7]]]
 
     def test_nested_count_roundtrip(self, nested_events, output_path):
-        # raw_hits has no id-like field — local_index fallback, also split for TTree
+        # raw_hits has no id-like field — local_index fallback, stored natively
         dump_to_root(nested_events, output_path)
         with uproot.open(output_path) as f:
-            tree = f["DTPR/TREE"]
-            assert tree["tps_raw_hits_ids"].array().tolist() == [[0, 1, 0], [0]]
-            assert tree["tps_raw_hits_ids_n"].array().tolist() == [[2, 1], [1]]
+            assert f["DTPR/TREE"]["tps_raw_hits_ids"].array().tolist() == \
+                [[[0, 1], [0]], [[0]]]
 
     def test_overwrites_existing_file(self, simple_events, output_path):
         dump_to_root(simple_events, output_path)
@@ -207,7 +210,149 @@ class TestDumpToRootDask:
 
 
 # ---------------------------------------------------------------------------
-# NTuple integration test
+# dump_to_parquet
+# ---------------------------------------------------------------------------
+
+class TestDumpToParquet:
+    def test_creates_file(self, simple_events, parquet_path):
+        dump_to_parquet(simple_events, parquet_path)
+        assert os.path.exists(parquet_path)
+
+    def test_scalar_roundtrip(self, simple_events, parquet_path):
+        dump_to_parquet(simple_events, parquet_path)
+        loaded = ak.from_parquet(parquet_path)
+        assert loaded["run"].tolist() == [1, 2]
+        assert loaded["lumi"].tolist() == [1, 2]
+
+    def test_flat_collection_roundtrip(self, simple_events, parquet_path):
+        dump_to_parquet(simple_events, parquet_path)
+        loaded = ak.from_parquet(parquet_path)
+        assert loaded["digis"]["wh"].tolist() == [[-1, 2], [1]]
+
+    def test_nested_collection_preserved(self, nested_events, parquet_path):
+        # Unlike dump_to_root, nested structure is NOT flattened
+        dump_to_parquet(nested_events, parquet_path)
+        loaded = ak.from_parquet(parquet_path)
+        # The full nested record (incl. wh, sector, station) must survive
+        assert "wh" in ak.fields(loaded["tps"]["matched_showers"])
+        assert loaded["tps"]["matched_showers"]["idx"].tolist() == [[[5], []], [[2, 7]]]
+
+    def test_dask_array_is_computed(self, simple_events, parquet_path):
+        import dask_awkward as dak
+        devents = dak.from_awkward(simple_events, npartitions=2)
+        dump_to_parquet(devents, parquet_path)
+        loaded = ak.from_parquet(parquet_path)
+        assert loaded["run"].tolist() == [1, 2]
+
+    def test_empty_events_raises(self, parquet_path):
+        with pytest.raises(ValueError, match="No fields"):
+            dump_to_parquet(ak.Array([]), parquet_path)
+
+
+# ---------------------------------------------------------------------------
+# reconstruct_nested_ids preprocessor
+# ---------------------------------------------------------------------------
+
+class TestReconstructNestedIds:
+    """Tests for the reconstruct_nested_ids factory in dtpr.utils.preprocessors.
+
+    In a TTree (produced by the old dump_to_root TTree path or by external tools
+    using the flat+count convention), a ``var * var * int`` field is encoded as:
+      - ``events["tps_matched_showers_ids"]`` — flat ids per event  (``var * int``)
+      - ``events["tps_matched_showers_ids_n"]`` — count per *parent* TP (``var * int``)
+    The reconstructor unfolds these back to ``var * var * int`` and injects
+    the result into the ``tps`` collection.
+    """
+
+    @pytest.fixture
+    def flat_events(self):
+        """Events with top-level flat ids + count branches (TTree readback convention)."""
+        return ak.Array([
+            {
+                "run": 1,
+                "tps": [{"quality": 2}, {"quality": 3}],
+                # flat ids per event (tp[0] contributed 1, tp[1] contributed 0)
+                "tps_matched_showers_ids":   [5],
+                "tps_matched_showers_ids_n": [1, 0],
+            },
+            {
+                "run": 2,
+                "tps": [{"quality": 1}],
+                # flat ids per event (tp[0] contributed 2 ids)
+                "tps_matched_showers_ids":   [2, 7],
+                "tps_matched_showers_ids_n": [2],
+            },
+        ])
+
+    def test_returns_callable(self):
+        from dtpr.utils.preprocessors import reconstruct_nested_ids
+        pp = reconstruct_nested_ids("tps_matched_showers_ids",
+                                    "tps_matched_showers_ids_n",
+                                    "tps")
+        assert callable(pp)
+
+    def test_name_set_on_callable(self):
+        from dtpr.utils.preprocessors import reconstruct_nested_ids
+        pp = reconstruct_nested_ids("tps_matched_showers_ids",
+                                    "tps_matched_showers_ids_n",
+                                    "tps")
+        assert "tps" in pp.__name__
+
+    def test_reconstructs_nested_ids(self, flat_events):
+        from dtpr.utils.preprocessors import reconstruct_nested_ids
+        pp = reconstruct_nested_ids("tps_matched_showers_ids",
+                                    "tps_matched_showers_ids_n",
+                                    "tps")
+        pp(flat_events)
+        result = flat_events["tps"]["matched_showers_ids"].tolist()
+        assert result == [[[5], []], [[2, 7]]]
+
+    def test_custom_out_field(self, flat_events):
+        """out_field kwarg gives the new nested field a different name."""
+        from dtpr.utils.preprocessors import reconstruct_nested_ids
+        pp = reconstruct_nested_ids("tps_matched_showers_ids",
+                                    "tps_matched_showers_ids_n",
+                                    "tps",
+                                    out_field="shower_ids_nested")
+        pp(flat_events)
+        assert flat_events["tps"]["shower_ids_nested"].tolist() == [[[5], []], [[2, 7]]]
+
+
+# ---------------------------------------------------------------------------
+# NTuple parquet round-trip
+# ---------------------------------------------------------------------------
+
+class TestNTupleParquet:
+    """Tests for NTuple loading parquet files (bypasses NanoEventsFactory)."""
+
+    @pytest.fixture
+    def parquet_roundtrip(self, simple_events, parquet_path):
+        """Write simple_events to parquet and return (path, original_events)."""
+        dump_to_parquet(simple_events, parquet_path)
+        return parquet_path, simple_events
+
+    def test_ntuple_reads_parquet(self, parquet_roundtrip):
+        import types
+        from dtpr.base.ntuple import NTuple
+        parquet_file, original = parquet_roundtrip
+        # Minimal config: no schema, no pipeline
+        cfg = types.SimpleNamespace(ntuple_tree_name="DTPR/TREE", pipeline=None, Schema=None)
+        ntuple = NTuple(parquet_file, CONFIG=cfg)
+        assert hasattr(ntuple, "events")
+
+    def test_ntuple_parquet_fields_preserved(self, parquet_roundtrip):
+        import types
+        from dtpr.base.ntuple import NTuple
+        parquet_file, original = parquet_roundtrip
+        cfg = types.SimpleNamespace(ntuple_tree_name="DTPR/TREE", pipeline=None, Schema=None)
+        ntuple = NTuple(parquet_file, CONFIG=cfg)
+        events = ntuple.events.compute()
+        assert events["run"].tolist() == original["run"].tolist()
+        assert events["digis"]["wh"].tolist() == original["digis"]["wh"].tolist()
+
+
+# ---------------------------------------------------------------------------
+# NTuple integration test (ROOT)
 # ---------------------------------------------------------------------------
 
 class TestDumpToRootNTuple:

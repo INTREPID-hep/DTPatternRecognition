@@ -31,7 +31,7 @@ class EventRecord(ak.Record):
     _ID_PATTERN = re.compile(r"(ev(ent)?|num(ber)?|index|idx)", re.IGNORECASE)
 
     @cached_property
-    def _id(self):
+    def id(self):
         """Numeric identifier for this event.
 
         Computed once and cached.  Scans the event fields for one whose name
@@ -54,7 +54,7 @@ class EventRecord(ak.Record):
     # Representation
     # ------------------------------------------------------------------
     def __repr__(self) -> str:
-        return f"<Event {self._id}>"
+        return f"<Event {self.id}>"
 
     def __str__(self, indentLevel: int = 0) -> str:
         """Verbose summary of all fields in this event record.
@@ -69,7 +69,7 @@ class EventRecord(ak.Record):
         """
         lines = [
             color_msg(
-                f"------ Event {self._id} ------",
+                f"------ Event {self.id} ------",
                 color="yellow",
                 indentLevel=indentLevel,
                 return_str=True,

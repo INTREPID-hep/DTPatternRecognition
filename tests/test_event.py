@@ -72,7 +72,7 @@ class TestEventRecordDispatch:
 
 
 class TestFindIdField:
-    """Tests for the _ID_PATTERN + find_field_by_pattern used by EventRecord._id."""
+    """Tests for the _ID_PATTERN + find_field_by_pattern used by EventRecord.id."""
 
     def test_matches_num(self):
         assert find_field_by_pattern(["num", "digis"], EventRecord._ID_PATTERN) == "num"
@@ -102,17 +102,17 @@ class TestEventId:
 
     def test_id_uses_id_field_value(self, events):
         """_id returns the raw field value, not a string."""
-        assert events[0]._id == 42
-        assert events[1]._id == 43
+        assert events[0].id == 42
+        assert events[1].id == 43
 
     def test_id_fallback_to_positional_index(self, events_no_id):
-        assert events_no_id[0]._id == 0
-        assert events_no_id[1]._id == 1
+        assert events_no_id[0].id == 0
+        assert events_no_id[1].id == 1
 
     def test_id_is_cached(self, events):
         """cached_property must return the same object on repeated access."""
         ev = events[0]
-        assert ev._id is ev._id
+        assert ev.id is ev.id
 
 
 class TestRepresentation:

@@ -23,7 +23,7 @@ def _collect_branches(events) -> dict:
 
     * Nested collection inside a collection  ``"tps"."matched_showers"``
       where each element is a full ``ParticleRecord`` (doubly-jagged)
-        → the ``_id`` of each nested particle is written as
+        → the ``id`` of each nested particle is written as
           ``"tps_matched_showers_ids"``  (``var * var * int``) —
           a list of ids per parent particle per event, e.g. ``[[1, 4], [0, 9]]``.
           All other fields of the nested particle (``wh``, ``sector``, …) are
@@ -31,7 +31,7 @@ def _collect_branches(events) -> dict:
           top-level collection.
           If no id-like field is found, falls back to ``ak.local_index``
           (the positional index of each nested particle within its parent list,
-          identical to what :attr:`ParticleRecord._id` returns via ``layout.at``).
+          identical to what :attr:`ParticleRecord.id` returns via ``layout.at``).
           Branch is still named ``"tps_matched_showers_ids"``.
     """
     branches: dict = {}
@@ -52,9 +52,9 @@ def _collect_branches(events) -> dict:
 
             if nested_subfields:
                 # Nested collection of ParticleRecords (e.g. tps.matched_showers).
-                # Delegate id-extraction to ParticleRecord._ids_from_array, which
-                # mirrors _id exactly: explicit field if found, local_index otherwise.
-                branches[f"{field}_{subfield}_ids"] = ParticleRecord._ids_from_array(subcol)
+                # Delegate id-extraction to ParticleRecord.ids_from_array, which
+                # mirrors id exactly: explicit field if found, local_index otherwise.
+                branches[f"{field}_{subfield}_ids"] = ParticleRecord.ids_from_array(subcol)
             else:
                 # Plain jagged leaf (e.g. tps.quality  →  var * int)
                 branches[f"{field}_{subfield}"] = subcol
@@ -62,33 +62,18 @@ def _collect_branches(events) -> dict:
     return branches
 
 
-def _to_ttree_branches(branches: dict) -> dict:
-    """Re-encode doubly-jagged branches for TTree compatibility.
-
-    ROOT TTrees cannot store ``var * var * T`` branches.  The standard
-    encoding is two branches:
-
-    * ``{name}``    (``var * int``) — flat list of ids per event
-      (``ak.flatten(arr, axis=-1)``)
-    * ``{name}_n``  (``var * int``) — number of ids per *parent* particle
-      (``ak.num(arr, axis=-1)``), so the doubly-jagged structure can be
-      reconstructed as ``ak.unflatten(ids, ids_n)``.
-
-    All other branch types pass through unchanged.
-    """
-    out: dict = {}
-    for name, arr in branches.items():
-        if str(arr.type.content).startswith("var * var * "):  # doubly-jagged
-            out[name] = ak.flatten(arr, axis=-1)   # var * int per event
-            out[name + "_n"] = ak.num(arr, axis=-1)  # var * int per event
-        else:
-            out[name] = arr
-    return out
-
-
-def dump_to_root(events, path: str, treepath: str = "DTPR/TREE",
-                 format: str = "TTree") -> None:
+def dump_to_root(events, path: str, treepath: str = "DTPR/TREE") -> None:
     """Write an event array to a new ROOT file.
+
+    .. warning:: **One-way export only.**
+       The output is a *flattened* representation of the event array — nested
+       particle collections are decomposed into ``{col}_{field}`` branches.
+       The nesting information (e.g. that ``tps_matched_showers_ids`` encodes
+       cross-references into the ``showers`` collection) is not preserved in the
+       ROOT file.  If you need to **persist the full array structure for later
+       re-use within this framework**, use :func:`dump_to_parquet` instead —
+       awkward-parquet preserves all nesting levels natively and can be reloaded
+       by :class:`~dtpr.base.ntuple.NTuple`.
 
     Parameters
     ----------
@@ -99,18 +84,9 @@ def dump_to_root(events, path: str, treepath: str = "DTPR/TREE",
     path : str
         Output file path, e.g. ``"output.root"``.
     treepath : str
-        TTree path inside the ROOT file.  Default ``"DTPR/TREE"``.
-        Use ``"/"``-separated names to create sub-directories, e.g. ``"myDir/events"``.
-    format : {"TTree", "RNTuple"}
-        Output format.  Default ``"TTree"`` (standard ROOT TTree, readable by any
-        ROOT version).  Use ``"RNTuple"`` for the new columnar format (ROOT 6.28+).
-
-        .. note::
-           TTrees cannot store ``var * var * T`` branches.  Any ``*_ids`` branch
-           produced from a nested particle collection is automatically split into
-           two branches: ``{name}`` (flat ids per event) and ``{name}_n``
-           (count per parent particle) — see :func:`_to_ttree_branches`.
-           RNTuple stores all arrays as-is.
+        RNTuple path inside the ROOT file.  Default ``"DTPR/TREE"``.
+        Use ``"/"``-separated names to create sub-directories,
+        e.g. ``"myDir/events"``.
 
     Notes
     -----
@@ -118,22 +94,17 @@ def dump_to_root(events, path: str, treepath: str = "DTPR/TREE",
 
     * ``events["run"]`` → branch ``run``  (scalar per event)
     * ``events["digis"]["wh"]`` → branch ``digis_wh``  (``var * int``)
-    * ``events["tps"]["matched_showers"]`` — each element is a shower ``ParticleRecord``
-      with fields ``(wh, sector, station, idx)``.  The ``_id`` of each matched shower
-      is written as a list-per-tp:
-      → branch ``tps_matched_showers_ids``  (``var * var * int``), e.g. ``[[1, 4], [0, 9]]``.
-      Non-id particle fields (``wh``, ``sector``, ``station``) are suppressed.
+    * ``events["tps"]["matched_showers"]`` — each element is a shower
+      ``ParticleRecord`` with fields ``(wh, sector, station, idx)``.  Only the
+      ``id`` of each matched shower is written, as a list-per-tp:
+      → branch ``tps_matched_showers_ids``  (``var * var * int``),
+      e.g. ``[[1, 4], [0, 9]]``.  Non-id particle fields are suppressed.
     * Nested collection whose particle records have no id-like field
-      → ``ak.local_index`` (positional index, same as ``ParticleRecord._id``
-      fallback via ``layout.at``) is written as ``tps_raw_hits_ids`` /
-      ``tps_raw_hits_ids_n`` (TTree) or ``tps_raw_hits_ids`` (RNTuple).
+      → ``ak.local_index`` (positional index, same as ``ParticleRecord.id``
+      fallback) is written as ``tps_raw_hits_ids``  (``var * var * int``).
 
-    For TTree output, doubly-jagged ``*_ids`` branches are split — see
-    :func:`_to_ttree_branches` for the encoding details.
-
-    Scalar branches are fixed-type leaves; jagged branches become ``std::vector<T>``
-    (uproot 5 handles this automatically for ``ak.Array`` of type ``var * T``).
-
+    The output uses ROOT's **RNTuple** format (requires ROOT 6.28+), which
+    stores jagged arrays natively without counter branches.
     **Existing files are overwritten** — ``uproot.recreate`` is used.
 
     Examples
@@ -142,8 +113,7 @@ def dump_to_root(events, path: str, treepath: str = "DTPR/TREE",
 
         from dtpr.utils.io import dump_to_root
 
-        events = ntuple.events()
-        events = execute_pipeline(events, steps)
+        events = ntuple.events
         dump_to_root(events, "processed.root", treepath="dtpr/events")
     """
     import uproot
@@ -162,13 +132,52 @@ def dump_to_root(events, path: str, treepath: str = "DTPR/TREE",
         raise ValueError("No fields found on the events array — nothing to write.")
 
     with uproot.recreate(path) as f:
-        if format.upper() == "RNTUPLE":
-            f[treepath] = branches
-        else:  # TTree (default)
-            ttree_branches = _to_ttree_branches(branches)
-            branch_types = {n: str(a.type.content) for n, a in ttree_branches.items()}
-            f.mktree(treepath, branch_types)
-            f[treepath].extend(ttree_branches)
+        f[treepath] = branches
+
+
+def dump_to_parquet(events, path: str) -> None:
+    """Persist the full event array to Parquet, preserving all nesting.
+
+    Unlike :func:`dump_to_root`, the output is **not flattened** — all fields
+    and nested collections are written as-is, exactly as found in the event
+    array.  The file can be reloaded with :class:`~dtpr.base.ntuple.NTuple`
+    (parquet support) and the reconstructed array will have the same structure.
+
+    Parameters
+    ----------
+    events : ak.Array or dask_awkward.Array
+        The event array to persist.  If a dask-awkward array is passed,
+        it is materialised by calling ``.compute()`` before writing.
+    path : str
+        Output file path, e.g. ``"output.parquet"``.
+        If the path does not end with ``".parquet"``, a ``.parquet`` suffix is
+        **not** appended automatically — you are free to use any name.
+
+    Examples
+    --------
+    ::
+
+        from dtpr.utils.io import dump_to_parquet
+
+        events = ntuple.events
+        dump_to_parquet(events, "processed.parquet")
+
+        # Round-trip:
+        from dtpr.base.ntuple import NTuple
+        ntuple2 = NTuple("processed.parquet")
+    """
+    # Materialise dask arrays before writing
+    try:
+        import dask_awkward as dak
+        if isinstance(events, dak.Array):
+            events = events.compute()
+    except ImportError:
+        pass
+
+    if not ak.fields(events):
+        raise ValueError("No fields found on the events array — nothing to write.")
+
+    ak.to_parquet(events, path)
 
 
 # ---------------------------------------------------------------------------

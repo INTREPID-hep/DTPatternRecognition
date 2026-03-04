@@ -335,8 +335,8 @@ class TestNTupleParquet:
         import types
         from dtpr.base.ntuple import NTuple
         parquet_file, original = parquet_roundtrip
-        # Minimal config: no schema, no pipeline
-        cfg = types.SimpleNamespace(ntuple_tree_name="DTPR/TREE", pipeline=None, Schema=None)
+        # Minimal config: no schema, no pre-steps
+        cfg = types.SimpleNamespace(ntuple_tree_name="DTPR/TREE", Schema=None, **{"pre-steps": None})
         ntuple = NTuple(parquet_file, CONFIG=cfg)
         assert hasattr(ntuple, "events")
 
@@ -344,7 +344,7 @@ class TestNTupleParquet:
         import types
         from dtpr.base.ntuple import NTuple
         parquet_file, original = parquet_roundtrip
-        cfg = types.SimpleNamespace(ntuple_tree_name="DTPR/TREE", pipeline=None, Schema=None)
+        cfg = types.SimpleNamespace(ntuple_tree_name="DTPR/TREE", Schema=None, **{"pre-steps": None})
         ntuple = NTuple(parquet_file, CONFIG=cfg)
         events = ntuple.events.compute()
         assert events["run"].tolist() == original["run"].tolist()
@@ -358,16 +358,172 @@ class TestNTupleParquet:
 class TestDumpToRootNTuple:
     def test_ntuple_writes_positive_event_count(self, output_path):
         from dtpr.base.ntuple import NTuple
-        ntuple = NTuple(NTUPLE_FILE, maxfiles=1)
+        ntuple = NTuple(NTUPLE_FILE, tree_name="dtNtupleProducer/DTTREE", maxfiles=1)
         dump_to_root(ntuple.events, output_path)
         with uproot.open(output_path) as f:
             assert f["DTPR/TREE"].num_entries > 0
 
     def test_ntuple_expected_branches_present(self, output_path):
         from dtpr.base.ntuple import NTuple
-        ntuple = NTuple(NTUPLE_FILE, maxfiles=1)
+        ntuple = NTuple(NTUPLE_FILE, tree_name="dtNtupleProducer/DTTREE", maxfiles=1)
         dump_to_root(ntuple.events, output_path)
         with uproot.open(output_path) as f:
             keys = set(f["DTPR/TREE"].keys())
         for expected in ("digis_wh", "tps_quality", "segments_wh"):
             assert expected in keys, f"Expected branch '{expected}' not found"
+
+
+# ---------------------------------------------------------------------------
+# _resolve_fileset_input
+# ---------------------------------------------------------------------------
+
+NTUPLE_FILE2 = os.path.abspath(
+    os.path.join(os.path.dirname(__file__),
+                 "ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_110.root")
+)
+
+
+def _make_cfg(filesets=None, tree="DTPR/TREE"):
+    """Return a minimal SimpleNamespace config with optional filesets."""
+    import types
+    return types.SimpleNamespace(
+        ntuple_tree_name=tree,
+        Schema=None,
+        filesets=filesets,
+        **{"pre-steps": None},
+    )
+
+
+class TestResolveFilesetInput:
+    """Unit tests for _resolve_fileset_input."""
+
+    def test_explicit_path_returns_path(self):
+        from dtpr.base.ntuple import _resolve_fileset_input
+        cfg = _make_cfg()
+        path, extras = _resolve_fileset_input(NTUPLE_FILE, None, cfg)
+        assert path == NTUPLE_FILE
+        assert extras == {}
+
+    def test_explicit_path_overrides_filesets(self):
+        """CLI -i takes priority even when filesets are defined in config."""
+        from dtpr.base.ntuple import _resolve_fileset_input
+        cfg = _make_cfg(filesets={"ds": {"files": {NTUPLE_FILE2: "tree"}}})
+        path, extras = _resolve_fileset_input(NTUPLE_FILE, None, cfg)
+        assert path == NTUPLE_FILE
+
+    def test_no_path_no_filesets_raises(self):
+        from dtpr.base.ntuple import _resolve_fileset_input
+        cfg = _make_cfg(filesets=None)
+        with pytest.raises(ValueError, match="No input path"):
+            _resolve_fileset_input(None, None, cfg)
+
+    def test_uses_filesets_when_no_path(self):
+        from dtpr.base.ntuple import _resolve_fileset_input
+        files = {NTUPLE_FILE: "dtNtupleProducer/DTTREE"}
+        cfg = _make_cfg(filesets={"MySample": {"files": files}})
+        path, extras = _resolve_fileset_input(None, None, cfg)
+        assert path == files
+
+    def test_selects_named_dataset(self):
+        from dtpr.base.ntuple import _resolve_fileset_input
+        f1 = {NTUPLE_FILE: "tree"}
+        f2 = {NTUPLE_FILE2: "tree"}
+        cfg = _make_cfg(filesets={"A": {"files": f1}, "B": {"files": f2}})
+        path, _ = _resolve_fileset_input(None, "B", cfg)
+        assert path == f2
+
+    def test_missing_dataset_raises(self):
+        from dtpr.base.ntuple import _resolve_fileset_input
+        cfg = _make_cfg(filesets={"A": {"files": {NTUPLE_FILE: "tree"}}})
+        with pytest.raises(KeyError, match="Dataset 'Z' not found"):
+            _resolve_fileset_input(None, "Z", cfg)
+
+    def test_step_size_extracted_from_fileset(self):
+        from dtpr.base.ntuple import _resolve_fileset_input
+        cfg = _make_cfg(filesets={
+            "ds": {"files": {NTUPLE_FILE: "tree"}, "step_size": 500}
+        })
+        _, extras = _resolve_fileset_input(None, None, cfg)
+        assert extras["step_size"] == 500
+
+    def test_metadata_extracted_from_fileset(self):
+        from dtpr.base.ntuple import _resolve_fileset_input
+        cfg = _make_cfg(filesets={
+            "ds": {"files": {NTUPLE_FILE: "tree"},
+                   "metadata": {"year": 2018, "is_mc": True}}
+        })
+        _, extras = _resolve_fileset_input(None, None, cfg)
+        assert extras["metadata"] == {"year": 2018, "is_mc": True}
+
+
+# ---------------------------------------------------------------------------
+# NTuple: fileset-driven loading
+# ---------------------------------------------------------------------------
+
+class TestNTupleFileset:
+    """Integration tests for fileset-based NTuple loading."""
+
+    def test_ntuple_from_config_fileset(self):
+        """NTuple with no inputFolder reads from config filesets."""
+        from dtpr.base.ntuple import NTuple
+        treepath = "dtNtupleProducer/DTTREE"
+        cfg = _make_cfg(filesets={
+            "TestSample": {
+                "files": {NTUPLE_FILE: treepath},
+            }
+        }, tree=treepath)
+        ntuple = NTuple(CONFIG=cfg)
+        assert ntuple.events is not None
+        assert ntuple.events.npartitions >= 1
+
+    def test_ntuple_metadata_attached(self):
+        """Metadata from fileset is stored on the NTuple instance."""
+        from dtpr.base.ntuple import NTuple
+        treepath = "dtNtupleProducer/DTTREE"
+        cfg = _make_cfg(filesets={
+            "TestSample": {
+                "files": {NTUPLE_FILE: treepath},
+                "metadata": {"year": 2026, "is_mc": False},
+            }
+        }, tree=treepath)
+        ntuple = NTuple(CONFIG=cfg)
+        assert ntuple.metadata == {"year": 2026, "is_mc": False}
+
+    def test_ntuple_step_size_increases_partitions(self):
+        """step_size=500 should produce more partitions than no step_size (file >500 entries)."""
+        from dtpr.base.ntuple import NTuple
+        treepath = "dtNtupleProducer/DTTREE"
+        cfg = _make_cfg(tree=treepath)
+
+        ntuple_plain = NTuple(NTUPLE_FILE2, CONFIG=cfg)    # 1600 entries → 1 partition
+        ntuple_chunked = NTuple(NTUPLE_FILE2, step_size=500, CONFIG=cfg)
+
+        assert ntuple_chunked.events.npartitions > ntuple_plain.events.npartitions
+
+    def test_ntuple_step_size_from_fileset_yaml(self):
+        """step_size defined inside filesets block is respected."""
+        from dtpr.base.ntuple import NTuple
+        treepath = "dtNtupleProducer/DTTREE"
+        cfg = _make_cfg(filesets={
+            "ds": {
+                "files": {NTUPLE_FILE2: treepath},
+                "step_size": 500,
+            }
+        }, tree=treepath)
+        ntuple = NTuple(CONFIG=cfg)
+        assert ntuple.events.npartitions > 1
+
+    def test_ntuple_constructor_step_size_overrides_fileset(self):
+        """Constructor step_size wins over fileset step_size."""
+        from dtpr.base.ntuple import NTuple
+        treepath = "dtNtupleProducer/DTTREE"
+        cfg = _make_cfg(filesets={
+            "ds": {
+                "files": {NTUPLE_FILE2: treepath},
+                "step_size": 200,   # would give many partitions
+            }
+        }, tree=treepath)
+        ntuple_yaml = NTuple(CONFIG=cfg)
+        ntuple_override = NTuple(NTUPLE_FILE2, step_size=800, CONFIG=cfg)
+        # 800-entry chunks should yield fewer partitions than 200-entry chunks
+        assert ntuple_override.events.npartitions <= ntuple_yaml.events.npartitions

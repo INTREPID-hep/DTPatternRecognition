@@ -1,5 +1,21 @@
 # -------------------------------- configuration for NTuple --------------------------------------#
-ntuple_tree_name: '/dtNtupleProducer/DTTREE'
+
+# filesets: named datasets with file lists and optional chunking parameters.
+#
+# Structure:
+#   filesets:
+#     <dataset_name>:
+#       files:
+#         "/path/to/file.root": "<treepath>"       # shorthand
+#         "/path/to/file2.root":                    # full form
+#           object_path: "<treepath>"
+#       metadata: {key: value, ...}                 # optional, arbitrary
+#       step_size: 100000                           # optional, ROOT entries per partition
+#       split_row_groups: true                      # optional, Parquet row-group splitting
+#
+# When ``filesets`` is defined, NTuple can be created without an explicit
+# input path — the dataset files are read from this section instead.
+# CLI ``-i`` always takes priority over ``filesets``.
 
 # Schema: defines what to read and how to structure it into an Awkward record.
 #
@@ -78,9 +94,9 @@ Schema:
     process_type: "simHit_processType"
     particle_type: "simHit_particleType"
 
-# pipeline: ordered transformations applied to the loaded event array.
+# pre-steps: ordered transformations applied to the loaded event array.
 #
-# The pipeline: value must be a mapping — each key IS the step name
+# The pre-steps: value must be a mapping — each key IS the step name
 #
 # Step body keys:
 #   type       — "selector" or "preprocessor"
@@ -95,7 +111,7 @@ Schema:
 #                  preprocessor: fn(events) -> None             (mutates events in-place)
 #   depends_on — list of step names that must run first (default [])
 #
-pipeline:
+pre-steps:
   # ---- level 0: independent steps ----
 
   # Compute digi BX from time (integer floor-divide by 25)

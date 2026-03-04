@@ -69,7 +69,7 @@ class ParticleRecord(ak.Record):
         return f"<{collection}[{self.id}] {parts}>"
 
     def __str__(self, indentLevel: int = 0, include=None, exclude=None, **kwargs) -> str:
-        """Human-readable summary, compatible with the old ``Particle.__str__`` style."""
+        """Human-readable summary"""
         fields = [
             f
             for f in self.fields

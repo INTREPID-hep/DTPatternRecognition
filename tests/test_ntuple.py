@@ -13,7 +13,7 @@ def test_ntuple_with_real_root_file():
     assert os.path.exists(test_file), f"Test ROOT file not found: {test_file}"
 
     # Create the NTuple instance
-    ntuple = NTuple(test_file)
+    ntuple = NTuple(test_file, tree_name="dtNtupleProducer/DTTREE")
     # ntuple.events is a dask_awkward.Array — compute divisions to enable len()
     assert hasattr(ntuple, "events")
     ntuple.events.eager_compute_divisions()

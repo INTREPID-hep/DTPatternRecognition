@@ -38,11 +38,22 @@ def add_arguments(parser: argparse.ArgumentParser, args: dict) -> None:
 def create_wrapper(func: callable) -> callable:
     """Create a wrapper function to map parsed arguments to the function's parameters."""
     sig = inspect.signature(func)
+    has_var_keyword = any(
+        p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
+    )
 
     def wrapper(args: argparse.Namespace) -> None:
         kwargs = {}
+        named_params: set[str] = set()
         for param in sig.parameters.values():
+            if param.kind == inspect.Parameter.VAR_KEYWORD:
+                continue
+            named_params.add(param.name)
             kwargs[param.name] = getattr(args, param.name)
+        if has_var_keyword:
+            for key, val in vars(args).items():
+                if key not in named_params and key != "func":
+                    kwargs[key] = val
         return func(**kwargs)
 
     return wrapper
@@ -83,6 +94,7 @@ def main():
             "plot-dt",
             "inspect-events",
             "events-visualizer",
+            "test-cli",
             # ---- config commands ----
             "create-particle",
             "create-config",

@@ -89,11 +89,11 @@ def reconstruct_nested_ids(
 
     Examples
     --------
-    Use in a YAML pipeline:
+    Use in a YAML pre-steps block:
 
     .. code-block:: yaml
 
-       pipeline:
+       pre-steps:
          - name: reconstruct_nested_ids
            args:
              - "tps_matched_showers_ids"
@@ -112,7 +112,8 @@ def reconstruct_nested_ids(
         pp(events)
         # events["tps"]["matched_showers_ids"] is now var * var * int
     """
-    resolved_out = out_field if out_field is not None else flat_field[len(col) + 1:]
+    # Infer the output field name if not provided.
+    resolved_out = out_field if out_field is not None else flat_field[:-4]  # remove '_ids'
 
     def _preprocessor(events) -> None:
         flat_ids = events[flat_field]   # var * int per event

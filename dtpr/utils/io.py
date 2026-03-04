@@ -62,7 +62,13 @@ def _collect_branches(events) -> dict:
     return branches
 
 
-def dump_to_root(events, path: str, treepath: str = "DTPR/TREE") -> None:
+def dump_to_root(
+    events,
+    path: str,
+    treepath: str = "DTPR/TREE",
+    *,
+    per_partition: bool = False,
+) -> None:
     """Write an event array to a new ROOT file.
 
     .. warning:: **One-way export only.**
@@ -87,6 +93,13 @@ def dump_to_root(events, path: str, treepath: str = "DTPR/TREE") -> None:
         RNTuple path inside the ROOT file.  Default ``"DTPR/TREE"``.
         Use ``"/"``-separated names to create sub-directories,
         e.g. ``"myDir/events"``.
+    per_partition : bool, optional
+        If ``True`` and *events* is a dask-awkward array, each partition is
+        written to a separate file.  The file name is derived from *path* by
+        inserting the zero-padded partition index before the extension:
+        ``output.root`` → ``output_0.root``, ``output_1.root``, …
+        When ``False`` (default) all partitions are materialised together and
+        written to a single file.
 
     Notes
     -----
@@ -115,19 +128,50 @@ def dump_to_root(events, path: str, treepath: str = "DTPR/TREE") -> None:
 
         events = ntuple.events
         dump_to_root(events, "processed.root", treepath="dtpr/events")
+
+        # One file per dask partition:
+        dump_to_root(events, "processed.root", per_partition=True)
+        # → processed_0.root, processed_1.root, …
     """
     import uproot
+    import os
 
-    # Materialise dask arrays before writing
     try:
         import dask_awkward as dak
-        if isinstance(events, dak.Array):
-            events = events.compute()
-    except:
-        pass
+        _is_dak = isinstance(events, dak.Array)
+    except ImportError:
+        _is_dak = False
+
+    if per_partition and _is_dak:
+        import dask
+        stem, ext = os.path.splitext(path)
+        ext = ext or ".root"
+        n = events.npartitions
+        pad = len(str(n - 1))
+
+        @dask.delayed
+        def _write_partition(partition, part_path):
+            branches = _collect_branches(partition)
+            if not branches:
+                raise ValueError(f"No fields found in partition — nothing to write.")
+            with uproot.recreate(part_path) as f:
+                f[treepath] = branches
+
+        tasks = [
+            _write_partition(
+                events.partitions[i],
+                f"{stem}_{str(i).zfill(pad)}{ext}",
+            )
+            for i in range(n)
+        ]
+        dask.compute(*tasks)
+        return
+
+    # Single-file path — materialise if needed
+    if _is_dak:
+        events = events.compute()
 
     branches = _collect_branches(events)
-
     if not branches:
         raise ValueError("No fields found on the events array — nothing to write.")
 
@@ -135,7 +179,12 @@ def dump_to_root(events, path: str, treepath: str = "DTPR/TREE") -> None:
         f[treepath] = branches
 
 
-def dump_to_parquet(events, path: str) -> None:
+def dump_to_parquet(
+    events,
+    path: str,
+    *,
+    per_partition: bool = False,
+) -> None:
     """Persist the full event array to Parquet, preserving all nesting.
 
     Unlike :func:`dump_to_root`, the output is **not flattened** — all fields
@@ -149,9 +198,17 @@ def dump_to_parquet(events, path: str) -> None:
         The event array to persist.  If a dask-awkward array is passed,
         it is materialised by calling ``.compute()`` before writing.
     path : str
-        Output file path, e.g. ``"output.parquet"``.
+        Output file path (``per_partition=False``) or **directory** path
+        (``per_partition=True``), e.g. ``"output.parquet"`` or
+        ``"output_dir/"``.
         If the path does not end with ``".parquet"``, a ``.parquet`` suffix is
         **not** appended automatically — you are free to use any name.
+    per_partition : bool, optional
+        If ``True`` and *events* is a dask-awkward array, write one Parquet
+        file per partition into the directory given by *path* (using
+        ``dask_awkward.to_parquet``).  The resulting directory can be read
+        back as-is by :class:`~dtpr.base.ntuple.NTuple`.  When ``False``
+        (default) all data is materialised and written to a single file.
 
     Examples
     --------
@@ -162,17 +219,27 @@ def dump_to_parquet(events, path: str) -> None:
         events = ntuple.events
         dump_to_parquet(events, "processed.parquet")
 
-        # Round-trip:
+        # One file per dask partition (preserves partition boundaries):
+        dump_to_parquet(events, "processed_dir/", per_partition=True)
+
+        # Round-trip (single file or directory both work):
         from dtpr.base.ntuple import NTuple
         ntuple2 = NTuple("processed.parquet")
+        ntuple3 = NTuple("processed_dir/")
     """
-    # Materialise dask arrays before writing
     try:
         import dask_awkward as dak
-        if isinstance(events, dak.Array):
-            events = events.compute()
+        _is_dak = isinstance(events, dak.Array)
     except ImportError:
-        pass
+        _is_dak = False
+
+    if per_partition and _is_dak:
+        dak.to_parquet(events, path)
+        return
+
+    # Single-file path — materialise if needed
+    if _is_dak:
+        events = events.compute()
 
     if not ak.fields(events):
         raise ValueError("No fields found on the events array — nothing to write.")

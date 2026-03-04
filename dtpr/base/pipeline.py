@@ -25,7 +25,7 @@ Step semantics
 
 Step definition keys
 --------------------
-The ``pipeline:`` key in YAML is a **mapping** (dict), where each key is the
+The ``pre-steps:`` key in YAML is a **mapping** (dict), where each key is the
 unique step name.  No ``name:`` sub-key is needed.
 
 * ``type``       — ``"selector"`` or ``"preprocessor"``
@@ -53,7 +53,7 @@ def topological_sort(steps: dict[str, dict]) -> list[list[dict]]:
     Parameters
     ----------
     steps : dict[str, dict]
-        Mapping of step-name → step-body as parsed from the YAML ``pipeline:``
+        Mapping of step-name → step-body as parsed from the YAML ``pre-steps:``
         key.  Each value must not contain a redundant ``name`` key — the dict
         key *is* the name.
 
@@ -138,11 +138,11 @@ def _make_fn(name: str, step: dict, kind: str = "eval"):
 
     if has_expr:
         if kind == "exec":
-            code = compile(step["expr"], f"<pipeline:{name}>", "exec")
+            code = compile(step["expr"], f"<pre-steps:{name}>", "exec")
             def _fn(events, _c=code):
                 exec(_c, {"events": events, "ak": ak})
             return _fn
-        code = compile(step["expr"], f"<pipeline:{name}>", "eval")
+        code = compile(step["expr"], f"<pre-steps:{name}>", "eval")
         return lambda events, _c=code: eval(_c, {"events": events, "ak": ak})
 
     return get_callable_from_src(step["src"])
@@ -173,7 +173,7 @@ def execute_pipeline(events, steps: dict[str, dict]):
         The loaded event array.  If lazy (dask-awkward), no computation is
         triggered — this function only builds graph nodes.
     steps : dict[str, dict]
-        Pipeline step definitions as parsed from the YAML ``pipeline:`` key.
+        Pipeline step definitions as parsed from the YAML ``pre-steps:`` key.
         Each key is the step name; each value is the step body (``type``,
         ``expr``/``src``, optional ``depends_on``, optional ``target``).
 

@@ -140,7 +140,7 @@ class TestParticleId:
     def test_repr_uses_id_in_brackets(self):
         """__repr__ formats as <Collection[id] ...>."""
         raw = ak.with_name(
-            ak.Array([[{"idx": 3, "wh": 2}]]),
+            ak.Array([[{"number": 3, "wh": 2}]]),
             name="Particle", behavior=behavior,
         )
         assert repr(raw[0][0]).startswith("<Particle[3] ")

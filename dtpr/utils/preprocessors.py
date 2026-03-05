@@ -78,8 +78,8 @@ def reconstruct_nested_ids(
         e.g. ``"tps"``.
     out_field : str, optional
         Name of the new nested field within *col*.  Defaults to
-        *flat_field* with the leading ``{col}_`` prefix stripped,
-        e.g. ``"matched_showers_ids"`` when *flat_field* is
+        *flat_field* with the trailing ``_ids`` suffix stripped,
+        e.g. ``"tps_matched_showers"`` when *flat_field* is
         ``"tps_matched_showers_ids"``.
 
     Returns
@@ -113,7 +113,10 @@ def reconstruct_nested_ids(
         # events["tps"]["matched_showers_ids"] is now var * var * int
     """
     # Infer the output field name if not provided.
-    resolved_out = out_field if out_field is not None else flat_field[:-4]  # remove '_ids'
+    # Strip the trailing "_ids" suffix so e.g. "tps_matched_showers_ids" → "tps_matched_showers".
+    resolved_out = out_field if out_field is not None else (
+        flat_field[:-4] if flat_field.endswith("_ids") else flat_field
+    )
 
     def _preprocessor(events) -> None:
         flat_ids = events[flat_field]   # var * int per event

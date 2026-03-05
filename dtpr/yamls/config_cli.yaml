@@ -1,0 +1,272 @@
+# ---------------------------------- posible optional arguments ---------------------------------- #
+opt_args:
+    config-path: &config_path
+        flags: ["-cf", "--config-file"]
+        dest: "config_file"
+        type: str
+        help: "Path to the configuration file."
+    inputs: &inputs
+        flags: ["-i", "--inputs"]
+        dest: "inputs"
+        type: str
+        nargs: "+"
+        default: ~
+        help: "Input ROOT or Parquet files. One or more: file, directory, glob, or 'file.root:treepath'. Omit to use filesets defined in the config YAML."
+    datasets: &datasets
+        flags: ["-ds", "--datasets"]
+        dest: "datasets"
+        type: str
+        nargs: "*"
+        default: ~
+        help: "Named dataset(s) to load from the 'filesets:' section of the config. Omit to load all defined filesets. Mutually exclusive with -i/--inputs."
+    output-path: &output_path
+        flags: ["-o", "--outputpath"]
+        dest: "outfolder"
+        type: str
+        default: "./results"
+        help: "Directory to save the output files. If the directory does not exist, it will be created automatically."
+    tag: &tag
+        flags: ["-t", "--tag"]
+        dest: "tag"
+        type: str
+        default: ""
+        help: "Tag to be added to the output file names."
+    max-files: &max_files
+        flags: ["--maxfiles"]
+        dest: "maxfiles"
+        type: int
+        default: -1
+        help: "Maximum number of files to read. -1 is default to read all available files."
+    max-events: &max_events
+        flags: ["--maxevents"]
+        dest: "maxevents"
+        type: int
+        default: -1
+        help: "Maximum number of events to read. -1 is default to read all available events."
+    tree-name: &tree_name
+        flags: ["-tr", "--tree"]
+        dest: "tree_name"
+        type: str
+        default: ~
+        help: "TTree path inside the ROOT files (e.g. 'dtNtupleProducer/DTTREE'). Can also be embedded in -i as 'file.root:treepath'. Falls back to 'treename:' in the fileset config."
+    event-number: &event_number
+        flags: ["-evn", "--event-number"]
+        dest: "event_number"
+        type: "lambda arg: int(arg) if arg.lstrip('-').isdigit() else arg"
+        default: 0
+        help: "Event number to be analyzed. Default is 0."
+    wheel: &wheel
+        flags: ["-wh", "--wheel"]
+        dest: "wheel"
+        type: int
+        default: -2
+        help: "Wheel number to be analyzed. Default is -2."
+    sector: &sector
+        flags: ["-sc", "--sector"]
+        dest: "sector"
+        type: int
+        default: 1
+        help: "Sector number to be analyzed. Default is 1."
+    station: &station
+        flags: ["-st", "--station"]
+        dest: "station"
+        type: int
+        default: 1
+        help: "Station number to be analyzed. Default is 1."
+    save: &save
+        flags: ["-s", "--save"]
+        dest: "save"
+        action: "store_true"
+        help: "Save the products of the analysis. Default is False."
+    debug: &debug
+        flags: ["--debug"]
+        dest: "debug"
+        action: "store_true"
+        help: "Print debug information. Default is False."
+    template-name: &template_name
+        flags: ["-n", "--name"]
+        dest: "name"
+        type: str
+        default: "analysis_template"
+        help: "Name of the template."
+    artist-names: &artist_names
+        flags: ["--artist-names"]
+        dest: "artist_names"
+        type: str
+        nargs: "*"
+        help: "Artist name(s) to include. Can be a single string or multiple strings."
+    cores-number: &cores_number
+        flags: ["-c", "--cores"]
+        dest: "ncores"
+        type: int
+        default: -1
+        help: "Number of CPU cores to use for parallel processing. Default is -1, which means no parallelization."
+    use-executable: &use_executable
+        flags: ["-e", "--exec"]
+        dest: "use_executable"
+        action: "store_true"
+        help: "Use the pre-built executable. Default is False."
+    per-partition: &per_partition
+        flags: ["--per-partition"]
+        dest: "per_partition"
+        action: "store_true"
+        help: "Write one output file per dask partition instead of a single merged file. Default is False."
+    checkpoint-dir: &checkpoint_dir
+        flags: ["-i, --input-dir"]
+        dest: "checkpoint_dir"
+        type: str
+        default: ~
+        help: "Directory containing per-partition checkpoint files (used by merge-histos)."
+    to-root: &to_root
+        flags: ["-r", "--root"]
+        dest: "to_root"
+        action: "store_true"
+        help: "Export to ROOT format."
+    to-parquet: &to_parquet
+        flags: ["-p", "--parquet"]
+        dest: "to_parquet"
+        action: "store_true"
+        help: "Export to Parquet format."
+    scheduler-address: &scheduler_address
+        flags: ["--scheduler-address"]
+        dest: "scheduler_address"
+        type: str
+        default: ~
+        help: "Dask distributed scheduler address (e.g. 'tcp://host:8786'). When set, tasks are dispatched to the cluster instead of running locally."
+    overwrite: &overwrite
+        flags: ["-f", "--force-overwrite"]
+        dest: "overwrite"
+        action: "store_true"
+        help: "Overwrite existing per-partition output files instead of skipping them. Default is False (resume-safe)."
+
+# ---------------------------------- posible analysis ---------------------------------------- #
+pos_args:
+    fill-histos:
+        name: "fill-histos"
+        help: "Fill predefined ROOT histograms based on event-by-event information from DT NTuple files."
+        func: "dtpr.analysis.fill_histograms.fill_histos"
+        opt_args:
+            config-path: *config_path
+            inputs: *inputs
+            datasets: *datasets
+            output-path: *output_path
+            tag: *tag
+            max-files: *max_files
+            max-events: *max_events
+            tree-name: *tree_name
+            cores-number: *cores_number
+            per-partition: *per_partition
+            overwrite: *overwrite
+            scheduler-address: *scheduler_address
+    dump-events:
+        name: "dump-events"
+        help: "Load DT NTuple files and export the event array. Use -r for ROOT or -p for Parquet."
+        func: "dtpr.analysis.dumper.dump"
+        opt_args:
+            config-path: *config_path
+            inputs: *inputs
+            datasets: *datasets
+            output-path: *output_path
+            tag: *tag
+            max-files: *max_files
+            tree-name: *tree_name
+            per-partition: *per_partition
+            to-root: *to_root
+            to-parquet: *to_parquet
+            cores-number: *cores_number
+            overwrite: *overwrite
+            scheduler-address: *scheduler_address
+    merge-histos:
+        name: "merge-histos"
+        help: "Merge per-partition histogram ROOT files into a single ROOT output."
+        func: "dtpr.analysis.merge_histos.merge_histos"
+        opt_args:
+            checkpoint-dir: *checkpoint_dir
+            output-path: *output_path
+            config-path: *config_path
+            tag: *tag
+    plot-dt:
+        name: "plot-dt"
+        help: "Produce CMS DT chamber plot (local view) for a specific event digis information from a DT NTuple files."
+        func: "dtpr.analysis.plot_dt_chamber.plot_dt_chamber"
+        opt_args:
+            config-path: *config_path
+            inputs: *inputs
+            output-path: *output_path
+            tag: *tag
+            max-files: *max_files
+            tree-name: *tree_name
+            event-number: *event_number
+            wheel: *wheel
+            station: *station
+            sector: *sector
+            save: *save
+            artist-names: *artist_names
+    plot-dts:
+        name: "plot-dts"
+        help: "Produce CMS DT chamber plots (global view) based on event-by-event digis information from DT NTuple files."
+        func: "dtpr.analysis.plot_dt_chambers.plot_dt_chambers"
+        opt_args:
+            config-path: *config_path
+            inputs: *inputs
+            output-path: *output_path
+            tag: *tag
+            max-files: *max_files
+            tree-name: *tree_name
+            event-number: *event_number
+            wheel: *wheel
+            sector: *sector
+            save: *save
+            artist-names: *artist_names
+    events-visualizer:
+        name: "events-visualizer"
+        help: "Launch the events visualizer for DT NTuple files."
+        func: "dtpr.analysis.run_events_visualizer.open_visualizer"
+        opt_args:
+            config-path: *config_path
+            inputs: *inputs
+            max-files: *max_files
+            tree-name: *tree_name
+            use-executable: *use_executable
+    # -------------------------------- dev/debug ------------------------------------------------- #
+    test-cli:
+        name: "test-cli"
+        help: "Print all parsed CLI arguments — smoke-test for argument wiring."
+        func: "dtpr.analysis.test_cli.test_cli"
+        opt_args:
+            config-path: *config_path
+            inputs: *inputs
+            max-files: *max_files
+            tree-name: *tree_name
+            event-number: *event_number
+            output-path: *output_path
+            tag: *tag
+
+    # -------------------------------- posible create-templates ---------------------------------- #
+    create-particle:
+        name: "create-particle"
+        help: "Create a new particle class template."
+        func: "dtpr.utils.create_templates.create_particle_class_template"
+        opt_args:
+            output-path: *output_path
+            template-name: *template_name
+    create-config:
+        name: "create-config"
+        help: "Create a config file for running analysis."
+        func: "dtpr.utils.create_templates.create_run_config_template"
+        opt_args:
+            output-path: *output_path
+    create-analysis:
+        name: "create-analysis"
+        help: "Create a new analysis template."
+        func: "dtpr.utils.create_templates.create_analysis_template"
+        opt_args:
+            output-path: *output_path
+            template-name: *template_name
+    create-histogram:
+        name: "create-histo"
+        help: "Create a new histogram template."
+        func: "dtpr.utils.create_templates.create_histogram_template"
+        opt_args:
+            output-path: *output_path
+            template-name: *template_name

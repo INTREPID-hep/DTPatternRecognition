@@ -209,6 +209,32 @@ def get_callable_from_src(src_str: str) -> Callable:
     return loaded_callable
 
 
+def make_dask_sched_kwargs(ncores: int) -> dict:
+    """Return kwargs to pass to ``dask.compute`` for the requested parallelism.
+
+    Priority:
+
+    * ``ncores == 1``  → ``{"scheduler": "synchronous"}`` — always honoured,
+      even when a distributed client is active (explicit debug request).
+    * ``ncores > 1``   → local ``"processes"`` scheduler **unless** a
+      ``dask.distributed.Client`` is already active, in which case the cluster
+      takes over and local processes would conflict.
+    * ``ncores == -1`` → ``{}`` — defer to whatever is active (distributed
+      client if set, otherwise dask's default threaded scheduler).
+    """
+    if ncores == 1:
+        return {"scheduler": "synchronous"}
+    if ncores > 1:
+        try:
+            from dask.distributed import get_client
+            get_client()
+            return {}  # distributed client active — let it handle distribution
+        except Exception:
+            return {"scheduler": "processes", "num_workers": ncores}
+    # ncores == -1: defer to the active scheduler
+    return {}
+
+
 def create_outfolder(outname: str) -> None:
     """
     Creates an output directory if it does not exist.
@@ -216,8 +242,16 @@ def create_outfolder(outname: str) -> None:
     :param outname: The path of the output directory.
     :type outname: str
     """
-    if not (os.path.exists(outname)):
-        os.system("mkdir -p %s" % outname)
+    if not isinstance(outname, str) or not outname:
+        raise ValueError("Output folder path must be a non-empty string.")
+    if os.path.isfile(outname):
+        color_msg(f"Warning: '{outname}' exists and is a file, not a directory.", color="yellow")
+        raise FileExistsError(f"Cannot create directory '{outname}': a file with that name exists.")
+    try:
+        os.makedirs(outname, exist_ok=True)
+    except Exception as e:
+        color_msg(f"Failed to create directory '{outname}': {e}", color="red")
+        raise
 
 
 def save_mpl_canvas(fig: plt.Figure, name: str, path: str = "./results", dpi: int = 500) -> None:

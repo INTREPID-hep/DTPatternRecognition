@@ -23,12 +23,7 @@ def test_dtpr_cli_entry_point():
     [
         (
             "fill-histos",
-            ["--maxevents", "10"],
-            "Done"
-        ),
-        (
-            "inspect-events",
-            ["-evn", "0:11"],
+            ["--maxevents", "10", "--tree", "dtNtupleProducer/DTTREE"],
             "Done"
         ),
         (

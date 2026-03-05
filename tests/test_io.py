@@ -304,7 +304,7 @@ class TestReconstructNestedIds:
                                     "tps_matched_showers_ids_n",
                                     "tps")
         pp(flat_events)
-        result = flat_events["tps"]["matched_showers_ids"].tolist()
+        result = flat_events["tps"]["tps_matched_showers"].tolist()
         assert result == [[[5], []], [[2, 7]]]
 
     def test_custom_out_field(self, flat_events):
@@ -394,68 +394,6 @@ def _make_cfg(filesets=None, tree="DTPR/TREE"):
     )
 
 
-class TestResolveFilesetInput:
-    """Unit tests for _resolve_fileset_input."""
-
-    def test_explicit_path_returns_path(self):
-        from dtpr.base.ntuple import _resolve_fileset_input
-        cfg = _make_cfg()
-        path, extras = _resolve_fileset_input(NTUPLE_FILE, None, cfg)
-        assert path == NTUPLE_FILE
-        assert extras == {}
-
-    def test_explicit_path_overrides_filesets(self):
-        """CLI -i takes priority even when filesets are defined in config."""
-        from dtpr.base.ntuple import _resolve_fileset_input
-        cfg = _make_cfg(filesets={"ds": {"files": {NTUPLE_FILE2: "tree"}}})
-        path, extras = _resolve_fileset_input(NTUPLE_FILE, None, cfg)
-        assert path == NTUPLE_FILE
-
-    def test_no_path_no_filesets_raises(self):
-        from dtpr.base.ntuple import _resolve_fileset_input
-        cfg = _make_cfg(filesets=None)
-        with pytest.raises(ValueError, match="No input path"):
-            _resolve_fileset_input(None, None, cfg)
-
-    def test_uses_filesets_when_no_path(self):
-        from dtpr.base.ntuple import _resolve_fileset_input
-        files = {NTUPLE_FILE: "dtNtupleProducer/DTTREE"}
-        cfg = _make_cfg(filesets={"MySample": {"files": files}})
-        path, extras = _resolve_fileset_input(None, None, cfg)
-        assert path == files
-
-    def test_selects_named_dataset(self):
-        from dtpr.base.ntuple import _resolve_fileset_input
-        f1 = {NTUPLE_FILE: "tree"}
-        f2 = {NTUPLE_FILE2: "tree"}
-        cfg = _make_cfg(filesets={"A": {"files": f1}, "B": {"files": f2}})
-        path, _ = _resolve_fileset_input(None, "B", cfg)
-        assert path == f2
-
-    def test_missing_dataset_raises(self):
-        from dtpr.base.ntuple import _resolve_fileset_input
-        cfg = _make_cfg(filesets={"A": {"files": {NTUPLE_FILE: "tree"}}})
-        with pytest.raises(KeyError, match="Dataset 'Z' not found"):
-            _resolve_fileset_input(None, "Z", cfg)
-
-    def test_step_size_extracted_from_fileset(self):
-        from dtpr.base.ntuple import _resolve_fileset_input
-        cfg = _make_cfg(filesets={
-            "ds": {"files": {NTUPLE_FILE: "tree"}, "step_size": 500}
-        })
-        _, extras = _resolve_fileset_input(None, None, cfg)
-        assert extras["step_size"] == 500
-
-    def test_metadata_extracted_from_fileset(self):
-        from dtpr.base.ntuple import _resolve_fileset_input
-        cfg = _make_cfg(filesets={
-            "ds": {"files": {NTUPLE_FILE: "tree"},
-                   "metadata": {"year": 2018, "is_mc": True}}
-        })
-        _, extras = _resolve_fileset_input(None, None, cfg)
-        assert extras["metadata"] == {"year": 2018, "is_mc": True}
-
-
 # ---------------------------------------------------------------------------
 # NTuple: fileset-driven loading
 # ---------------------------------------------------------------------------
@@ -464,7 +402,7 @@ class TestNTupleFileset:
     """Integration tests for fileset-based NTuple loading."""
 
     def test_ntuple_from_config_fileset(self):
-        """NTuple with no inputFolder reads from config filesets."""
+        """NTuple with no inputFolder reads from config filesets; events is a dict."""
         from dtpr.base.ntuple import NTuple
         treepath = "dtNtupleProducer/DTTREE"
         cfg = _make_cfg(filesets={
@@ -473,11 +411,12 @@ class TestNTupleFileset:
             }
         }, tree=treepath)
         ntuple = NTuple(CONFIG=cfg)
-        assert ntuple.events is not None
-        assert ntuple.events.npartitions >= 1
+        assert isinstance(ntuple.events, dict)
+        assert "TestSample" in ntuple.events
+        assert ntuple.events["TestSample"].npartitions >= 1
 
     def test_ntuple_metadata_attached(self):
-        """Metadata from fileset is stored on the NTuple instance."""
+        """Metadata from fileset is stored per-dataset in ntuple.metadata."""
         from dtpr.base.ntuple import NTuple
         treepath = "dtNtupleProducer/DTTREE"
         cfg = _make_cfg(filesets={
@@ -487,7 +426,7 @@ class TestNTupleFileset:
             }
         }, tree=treepath)
         ntuple = NTuple(CONFIG=cfg)
-        assert ntuple.metadata == {"year": 2026, "is_mc": False}
+        assert ntuple.metadata == {"TestSample": {"year": 2026, "is_mc": False}}
 
     def test_ntuple_step_size_increases_partitions(self):
         """step_size=500 should produce more partitions than no step_size (file >500 entries)."""
@@ -495,13 +434,14 @@ class TestNTupleFileset:
         treepath = "dtNtupleProducer/DTTREE"
         cfg = _make_cfg(tree=treepath)
 
-        ntuple_plain = NTuple(NTUPLE_FILE2, CONFIG=cfg)    # 1600 entries → 1 partition
-        ntuple_chunked = NTuple(NTUPLE_FILE2, step_size=500, CONFIG=cfg)
+        # Use file:tree embedding so explicit-input mode works without tree_name param
+        ntuple_plain   = NTuple(f"{NTUPLE_FILE2}:{treepath}", CONFIG=cfg)
+        ntuple_chunked = NTuple(f"{NTUPLE_FILE2}:{treepath}", step_size=500, CONFIG=cfg)
 
         assert ntuple_chunked.events.npartitions > ntuple_plain.events.npartitions
 
     def test_ntuple_step_size_from_fileset_yaml(self):
-        """step_size defined inside filesets block is respected."""
+        """step_size defined inside filesets block is respected; events is a dict."""
         from dtpr.base.ntuple import NTuple
         treepath = "dtNtupleProducer/DTTREE"
         cfg = _make_cfg(filesets={
@@ -511,7 +451,8 @@ class TestNTupleFileset:
             }
         }, tree=treepath)
         ntuple = NTuple(CONFIG=cfg)
-        assert ntuple.events.npartitions > 1
+        assert isinstance(ntuple.events, dict)
+        assert ntuple.events["ds"].npartitions > 1
 
     def test_ntuple_constructor_step_size_overrides_fileset(self):
         """Constructor step_size wins over fileset step_size."""
@@ -523,7 +464,7 @@ class TestNTupleFileset:
                 "step_size": 200,   # would give many partitions
             }
         }, tree=treepath)
-        ntuple_yaml = NTuple(CONFIG=cfg)
-        ntuple_override = NTuple(NTUPLE_FILE2, step_size=800, CONFIG=cfg)
+        ntuple_yaml     = NTuple(CONFIG=cfg)
+        ntuple_override = NTuple(CONFIG=cfg, step_size=800)
         # 800-entry chunks should yield fewer partitions than 200-entry chunks
-        assert ntuple_override.events.npartitions <= ntuple_yaml.events.npartitions
+        assert ntuple_override.events["ds"].npartitions <= ntuple_yaml.events["ds"].npartitions

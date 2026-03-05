@@ -14,6 +14,7 @@ from .utils.functions import (
     get_callable_from_src,
     create_outfolder,
 )
+from .utils.paths import ensure_config_on_syspath
 
 warnings.filterwarnings(action="once", category=UserWarning)
 # Set the custom warning handler
@@ -90,9 +91,10 @@ def main():
         [
             # ---- analysis commands ----
             "fill-histos",
+            "dump-events",
+            "merge-histos",
             "plot-dts",
             "plot-dt",
-            "inspect-events",
             "events-visualizer",
             "test-cli",
             # ---- config commands ----
@@ -128,14 +130,31 @@ def main():
                 "yellow",
             )
 
-    # Add the directory of config_file and outfolder to sys.path
-    if hasattr(args, "config_file") and args.config_file:
-        sys.path.append(os.path.dirname(args.config_file))
+    # Ensure config dir and (optionally) outfolder are importable
+    ensure_config_on_syspath(RUN_CONFIG)
     if hasattr(args, "outfolder") and args.outfolder:
         sys.path.append(args.outfolder)
 
-    # Run the function
-    args.func(args)
+    # Run the function — wrap in a Dask distributed client if requested
+    scheduler_address = getattr(args, "scheduler_address", None)
+    if scheduler_address:
+        try:
+            from dask.distributed import Client
+        except ImportError:
+            color_msg(
+                "dask.distributed is not installed. "
+                "Install it with: pip install dask[distributed]",
+                "red",
+            )
+            sys.exit(1)
+        color_msg(f"Connecting to Dask scheduler: {scheduler_address}", "yellow")
+        with Client(scheduler_address) as _client:
+            color_msg(
+                f"Dask dashboard: {_client.dashboard_link}", "yellow"
+            )
+            args.func(args)
+    else:
+        args.func(args)
 
 
 if __name__ == "__main__":

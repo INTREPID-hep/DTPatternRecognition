@@ -22,13 +22,17 @@ def create_particle_class_template(name, outfolder):
 
 
 def create_run_config_template(outfolder):
-    source_path = os.path.join(os.path.dirname(__file__), "yamls/run_config.yaml")
-    dest_path = os.path.join(outfolder, "run_config.yaml")
-
-    shutil.copy(source_path, dest_path)
+    yamls_dir = os.path.join(os.path.dirname(__file__), "../yamls")
+    _skip = {"config_cli.yaml"}
+    copied = []
+    for fname in os.listdir(yamls_dir):
+        if fname.endswith(".yaml") and fname not in _skip:
+            shutil.copy(os.path.join(yamls_dir, fname), os.path.join(outfolder, fname))
+            copied.append(fname)
     print(
-        color_msg(f"run_config.yaml created in ", "green", return_str=True)
-        + color_msg(f"{dest_path}", "yellow", return_str=True)
+        color_msg(f"Config templates copied to ", "green", return_str=True)
+        + color_msg(f"{outfolder}", "yellow", return_str=True)
+        + color_msg(f" ({', '.join(sorted(copied))})", "blue", return_str=True)
     )
 
 

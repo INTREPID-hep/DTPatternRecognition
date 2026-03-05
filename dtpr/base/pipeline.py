@@ -32,7 +32,9 @@ unique step name.  No ``name:`` sub-key is needed.
 * ``target``     — (selector only) collection name for particle-level filter
 * ``expr``       — inline Python evaluated with ``{"events": events, "ak": ak}``
 * ``src``        — dotted import path to ``fn(events) -> None``  (mutates in-place)
-* ``depends_on`` — list of step names that must run first (default ``[]``)
+* ``needs``      — list of step names that must run first (default ``[]``)
+* ``on``         — dataset name (str) or list of names this step is restricted
+  to.  Omit (or ``null``) to apply to every dataset / plain inputs.
 
 Exactly one of ``expr`` / ``src`` must be present.
 """
@@ -64,7 +66,7 @@ def topological_sort(steps: dict[str, dict]) -> list[list[dict]]:
     Raises
     ------
     ValueError
-        If a step references an unknown ``depends_on`` name, or if a cycle
+        If a step references an unknown ``needs`` name, or if a cycle
         is detected in the dependency graph.
     """
     if not steps:
@@ -72,15 +74,15 @@ def topological_sort(steps: dict[str, dict]) -> list[list[dict]]:
 
     deps_map: dict[str, list[str]] = {}
     for name, step in steps.items():
-        deps = step.get("depends_on", [])
+        deps = step.get("needs", [])
         if not isinstance(deps, list):
             raise ValueError(
-                f"Step '{name}': depends_on must be a list of step names."
+                f"Step '{name}': needs must be a list of step names."
             )
         unknown = set(deps) - steps.keys()
         if unknown:
             raise ValueError(
-                f"Step '{name}' depends_on unknown step(s): {unknown}"
+                f"Step '{name}' needs unknown step(s): {unknown}"
             )
         deps_map[name] = deps
 
@@ -152,7 +154,7 @@ def _make_fn(name: str, step: dict, kind: str = "eval"):
 # Pipeline executor
 # ---------------------------------------------------------------------------
 
-def execute_pipeline(events, steps: dict[str, dict]):
+def execute_pipeline(events, steps: dict[str, dict], dataset: str | None = None):
     """Execute pipeline steps in dependency order.
 
     Within each dependency level, **selectors run before preprocessors** to
@@ -163,7 +165,7 @@ def execute_pipeline(events, steps: dict[str, dict]):
     (``events["field"] = value``); no return value is captured.
 
     All real parallelism is provided by dask at the file/partition level.
-    Step ordering within a level is determined by the ``depends_on`` graph
+    Step ordering within a level is determined by the ``needs`` graph
     (topological sort); within the same level, selectors always precede
     preprocessors.
 
@@ -175,14 +177,39 @@ def execute_pipeline(events, steps: dict[str, dict]):
     steps : dict[str, dict]
         Pipeline step definitions as parsed from the YAML ``pre-steps:`` key.
         Each key is the step name; each value is the step body (``type``,
-        ``expr``/``src``, optional ``depends_on``, optional ``target``).
+        ``expr``/``src``, optional ``needs``, optional ``target``,
+        optional ``on``).
+    dataset : str or None, optional
+        Name of the dataset currently being loaded (e.g. ``"DY"``).
+        Steps whose ``on`` key does not match this name are skipped.
+        ``None`` / absent ``on`` → step applies to every dataset.
 
     Returns
     -------
     ak.Array or dask_awkward.Array
         The transformed event array (still lazy if input was lazy).
     """
-    for level_group in topological_sort(steps):
+    # ── filter steps by `on` key ─────────────────────────────────────────
+    active_steps: dict[str, dict] = {}
+    for sname, step in steps.items():
+        on = step.get("on")
+        if on is None:
+            active_steps[sname] = step
+        elif isinstance(on, str):
+            if on == dataset:
+                active_steps[sname] = step
+        elif isinstance(on, list):
+            if dataset in on:
+                active_steps[sname] = step
+
+    # Drop `needs` refs to steps not active for this dataset so the
+    # topological sort does not raise on unknown names.
+    cleaned_steps: dict[str, dict] = {
+        sname: {**step, "needs": [n for n in step.get("needs", []) if n in active_steps]}
+        for sname, step in active_steps.items()
+    }
+
+    for level_group in topological_sort(cleaned_steps):
         # Fail fast: validate step types before executing anything in this level.
         unknown = [step["type"] for _, step in level_group
                    if step["type"] not in {"selector", "preprocessor"}]
@@ -235,18 +262,18 @@ if __name__ == "__main__":
         "add_x2": {
             "type": "preprocessor",
             "expr": "events['x2'] = events['x'] * 2",
-            "depends_on": ["keep_even_events"],
+            "needs": ["keep_even_events"],
         },
         "add_xp1": {
             "type": "preprocessor",
             "expr": "events['xp1'] = events['x'] + 1",
-            "depends_on": ["keep_even_events"],
+            "needs": ["keep_even_events"],
         },
         "keep_positive_wh": {
             "type": "selector",
             "target": "digis",
             "expr": "events['digis']['wh'] > 0",
-            "depends_on": ["add_x2", "add_xp1"],
+            "needs": ["add_x2", "add_xp1"],
         },
     }
 

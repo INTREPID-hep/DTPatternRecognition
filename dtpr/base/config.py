@@ -28,7 +28,9 @@ def _resolve_includes(content, base_dir, visited=None):
         visited = set()
     
     # Pattern to match !include directives (standalone or after key:)
-    pattern = r'^(\s*)(?:(\w+):\s*)?!include\s+(.+)$'
+    # Key names may contain hyphens (e.g. pre-steps, plot-configs) in addition
+    # to standard word characters.
+    pattern = r'^(\s*)(?:([\w-]+):\s*)?!include\s+(.+)$'
     
     lines = content.split('\n')
     processed_lines = []
@@ -198,12 +200,12 @@ class Config:
 
 # ------- create CLI_CONFIG -------
 cli_config_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../utils/yamls/config_cli.yaml")
+    os.path.join(os.path.dirname(__file__), "../yamls/config_cli.yaml")
 )
 CLI_CONFIG = Config(cli_config_path)
 
 # ------- create RUN_CONFIG and customize its method -------
 run_config_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../utils/yamls/run_config.yaml")
+    os.path.join(os.path.dirname(__file__), "../yamls/run_config.yaml")
 )
 RUN_CONFIG = Config(run_config_path)

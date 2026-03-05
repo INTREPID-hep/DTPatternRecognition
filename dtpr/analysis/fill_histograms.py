@@ -1,308 +1,380 @@
-import os
+"""Columnar histogram filling — the engine behind ``dtpr fill-histos``.
+
+Execution modes
+---------------
+
+**In-memory map-reduce** (default, no ``--per-partition``)
+    Each dask partition is materialised, histograms are filled, and the
+    results are summed (``h1 + h2``) in the main process.  A single ROOT
+    file is written at the end.  Suitable for most jobs.
+
+**Per-partition output** (``--per-partition`` flag)
+    Each partition is processed independently and its histograms are
+    written to an individual ROOT file
+    (``<outfolder>/histograms/histograms{tag}_NNNN.root``).
+    Existing output files are *skipped* — the job is **resume-safe** after
+    a failure.  Use ``dtpr merge-histos`` to merge the per-partition ROOT
+    files into a single file. Use --force-overwrite to re-process and overwrite existing per-partition files.
+
+Multiple datasets
+-----------------
+When ``datasets`` is specified (or when ``inputs`` is omitted and the config
+defines ``filesets:``), each dataset is processed independently and its
+histograms are saved to a separate ROOT file:
+
+    histograms{tag}_{dataset_name}.root
+
+Per-partition outputs follow the same convention:
+
+    histograms{tag}_{dataset_name}_NNNN.root
+
+Parallelism
+-----------
+Controlled by ``ncores`` (identical semantics to ``dtpr dump``):
+
+- ``ncores == 1``   → always synchronous (single-threaded, easiest to debug),
+  even when a distributed client is active.
+- ``ncores == -1``  → dask default (threaded); OK for I/O-bound work.
+- ``ncores > 1``    → local ``"processes"`` scheduler with *ncores* workers,
+  **unless** a distributed client is active — in that case tasks go to the
+  cluster and ``ncores`` is ignored (except ``ncores == 1``).
+
+A ``dask.distributed.Client`` is activated transparently at the CLI level
+via ``--scheduler-address``; no per-command changes are needed.
+"""
+
+from __future__ import annotations
+
 import importlib
+import os
 import warnings
-import ROOT as r
-from tqdm import tqdm
+from functools import reduce
+
+import dask
 from ..base import NTuple
 from ..base.config import RUN_CONFIG
-from ..utils.functions import (
-    color_msg,
-    error_handler,
-    create_outfolder,
-)
-from more_itertools import collapse
-from multiprocess import Pool, cpu_count
-from typing import Any, Dict, Optional
+from ..utils.functions import color_msg, create_outfolder, make_dask_sched_kwargs
+from ..utils.histograms_base import HistogramBase, save_to_root
 
 
-def set_histograms_dict() -> Dict[str, Any]:
+# ---------------------------------------------------------------------------
+# Utility / helpers
+# ---------------------------------------------------------------------------
+
+def _show_histo_names(histos: list[HistogramBase], limit: int = 6) -> None:
+    names = [h.name for h in histos]
+    msg = (
+        f"{', '.join(names[:limit])} and {len(names) - limit} more..."
+        if len(names) > limit else ", ".join(names)
+    )
+    color_msg(f"Histograms to fill: {msg}", color="yellow", indentLevel=0)
+
+
+def load_histos_from_config(config=None) -> list[HistogramBase]:
+    """Load and filter histogram instances from the configured sources.
+
+    Reads ``histo_sources`` and ``histo_names`` from histograms map in *config*  (defaults to
+    :data:`~dtpr.base.config.RUN_CONFIG`).
+
+    Returns
+    -------
+    list[HistogramBase]
+        Histogram instances ready to be filled.
+
+    Warnings
+    --------
+    - If a source module does not have a valid ``histos`` attribute.
+    - If any of the specified histogram names are not found in any source.
     """
-    Sets up the histograms dictionary to fill based on configuration.
+    cfg = config or RUN_CONFIG
+    # Support both a nested ``histograms:`` config section and top-level attributes
+    # (backward-compatible fallback).
+    h_cfg = getattr(cfg, "histograms", None) or cfg
 
-    :return: Dictionary of histograms to fill
-    :rtype: Dict[str, Any]
-    """
-    histos_to_fill = {}
-    # Import histograms from each source in configuration
-    for source in RUN_CONFIG.histo_sources:
-        module = importlib.import_module(source)
-        module_histos = getattr(module, "histos", {})
-        # Only include histograms specified in the configuration
-        histos_to_fill.update(
-            {k: v for k, v in module_histos.items() if k in RUN_CONFIG.histo_names}
-        )
-
-    # Warn about any missing histograms
-    missing_histos = set(RUN_CONFIG.histo_names) - set(histos_to_fill.keys())
-    if missing_histos:
-        warnings.warn(
-            f"The following histograms could not be found in any of the sources: {', '.join(missing_histos)}"
-        )
-
-    return histos_to_fill
-
-
-def _execute_histo_function(func: Any, event: Any, histo_key: str) -> Optional[Any]:
-    """
-    Execute histogram function with error handling.
-
-    :param func: The function to execute on the event
-    :type func: Any
-    :param event: The event data to process
-    :type event: Any
-    :param histo_key: Histogram key for error reporting
-    :type histo_key: str
-    :return: The result of the function or None if an error occurred
-    :rtype: Optional[Any]
-    """
-    try:
-        return func(event)
-    except Exception as e:
-        error_handler(
-            type(e),
-            f"Error in function for histogram {histo_key}: {str(e)}",
-            exc_traceback=None,
-        )
-        return None
-
-
-def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
-    """
-    Fill predefined histograms with event data.
-
-    :param ev: The event object containing data (instance of dtpr.base.Event)
-    :type ev: Any
-    :param histos_to_fill: Dictionary defining histograms to fill
-    :type histos_to_fill: Dict[str, Any]
-    :return: None
-    :rtype: None
-    """
-    # Skip processing if event is None
-    if ev is None:
-        return
-
-    for histo_key, histoinfo in histos_to_fill.items():
-        hType = histoinfo["type"]
-        func = histoinfo["func"]
-
-        # Get values from the event
-        val = _execute_histo_function(func, ev, histo_key)
-        if val is None:
-            continue
-
-        # Handle different histogram types
-        # Distribution histograms (1D)
-        if hType == "distribution":
-            h = histoinfo["histo"]
-            if isinstance(val, (list, tuple)):
-                # Handle multi-value results
-                for ival in collapse(val):
-                    h.Fill(ival)
-            elif val:
-                h.Fill(val)
-
-        # Efficiency histograms
-        elif hType == "eff":
-            num = histoinfo["histoNum"]
-            den = histoinfo["histoDen"]
-
-            # Get which values pass the criteria
-            numPasses = _execute_histo_function(histoinfo["numdef"], ev, histo_key)
-            if numPasses is None:
-                continue
-
-            # Fill denominator for all values, numerator only for passing values
-            for v, passes in zip(val, numPasses):
-                den.Fill(v)
-                if passes:
-                    num.Fill(v)
-
-        # Multi-dimensional distributions (2D, 3D)
-        elif hType in ("distribution2d", "distribution3d"):
-            h = histoinfo["histo"]
-            if isinstance(val, list):
-                # Handle multiple points
-                for ival in collapse(val, base_type=tuple):
-                    h.Fill(*ival)
-            else:
-                h.Fill(*val)
-
-
-def process_event_chunk(
-    index: int, start_idx: int, end_idx: int, events: Any, histos_to_fill: Dict[str, Any]
-) -> Dict[str, Any]:
-    """
-    Process a chunk of events for parallel execution.
-
-    :param index: Worker index for naming cloned histograms
-    :type index: int
-    :param start_idx: Starting event index
-    :type start_idx: int
-    :param end_idx: Ending event index
-    :type end_idx: int
-    :param events: List of all events
-    :type events: Any
-    :param histos_to_fill: Dictionary of histograms to fill
-    :type histos_to_fill: Dict[str, Any]
-    :return: Dictionary of filled histograms for this chunk
-    :rtype: Dict[str, Any]
-    """
-    # Clone histograms for this worker to avoid thread safety issues
-    c_histos_to_fill = {}
-    for key, val in histos_to_fill.items():
-        if isinstance(val, (r.TH1, r.TH2, r.TH3)):
-            _val = val.Clone(val.GetName() + f"_{index}")
-        else:
-            _val = val
-        c_histos_to_fill[key] = _val
-
-    # Process all events in this chunk
-    for ev in events[start_idx:end_idx]:
-        if ev is None:
-            continue
-        fill_histograms(ev, c_histos_to_fill)
-
-    return c_histos_to_fill
-
-
-def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) -> None:
-    """
-    Store histograms in a ROOT file.
-
-    :param outfolder: The output folder path
-    :type outfolder: str
-    :param tag: Tag to append to the filename
-    :type tag: str
-    :param histos_to_save: Dictionary of histograms to save
-    :type histos_to_save: Dict[str, Any]
-    :return: None
-    :rtype: None
-    """
-    outname = os.path.join(outfolder, f"histograms{tag}.root")
-    with r.TFile.Open(os.path.abspath(outname), "RECREATE") as f:
-        for histoinfo in histos_to_save.values():
-            hType = histoinfo["type"]
-
-            # Write histograms to file based on type
-            if "distribution" in hType:
-                histoinfo["histo"].Write()
-            elif hType == "eff":
-                histoinfo["histoNum"].Write()
-                histoinfo["histoDen"].Write()
-
-
-def fill_histos(
-    inpath: str, outfolder: str, tag: str, maxfiles: int, maxevents: int, ncores: int
-) -> None:
-    """
-    Fill histograms based on NTuples information.
-
-    :param inpath: Path to the input folder containing NTuples
-    :type inpath: str
-    :param outfolder: Path to the output folder for histograms
-    :type outfolder: str
-    :param tag: Tag to identify the output histograms
-    :type tag: str
-    :param maxfiles: Maximum number of files to process
-    :type maxfiles: int
-    :param maxevents: Maximum number of events to process (0 = all)
-    :type maxevents: int
-    :param ncores: Number of CPU cores to use (1 = sequential, >1 = parallel)
-    :type ncores: int
-    :return: None
-    :rtype: None
-    """
-    color_msg("Running program to fill histograms...", "green")
-
-    # Create the Ntuple object and set maxevents
-    ntuple = NTuple(inputFolder=inpath, maxfiles=maxfiles)
-    _maxevents = min(maxevents if maxevents > 0 else len(ntuple.events), len(ntuple.events)) - 1
-
-    # Set up histograms to fill from configured sources
-    histograms_to_fill = set_histograms_dict()
-    color_msg("Histograms to be filled:", color="blue", indentLevel=1)
-
-    if not histograms_to_fill:
-        color_msg("No histograms to fill.", color="red", indentLevel=2)
-        return
-
-    # Display histogram names (limited to 6 for readability)
-    histo_keys = list(histograms_to_fill.keys())
-    if len(histo_keys) > 6:
-        displayed_msg = f"{', '.join(histo_keys[:6])} and {len(histo_keys) - 6} more..."
+    if isinstance(h_cfg, dict):
+        sources = h_cfg.get("histo_sources")
+        names_filter = set(h_cfg.get("histo_names"))
     else:
-        displayed_msg = f"{', '.join(histo_keys)}"
-    color_msg(displayed_msg, color="yellow", indentLevel=2)
+        sources = getattr(h_cfg, "histo_sources", None)
+        names_filter = set(getattr(h_cfg, "histo_names", None))
 
-    # Determine number of cores for processing
-    _ncores = min(ncores, cpu_count()) if ncores > 1 else None
+    all_histos: list[HistogramBase] = []
+    for source in sources:
+        module = importlib.import_module(source)
+        module_histos = getattr(module, "histos", [])
+        if isinstance(module_histos, HistogramBase):
+            module_histos = [module_histos]
+        elif not isinstance(module_histos, list):
+            warnings.warn(
+                f"Source module {source!r} has no 'histos' attribute or it is not a list or a HistogramBase instance. Skipping.",
+                stacklevel=2,
+            )
+            continue
+        if any(not isinstance(h, HistogramBase) for h in module_histos):
+            warnings.warn(
+                f"Source module {source!r} has an invalid 'histos' attribute. Skipping.",
+                stacklevel=2,
+            )
+            continue
+        all_histos.extend(module_histos)
 
-    # Process events with progress bar
-    with tqdm(
-        total=_maxevents + 1,
-        desc=color_msg("Processing events", color="purple", indentLevel=1, return_str=True),
-        ncols=100,
-        ascii=True,
-        unit=" event",
-    ) as pbar:
-        if _ncores is None:
-            # Sequential processing
-            each_print = (_maxevents + 1) // 10 if (_maxevents + 1) > 10 else 1
-            for i, ev in enumerate(ntuple.events):
-                if i > _maxevents:
-                    pbar.update(_maxevents + 1 - pbar.n)
-                    break
-                if i > 0 and i % each_print == 0:
-                    pbar.update(each_print)
-                fill_histograms(ev, histograms_to_fill)
+    if names_filter:
+        all_histos = [h for h in all_histos if h.name in names_filter]
+        found = {h.name for h in all_histos}
+        missing = names_filter - found
+        if missing:
+            warnings.warn(
+                f"The following histograms were not found in any source: "
+                f"{', '.join(sorted(missing))}",
+                stacklevel=2,
+            )
 
-            histograms_result = histograms_to_fill
-        else:
-            # Parallel processing with worker pool
-            chunk_size = (_maxevents + 1) // _ncores
-            with Pool(_ncores) as pool:
-                results = []
-                for i in range(_ncores):
-                    start_idx = i * chunk_size
-                    end_idx = min((i + 1) * chunk_size, _maxevents + 1)
+    return all_histos
 
-                    results.append(
-                        pool.apply_async(
-                            process_event_chunk,
-                            args=(i, start_idx, end_idx, ntuple.events, histograms_to_fill),
-                            callback=lambda _, i=i: pbar.write(f"Processed events chunk {i}")
-                            or pbar.update(chunk_size),
-                        )
-                    )
 
-                # Gather results from all workers
-                histograms_results = [r.get() for r in results]
-
-    # Save histograms to output directory
-    color_msg("Saving histograms...", color="purple", indentLevel=1)
+def _reduce_and_save(
+    all_results: list[list[HistogramBase]], outfolder: str, tag: str
+) -> None:
+    """Sum histograms across partitions and write ROOT output."""
+    nhist = len(all_results[0])
+    final_histos = [
+        reduce(lambda a, b: a + b, [part[i] for part in all_results])
+        for i in range(nhist)
+    ]
     outpath = os.path.join(outfolder, "histograms")
     create_outfolder(outpath)
+    root_path = os.path.join(outpath, f"histograms{tag}.root")
+    save_to_root(final_histos, root_path)
+    color_msg(f"Histograms saved → {root_path}", color="green", indentLevel=1)
 
-    if _ncores is None:
-        # Direct save for sequential processing
-        save_histograms(outpath, tag, histograms_result)
+# ---------------------------------------------------------------------------
+# Partition worker  (runs inside the dask worker / thread)
+# ---------------------------------------------------------------------------
+
+@dask.delayed
+def _fill_partition(partition_dak, histos_template, out_path=None, overwrite=False, label="") -> list[HistogramBase] | None:
+    """Materialise one dask partition and fill empty histogram clones.
+
+    Parameters
+    ----------
+    partition_dak : dask_awkward.Array
+        Lazy partition.  ``.compute()`` is called inside the worker.
+    histos_template : list[HistogramBase]
+        Template histograms.  Each worker gets its own clones via
+        :meth:`HistogramBase.empty_clone`.
+    out_path : str or None
+        **Per-partition mode**: write filled histograms to this ROOT file
+        and return ``None``.  If the file already exists it is skipped
+        (resume-safe).
+        **In-memory mode** (``None``): return the filled clones so the
+        caller can reduce them.
+    overwrite : bool
+        When ``True``, re-process and overwrite existing per-partition output
+        files instead of skipping them.  Ignored when *out_path* is ``None``.
+    label : str
+        Human-readable name used in log messages (dataset name or ``"inputs"``).
+
+    Returns
+    -------
+    list[HistogramBase] or None
+        Filled clones (in-memory mode) or ``None`` (per-partition mode).
+    """
+    # ── Resume: output already exists ───────────────────────────────────────
+    if not overwrite and out_path is not None and os.path.exists(out_path):
+        color_msg(f"[{label}] Skipping existing file {out_path} (resume-safe)", color="yellow", indentLevel=1)
+        return None
+
+    # When a dask_awkward.Array is passed to a @dask.delayed function, dask
+    # materialises it automatically before calling the function — so
+    # partition_dak is already a plain ak.Array here.
+
+    # ── Fill clones ─────────────────────────────────────────────────────────
+    clones = [h.empty_clone() for h in histos_template]
+    for h in clones:
+        try:
+            h.fill(partition_dak)
+        except Exception as exc:
+            warnings.warn(
+                f"Error filling histogram {h.name!r}: {exc}",
+                stacklevel=2,
+            )
+
+    # ── Per-partition: write ROOT file ───────────────────────────────────────
+    if out_path is not None:
+        color_msg(f"[{label}] Saving partition to {out_path}...", color="purple", indentLevel=1)
+        save_to_root(clones, out_path)
+        return None
+
+    return clones
+
+
+# ---------------------------------------------------------------------------
+# Per-dataset worker
+# ---------------------------------------------------------------------------
+
+def _fill_one_dataset(
+    events,
+    histos: list[HistogramBase],
+    outfolder: str,
+    file_tag: str,
+    per_partition: bool,
+    overwrite: bool,
+    ncores: int,
+    label: str,
+) -> None:
+    """Fill histograms for a single ``dak.Array`` and write output.
+
+    Parameters
+    ----------
+    events : dask_awkward.Array
+        Lazy event array for one dataset (or explicit inputs).
+    histos : list[HistogramBase]
+        Histogram templates.
+    outfolder : str
+        Root output directory.  ``histograms/`` sub-folder is created inside.
+    file_tag : str
+        Tag appended to the output filename (includes dataset name for
+        multi-dataset runs), e.g. ``"_v2_DY"`` → ``histograms_v2_DY.root``.
+    per_partition : bool
+        Write one ROOT file per partition (resume-safe).
+    overwrite : bool
+        Re-process and overwrite existing per-partition files.
+    ncores : int
+        Scheduler hint (``1`` = sync, ``-1`` = default, ``>1`` = processes).
+    label : str
+        Human-readable name used in log messages (dataset name or ``"inputs"``).
+    """
+    npartitions = events.npartitions
+    color_msg(
+        f"[{label}] {len(histos)} histogram(s) × {npartitions} partition(s)",
+        color="blue", indentLevel=1,
+    )
+
+    out_dir = os.path.join(outfolder, "histograms")
+    pad = len(str(npartitions - 1))
+
+    create_outfolder(out_dir)
+
+    # ── Build delayed task graph ─────────────────────────────────────────
+    tasks = [
+        _fill_partition(
+            events.partitions[i],
+            histos,
+            out_path=(
+                os.path.join(out_dir, f"histograms{file_tag}_{str(i).zfill(pad)}.root")
+                if per_partition else None
+            ),
+            overwrite=overwrite,
+            label=label,
+        )
+        for i in range(npartitions)
+    ]
+
+    # ── Execute ──────────────────────────────────────────────────────────
+    sched_kwargs = make_dask_sched_kwargs(ncores)
+    try:
+        from dask.distributed import get_client
+        get_client()
+        sched_label = "distributed"
+    except Exception:
+        sched_label = sched_kwargs.get("scheduler", "threaded (dask default)")
+    color_msg(f"[{label}] scheduler: {sched_label}", color="purple", indentLevel=1)
+    all_results = list(dask.compute(*tasks, **sched_kwargs))
+
+    # ── Per-partition: files already on disk ──────────────────────────────
+    if per_partition:
+        return
+
+    # ── In-memory: reduce and write single ROOT file ──────────────────────
+    color_msg(f"[{label}] merging partitions...", color="purple", indentLevel=1)
+    _reduce_and_save(all_results, outfolder, file_tag)
+
+
+# ---------------------------------------------------------------------------
+# Public entry-point
+# ---------------------------------------------------------------------------
+
+def fill_histos(
+    inputs: str | list | dict | None = None,
+    outfolder: str = "./results",
+    tag: str = "",
+    maxfiles: int = -1,
+    datasets: str | list[str] | None = None,
+    tree_name: str | list[str] | None = None,
+    ncores: int = -1,
+    per_partition: bool = False,
+    overwrite: bool = False,
+) -> None:
+    """Fill histograms from NTuple files.
+
+    Parameters
+    ----------
+    inputs : str, list, or None
+        Explicit input path(s) forwarded to :class:`~dtpr.base.ntuple.NTuple`.
+        Mutually exclusive with *datasets*.
+        ``None`` → use ``filesets:`` from config (same as ``datasets=[]``).
+    outfolder : str
+        Output directory.  A ``histograms/`` sub-folder is created inside.
+    tag : str
+        String appended to the output filename,
+        e.g. ``"_v2"`` → ``histograms_v2.root``.
+        For multiple datasets the dataset name is also appended:
+        ``histograms_v2_DY.root``.
+    maxfiles : int
+        Cap on number of files loaded per dataset.  ``-1`` = all.
+    datasets : str or list[str] or None
+        Named datasets to load from ``filesets:`` in the config.
+        ``[]`` or ``None`` (with no *inputs*) → load **all** filesets.
+        Ignored when *inputs* is given.
+    tree_name : str or list[str] or None
+        TTree path.  ``str`` → same for all datasets.  ``list[str]`` →
+        one entry per dataset (must match *datasets* length). Falls back to config or embedded
+        ``"file.root:treepath"`` syntax.
+    ncores : int
+        ``1`` = synchronous, ``-1`` = dask default, ``>1`` = N processes.
+    per_partition : bool
+        Write one ROOT file per partition under ``<outfolder>/histograms/``
+        (``histograms{tag}_NNNN.root`` or ``histograms{tag}_{dataset}_NNNN.root``).
+        Existing files are skipped (resume-safe).
+        When ``False`` (default) a single merged ROOT file is written per dataset.
+    overwrite : bool
+        When ``True``, re-process and overwrite existing per-partition output
+        files instead of skipping them.  Ignored when *per_partition* is
+        ``False``.  Default ``False``.
+    """
+    color_msg("Running fill-histos...", "green")
+    color_msg("Loading ntuples", "cyan", indentLevel=0)
+    ntuple = NTuple(
+        inputs=inputs,
+        maxfiles=maxfiles,
+        tree_name=tree_name,
+        datasets=datasets,
+    )
+    histos = load_histos_from_config()
+
+    if not histos:
+        color_msg("No histograms to fill.", color="red", indentLevel=0, bold=True)
+        return
+
+    _show_histo_names(histos)
+
+    # ── Dispatch: single array vs. dict of datasets ───────────────────────
+    if isinstance(ntuple.events, dict):
+        color_msg(
+            f"Processing {len(ntuple.events)} dataset(s): "
+            f"{', '.join(ntuple.events)}",
+            color="purple", indentLevel=0,
+        )
+        for ds_name, ds_events in ntuple.events.items():
+            # Dataset name appended to tag so output files are unambiguously named.
+            _fill_one_dataset(
+                ds_events, histos, outfolder, f"{tag}_{ds_name}",
+                per_partition, overwrite, ncores, label=ds_name,
+            )
     else:
-        # For parallel processing, save temporary files and merge them
-        import subprocess as bash
+        _fill_one_dataset(
+            ntuple.events, histos, outfolder, tag,
+            per_partition, overwrite, ncores, label="inputs",
+        )
 
-        tmp_path = os.path.join(outpath, "_tmp")
-        create_outfolder(tmp_path)
-
-        histo_files = []
-        for i, histograms_i in enumerate(histograms_results):
-            file_path = os.path.join(tmp_path, f"histograms_{i}.root")
-            save_histograms(tmp_path, f"_{i}", histograms_i)
-            histo_files.append(file_path)
-
-        # Merge all temporary files with hadd
-        color_msg("Merging histograms...", color="purple", indentLevel=1)
-        output_file = os.path.join(outpath, f"histograms{tag}.root")
-        bash.call(f"hadd -f -j {_ncores} {output_file} {' '.join(histo_files)}", shell=True)
-        color_msg("Cleaning up temporary files...", color="purple", indentLevel=1)
-        bash.call(f"rm -rf {tmp_path}", shell=True)
     color_msg("Done!", color="green")

@@ -52,7 +52,7 @@ from __future__ import annotations
 import os
 
 from ..base.ntuple import NTuple
-from ..utils.functions import color_msg, create_outfolder, make_dask_sched_kwargs
+from ..utils.functions import color_msg, create_outfolder, get_scheduler_label
 from ..utils.io import dump_to_root, dump_to_parquet
 
 
@@ -100,14 +100,7 @@ def _dump_one_dataset(
         color="blue", indentLevel=1,
     )
 
-    sched_kwargs = make_dask_sched_kwargs(ncores)
-    try:
-        from dask.distributed import get_client
-        get_client()
-        sched_label = "distributed"
-    except Exception:
-        sched_label = sched_kwargs.get("scheduler", "threaded (dask default)")
-    color_msg(f"[{label}] scheduler: {sched_label}", color="purple", indentLevel=1)
+    # color_msg(f"[{label}] scheduler: {get_scheduler_label(ncores)}", color="purple", indentLevel=1)
 
     create_outfolder(outfolder)
 
@@ -123,7 +116,7 @@ def _dump_one_dataset(
         dump_func = dump_to_parquet
     dump_func(
         events, out_path,
-        per_partition=per_partition, ncores=ncores, overwrite=overwrite,
+        per_partition=per_partition, ncores=ncores, overwrite=overwrite, label=label,
     )
 
     color_msg(f"[{label}] Events written → {out_path}", color="green", indentLevel=1)

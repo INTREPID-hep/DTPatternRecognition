@@ -1,14 +1,15 @@
 """Miscelaneous"""
 
 import re
-from functools import partial, lru_cache
 import os
 import math
+import dask
 import matplotlib.pyplot as plt
+from dask.distributed import get_client
+from functools import partial, lru_cache
 from copy import deepcopy
 from importlib import import_module
 import numpy as np
-from mpldts.geometry import Station
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 
@@ -211,6 +212,7 @@ def get_callable_from_src(src_str: str) -> Callable:
 
 def make_dask_sched_kwargs(ncores: int) -> dict:
     """Return kwargs to pass to ``dask.compute`` for the requested parallelism.
+    Also returns a human-readable label for the chosen scheduler (for logging).
 
     Priority:
 
@@ -223,16 +225,54 @@ def make_dask_sched_kwargs(ncores: int) -> dict:
       client if set, otherwise dask's default threaded scheduler).
     """
     if ncores == 1:
-        return {"scheduler": "synchronous"}
+        return {"scheduler": "synchronous"}, "synchronous"
     if ncores > 1:
         try:
-            from dask.distributed import get_client
             get_client()
-            return {}  # distributed client active — let it handle distribution
+            return {}, "distributed"  # distributed client active — let it handle distribution
         except Exception:
-            return {"scheduler": "processes", "num_workers": ncores}
+            return {"scheduler": "processes", "num_workers": ncores}, f"processes ({ncores} workers)"
     # ncores == -1: defer to the active scheduler
-    return {}
+    return {}, "threaded (dask default)"
+
+def get_scheduler_label(ncores: int = -1) -> str:
+    """Return a human-readable name for the dask scheduler that will be used.
+
+    Mirrors the logic of :func:`make_dask_sched_kwargs` so callers can log a
+    consistent description before dispatching tasks.
+    """
+    if ncores == 1:
+        return "synchronous"
+    try:
+        from dask.distributed import get_client
+        get_client()
+        return "distributed"
+    except Exception:
+        pass
+    if ncores > 1:
+        return f"processes ({ncores} workers)"
+    return "threaded (dask default)"
+
+
+def compute_on_partitions(tasks: list, *, ncores: int = -1) -> list:
+    """Execute a list of delayed partition tasks with the appropriate dask scheduler.
+
+    Thin wrapper around ``dask.compute`` + :func:`make_dask_sched_kwargs` so
+    callers don't repeat scheduler-selection logic.
+
+    Parameters
+    ----------
+    tasks : list
+        ``dask.delayed`` objects — one per partition.
+    ncores : int
+        Scheduler hint (same semantics as :func:`make_dask_sched_kwargs`).
+
+    Returns
+    -------
+    list
+        Materialised results in the same order as *tasks*.
+    """
+    return list(dask.compute(*tasks, **make_dask_sched_kwargs(ncores)))
 
 
 def create_outfolder(outname: str) -> None:

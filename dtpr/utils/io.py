@@ -5,9 +5,13 @@ processed event array to a new ROOT file using *uproot*.
 """
 
 from __future__ import annotations
-
+import uproot
+import os
 import awkward as ak
+import dask
+import dask_awkward as dak
 from ..base.particle import ParticleRecord
+from ..utils.functions import compute_on_partitions, color_msg, create_outfolder, make_dask_sched_kwargs
 
 
 def _collect_branches(events) -> dict:
@@ -62,14 +66,107 @@ def _collect_branches(events) -> dict:
     return branches
 
 
+# ---------------------------------------------------------------------------
+# Partition-level workers — @dask.delayed, composable by users
+# ---------------------------------------------------------------------------
+
+@dask.delayed
+def write_root_partition(
+    partition,
+    out_path: str,
+    treepath: str = "DTPR/TREE",
+    overwrite: bool = False,
+    label: str = "",
+) -> None:
+    """Write one materialised partition to a ROOT file (RNTuple).
+
+    This is the building block used by :func:`dump_to_root` in per-partition
+    mode.  Being ``@dask.delayed``, it can be composed into custom dask graphs
+    without going through the high-level entry-point::
+
+        import dask
+        from dtpr.utils.io import write_root_partition
+
+        tasks = [
+            write_root_partition(events.partitions[i], f"out_{i}.root")
+            for i in range(events.npartitions)
+        ]
+        dask.compute(*tasks)
+
+    Parameters
+    ----------
+    partition : ak.Array
+        Materialised awkward array for one partition.
+    out_path : str
+        Output ``.root`` file path.
+    treepath : str
+        RNTuple path inside the ROOT file.  Default ``"DTPR/TREE"``.
+    overwrite : bool
+        If ``False`` (default) skip writing when *out_path* already exists.
+    """
+    # ── Resume: output already exists ───────────────────────────────────────
+    if not overwrite and os.path.exists(out_path):
+        color_msg(f"[{label}] Skipping existing file {out_path} (resume-safe)", color="yellow", indentLevel=1)
+        return
+    # ── write partition to ROOT ───────────────────────────────────────────────
+    branches = _collect_branches(partition)
+    if not branches:
+        Warning.warn("No events found in partition — skipping ROOT output.", stacklevel=2)
+        return
+
+    with uproot.recreate(out_path) as f:
+        f[treepath] = branches
+        color_msg(f"[{label}] Saving partition to {out_path}", color="green", indentLevel=1)
+
+
+@dask.delayed
+def write_parquet_partition(
+    partition,
+    path: str,
+    overwrite: bool = False,
+    label: str = "",
+) -> None:
+    """Write one materialised partition to a Parquet file.
+
+    Mirrors :func:`write_root_partition` for the Parquet format::
+
+        import dask
+        from dtpr.utils.io import write_parquet_partition
+
+        tasks = [
+            write_parquet_partition(events.partitions[i], f"out/part_{i}.parquet")
+            for i in range(events.npartitions)
+        ]
+        dask.compute(*tasks)
+
+    Parameters
+    ----------
+    partition : ak.Array
+        Materialised awkward array for one partition.
+    path : str
+        Output Parquet file path.
+    overwrite : bool
+        If ``False`` (default) skip writing when *path* already exists.
+    """
+    if not overwrite and os.path.exists(path):
+        color_msg(f"[{label}]Skipping existing file {path} (resume-safe)", color="yellow", indentLevel=1)
+        return
+    if not ak.fields(partition):
+        raise ValueError("No fields found in partition — nothing to write.")
+
+    color_msg(f"[{label}]Saved partition to {path}", color="green", indentLevel=1)
+    ak.to_parquet(partition, path)
+
+
 def dump_to_root(
     events,
-    path: str,
+    outfolder: str,
     treepath: str = "DTPR/TREE",
-    *,
+    file_tag: str = "",
     per_partition: bool = False,
-    ncores: int = -1,
     overwrite: bool = False,
+    ncores: int = -1,
+    label: str = "",
 ) -> None:
     """Write an event array to a new ROOT file.
 
@@ -89,8 +186,8 @@ def dump_to_root(
         The event array produced by :func:`~dtpr.base.pipeline.execute_pipeline`
         (or loaded directly from an NTuple).  If a dask-awkward array is passed,
         it is materialised by calling ``.compute()`` before writing.
-    path : str
-        Output file path, e.g. ``"output.root"``.
+    outfolder : str
+        Output folder path.
     treepath : str
         RNTuple path inside the ROOT file.  Default ``"DTPR/TREE"``.
         Use ``"/"``-separated names to create sub-directories,
@@ -129,70 +226,60 @@ def dump_to_root(
         from dtpr.utils.io import dump_to_root
 
         events = ntuple.events
-        dump_to_root(events, "processed.root", treepath="dtpr/events")
+        dump_to_root(events, "ntuples", treepath="dtpr/events")
 
         # One file per dask partition:
         dump_to_root(events, "processed.root", per_partition=True)
         # → processed_0.root, processed_1.root, …
     """
-    import uproot
-    import os
+    npartitions = events.npartitions
+    color_msg(
+        f"[{label}] 1 'ROOT' file × {npartitions} partition(s)",
+        color="blue", indentLevel=1,
+    )
 
-    try:
-        import dask_awkward as dak
-        _is_dak = isinstance(events, dak.Array)
-    except ImportError:
-        _is_dak = False
+    out_dir = os.path.join(outfolder, "roots")
+    pad = len(str(npartitions - 1))
 
-    if per_partition and _is_dak:
-        import dask
-        stem, ext = os.path.splitext(path)
-        ext = ext or ".root"
-        n = events.npartitions
-        pad = len(str(n - 1))
+    create_outfolder(out_dir)
 
-        @dask.delayed
-        def _write_partition(partition, part_path):
-            if not overwrite and os.path.exists(part_path):
-                return
-            branches = _collect_branches(partition)
-            if not branches:
-                raise ValueError(f"No fields found in partition — nothing to write.")
-            with uproot.recreate(part_path) as f:
-                f[treepath] = branches
+    # ── Build delayed task graph ─────────────────────────────────────────
+    tasks = [
+        write_root_partition(
+            events.partitions[i],
+            out_path=(
+                os.path.join(out_dir, f"rntuple{file_tag}_{str(i).zfill(pad)}.root")
+                if per_partition else os.path.join(out_dir, f"rntuple{file_tag}.root")
+            ),
+            treepath=treepath,
+            overwrite=overwrite,
+            label=label,
+        )
+        for i in range(npartitions)
+    ]
 
-        from ..utils.functions import make_dask_sched_kwargs, color_msg
-        tasks = []
-        for i in range(n):
-            part_path = f"{stem}_{str(i).zfill(pad)}{ext}"
-            if not overwrite and os.path.exists(part_path):
-                color_msg(f"  Skipping partition {i} → {os.path.basename(part_path)} (exists)", color="yellow", indentLevel=1)
-            else:
-                color_msg(f"  Writing partition {i} → {os.path.basename(part_path)}", color="purple", indentLevel=1)
-            tasks.append(_write_partition(events.partitions[i], part_path))
-        dask.compute(*tasks, **make_dask_sched_kwargs(ncores))
+    # ── Execute ──────────────────────────────────────────────────────────
+    sched_kwargs, sched_label = make_dask_sched_kwargs(ncores)
+
+    color_msg(f"[{label}] scheduler: {sched_label}", color="purple", indentLevel=1)
+    all_results = list(dask.compute(*tasks, **sched_kwargs))
+
+    # ── Per-partition: files already on disk ──────────────────────────────
+    if per_partition:
         return
 
-    # Single-file path — materialise if needed
-    if _is_dak:
-        from ..utils.functions import make_dask_sched_kwargs
-        events = events.compute(**make_dask_sched_kwargs(ncores))
-
-    branches = _collect_branches(events)
-    if not branches:
-        raise ValueError("No fields found on the events array — nothing to write.")
-
-    with uproot.recreate(path) as f:
-        f[treepath] = branches
+    # ── In-memory: reduce and write single ROOT file ──────────────────────
+    color_msg(f"[{label}] merging partitions...", color="purple", indentLevel=1)
+    _reduce_and_save(all_results, os.path.join(out_dir, f"events.parquet"))
 
 
 def dump_to_parquet(
     events,
     path: str,
-    *,
     per_partition: bool = False,
     ncores: int = -1,
     overwrite: bool = False,
+    label: str = "",
 ) -> None:
     """Persist the full event array to Parquet, preserving all nesting.
 
@@ -240,49 +327,43 @@ def dump_to_parquet(
         ntuple2 = NTuple("processed.parquet")
         ntuple3 = NTuple("processed_dir/")
     """
-    import os
+    npartitions = events.npartitions
+    color_msg(
+        f"[{label}] 1 'Parquet' file × {npartitions} partition(s)",
+        color="blue", indentLevel=1,
+    )
 
-    try:
-        import dask_awkward as dak
-        _is_dak = isinstance(events, dak.Array)
-    except ImportError:
-        _is_dak = False
+    out_dir = os.path.join(path, "parquets")
+    pad = len(str(npartitions - 1))
 
-    if per_partition and _is_dak:
-        import dask
-        os.makedirs(path, exist_ok=True)
-        n = events.npartitions
-        pad = len(str(n - 1))
+    create_outfolder(out_dir)
 
-        @dask.delayed
-        def _write_partition(partition, part_path):
-            if not overwrite and os.path.exists(part_path):
-                return
-            if not ak.fields(partition):
-                raise ValueError(f"No fields found in partition — nothing to write.")
-            ak.to_parquet(partition, part_path)
+    # ── Build delayed task graph ───────────────────────────────────────── 
 
-        from ..utils.functions import make_dask_sched_kwargs, color_msg
-        tasks = []
-        for i in range(n):
-            part_path = os.path.join(path, f"part_{str(i).zfill(pad)}.parquet")
-            if not overwrite and os.path.exists(part_path):
-                color_msg(f"  Skipping partition {i} → {os.path.basename(part_path)} (exists)", color="yellow", indentLevel=1)
-            else:
-                color_msg(f"  Writing partition {i} → {os.path.basename(part_path)}", color="purple", indentLevel=1)
-            tasks.append(_write_partition(events.partitions[i], part_path))
-        dask.compute(*tasks, **make_dask_sched_kwargs(ncores))
+    task = [
+        write_parquet_partition(
+            events.partitions[i],
+            path=(os.path.join(out_dir, f"part_{str(i).zfill(pad)}.parquet") 
+                    if per_partition else os.path.join(out_dir, f"events.parquet")
+                ),
+            overwrite=overwrite,
+            label=label,
+        )
+        for i in range(npartitions)
+    ]
+
+    # ── Execute ──────────────────────────────────────────────────────────
+    sched_kwargs, sched_label = make_dask_sched_kwargs(ncores)
+
+    color_msg(f"[{label}] scheduler: {sched_label}", color="purple", indentLevel=1)
+    all_results = dask.compute(*task, **sched_kwargs)
+
+    if per_partition:
         return
 
-    # Single-file path — materialise if needed
-    if _is_dak:
-        from ..utils.functions import make_dask_sched_kwargs
-        events = events.compute(**make_dask_sched_kwargs(ncores))
-
-    if not ak.fields(events):
-        raise ValueError("No fields found on the events array — nothing to write.")
-
-    ak.to_parquet(events, path)
+    # ── In-memory: single file ───────────────────────────────────────────────
+    color_msg(f"[{label}] merging partitions...", color="purple", indentLevel=1)
+    _reduce_and_save(all_results, os.path.join(out_dir, f"events.parquet"))
 
 
 if __name__ == "__main__":
@@ -290,22 +371,20 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("NTuple integration test")
     print("=" * 60)
-    import tempfile, os
+    import tempfile
+    from dtpr.base.ntuple import NTuple
 
-    OUTPUT = os.path.join(tempfile.gettempdir(), "dtpr_io_smoke.root")
+    OUTPUT = tempfile.gettempdir()
     TREEPATH = "DTPR/TREE"
 
-    import os
-    from dtpr.base.ntuple import NTuple
 
     NTUPLE_FILE = os.path.abspath(os.path.join(
         os.path.dirname(__file__),
         "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
     ))
-    NTUPLE_OUT = os.path.join(tempfile.gettempdir(), "dtpr_io_ntuple.root")
 
     ntuple = NTuple(NTUPLE_FILE, maxfiles=1, tree_name="dtNtupleProducer/DTTREE")
     print(f"Fields on loaded events: {ak.fields(ntuple.events)}")
 
-    dump_to_root(ntuple.events, NTUPLE_OUT, treepath=TREEPATH)
-    print(f"Written to: {NTUPLE_OUT}")
+    dump_to_root(ntuple.events, OUTPUT, treepath=TREEPATH)
+    print(f"Written to: {OUTPUT}")

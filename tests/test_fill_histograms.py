@@ -18,7 +18,7 @@ from dtpr.utils.histograms_base import Distribution, Efficiency, HistogramBase
 from dtpr.analysis.fill_histograms import (
     _show_histo_names,
     load_histos_from_config,
-    _fill_partition,
+    fill_partition,
     _reduce_and_save,
     _fill_one_dataset,
     fill_histos,
@@ -196,12 +196,12 @@ class TestLoadHistosFromConfig:
 
 
 # ---------------------------------------------------------------------------
-# _fill_partition
+# fill_partition
 # ---------------------------------------------------------------------------
 
 class TestFillPartition:
     def test_fills_and_returns_clones(self, dist_histo, simple_events):
-        delayed = _fill_partition(simple_events, [dist_histo])
+        delayed = fill_partition(simple_events, [dist_histo])
         result = delayed.compute()
 
         assert result is not None
@@ -213,7 +213,7 @@ class TestFillPartition:
         out_path = os.path.join(outdir, "existing.root")
         open(out_path, "w").close()  # create empty file
 
-        delayed = _fill_partition(simple_events, [dist_histo], out_path=out_path, overwrite=False)
+        delayed = fill_partition(simple_events, [dist_histo], out_path=out_path, overwrite=False)
         result = delayed.compute()
 
         assert result is None  # skipped
@@ -222,7 +222,7 @@ class TestFillPartition:
         out_path = os.path.join(outdir, "histograms_0.root")
         open(out_path, "w").close()  # pre-existing file
 
-        delayed = _fill_partition(simple_events, [dist_histo], out_path=out_path, overwrite=True)
+        delayed = fill_partition(simple_events, [dist_histo], out_path=out_path, overwrite=True)
         result = delayed.compute()
 
         assert result is None  # written, not returned
@@ -230,7 +230,7 @@ class TestFillPartition:
 
     def test_writes_root_file_in_per_partition_mode(self, dist_histo, simple_events, outdir):
         out_path = os.path.join(outdir, "histograms_0.root")
-        delayed = _fill_partition(simple_events, [dist_histo], out_path=out_path)
+        delayed = fill_partition(simple_events, [dist_histo], out_path=out_path)
         result = delayed.compute()
 
         assert result is None
@@ -242,14 +242,14 @@ class TestFillPartition:
             axis=simple_axis,
             func=lambda events: 1 / 0,  # always raises
         )
-        delayed = _fill_partition(simple_events, [bad_histo])
+        delayed = fill_partition(simple_events, [bad_histo])
         with pytest.warns(UserWarning, match="bad"):
             result = delayed.compute()
 
         assert result is not None  # returns even if fill failed
 
     def test_efficiency_histogram_filled(self, eff_histo, simple_events):
-        delayed = _fill_partition(simple_events, [eff_histo])
+        delayed = fill_partition(simple_events, [eff_histo])
         result = delayed.compute()
 
         assert result is not None

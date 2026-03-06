@@ -45,7 +45,6 @@ via ``--scheduler-address``; no per-command changes are needed.
 
 from __future__ import annotations
 
-import importlib
 import os
 import warnings
 from functools import reduce
@@ -53,6 +52,8 @@ from functools import reduce
 import dask
 from ..base import NTuple
 from ..base.config import RUN_CONFIG
+from importlib import import_module
+
 from ..utils.functions import color_msg, create_outfolder, make_dask_sched_kwargs
 from ..utils.histograms_base import HistogramBase, save_to_root
 
@@ -100,7 +101,7 @@ def load_histos_from_config(config=None) -> list[HistogramBase]:
 
     all_histos: list[HistogramBase] = []
     for source in sources:
-        module = importlib.import_module(source)
+        module = import_module(source)
         module_histos = getattr(module, "histos", [])
         if isinstance(module_histos, HistogramBase):
             module_histos = [module_histos]
@@ -152,25 +153,24 @@ def _reduce_and_save(
 # ---------------------------------------------------------------------------
 
 @dask.delayed
-def _fill_partition(partition_dak, histos_template, out_path=None, overwrite=False, label="") -> list[HistogramBase] | None:
-    """Materialise one dask partition and fill empty histogram clones.
+def fill_partition(partition, histos_template, out_path=None, overwrite=False, label="") -> list[HistogramBase] | None:
+    """
+    Fill histograms for a single partition (already materialized as ak.Array).
 
     Parameters
     ----------
-    partition_dak : dask_awkward.Array
-        Lazy partition.  ``.compute()`` is called inside the worker.
+    partition : ak.Array
+        Partition data. Note: when a dask_awkward.Array is passed to a @dask.delayed function,
+        dask materializes it automatically before calling the function, so this is already a plain ak.Array.
     histos_template : list[HistogramBase]
-        Template histograms.  Each worker gets its own clones via
-        :meth:`HistogramBase.empty_clone`.
-    out_path : str or None
-        **Per-partition mode**: write filled histograms to this ROOT file
-        and return ``None``.  If the file already exists it is skipped
-        (resume-safe).
-        **In-memory mode** (``None``): return the filled clones so the
-        caller can reduce them.
+        Template histograms. Each worker gets its own clones via :meth:`HistogramBase.empty_clone`.
+    out_path : str
+        **Per-partition mode**: write filled histograms to this ROOT file and return ``None``.
+        If the file already exists it is skipped (resume-safe).
+        **In-memory mode** (`""`): return the filled clones so the caller can reduce them.
     overwrite : bool
-        When ``True``, re-process and overwrite existing per-partition output
-        files instead of skipping them.  Ignored when *out_path* is ``None``.
+        When ``True``, re-process and overwrite existing per-partition output files instead of skipping them.
+        Ignored when *out_path* is ``None``.
     label : str
         Human-readable name used in log messages (dataset name or ``"inputs"``).
 
@@ -184,18 +184,14 @@ def _fill_partition(partition_dak, histos_template, out_path=None, overwrite=Fal
         color_msg(f"[{label}] Skipping existing file {out_path} (resume-safe)", color="yellow", indentLevel=1)
         return None
 
-    # When a dask_awkward.Array is passed to a @dask.delayed function, dask
-    # materialises it automatically before calling the function — so
-    # partition_dak is already a plain ak.Array here.
-
     # ── Fill clones ─────────────────────────────────────────────────────────
     clones = [h.empty_clone() for h in histos_template]
     for h in clones:
         try:
-            h.fill(partition_dak)
+            h.fill(partition)
         except Exception as exc:
             warnings.warn(
-                f"Error filling histogram {h.name!r}: {exc}",
+                f"Problem filling histogram {h.name!r}: {exc}",
                 stacklevel=2,
             )
 
@@ -257,7 +253,7 @@ def _fill_one_dataset(
 
     # ── Build delayed task graph ─────────────────────────────────────────
     tasks = [
-        _fill_partition(
+        fill_partition(
             events.partitions[i],
             histos,
             out_path=(
@@ -271,13 +267,8 @@ def _fill_one_dataset(
     ]
 
     # ── Execute ──────────────────────────────────────────────────────────
-    sched_kwargs = make_dask_sched_kwargs(ncores)
-    try:
-        from dask.distributed import get_client
-        get_client()
-        sched_label = "distributed"
-    except Exception:
-        sched_label = sched_kwargs.get("scheduler", "threaded (dask default)")
+    sched_kwargs, sched_label = make_dask_sched_kwargs(ncores)
+
     color_msg(f"[{label}] scheduler: {sched_label}", color="purple", indentLevel=1)
     all_results = list(dask.compute(*tasks, **sched_kwargs))
 

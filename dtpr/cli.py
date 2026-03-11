@@ -13,8 +13,8 @@ from .utils.functions import (
     error_handler,
     get_callable_from_src,
     create_outfolder,
+    ensure_on_syspaths,
 )
-from .utils.paths import ensure_config_on_syspath
 
 warnings.filterwarnings(action="once", category=UserWarning)
 # Set the custom warning handler
@@ -93,20 +93,15 @@ def main():
             "fill-histos",
             "dump-events",
             "merge-histos",
-            "plot-dts",
-            "plot-dt",
-            "events-visualizer",
+            "merge-roots",
             "test-cli",
-            # ---- config commands ----
-            "create-particle",
-            "create-config",
-            "create-analysis",
-            "create-histogram",
         ],
     )
 
     # Parse the command line
     args = parser.parse_args()
+
+    verbose = getattr(args, "verbose", True)
 
     if "create" not in args.command:
         change_cfg = False
@@ -122,16 +117,18 @@ def main():
                             args.config_file = entry.path
                         break
         if change_cfg:
-            color_msg(f"Using configuration file: {args.config_file}", "yellow")
+            if verbose:
+                color_msg(f"Using configuration file: {args.config_file}", "yellow")
             RUN_CONFIG.change_config_file(config_path=args.config_file)
         else:
-            color_msg(
-                f"No configuration file provided or found in the output path. Using default configuration file: {RUN_CONFIG.path}",
-                "yellow",
+            if verbose:
+                color_msg(
+                    f"No configuration file provided or found in the output path. Using default configuration file: {RUN_CONFIG.path}",
+                    "yellow",
             )
 
     # Ensure config dir and (optionally) outfolder are importable
-    ensure_config_on_syspath(RUN_CONFIG)
+    ensure_on_syspaths(RUN_CONFIG)
     if hasattr(args, "outfolder") and args.outfolder:
         sys.path.append(args.outfolder)
 
@@ -141,17 +138,16 @@ def main():
         try:
             from dask.distributed import Client
         except ImportError:
-            color_msg(
+            raise ImportError(
                 "dask.distributed is not installed. "
                 "Install it with: pip install dask[distributed]",
-                "red",
             )
-            sys.exit(1)
-        color_msg(f"Connecting to Dask scheduler: {scheduler_address}", "yellow")
+        if verbose:
+            color_msg(f"Connecting to Dask scheduler: {scheduler_address}", "yellow")
+
         with Client(scheduler_address) as _client:
-            color_msg(
-                f"Dask dashboard: {_client.dashboard_link}", "yellow"
-            )
+            if verbose:
+                color_msg(        f"Dask dashboard: {_client.dashboard_link}", "yellow")
             args.func(args)
     else:
         args.func(args)

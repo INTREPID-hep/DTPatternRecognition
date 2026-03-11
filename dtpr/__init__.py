@@ -1,2 +1,2 @@
-__version__ = "3.3.0-beta"
-__doc__ = "Set of tools to implement pattern recognition algorithms on CMS DTs"
+__version__ = "0.1.0"
+__doc__ = ""

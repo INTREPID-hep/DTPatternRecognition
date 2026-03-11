@@ -30,6 +30,11 @@ compute-tp-BX:
   type: preprocessor
   expr: "events['tps'] = ak.with_field(events['tps'], events['tps']['BX'] - 20, 'BX')"
 
+# keep only events with ≥2 genmuon ----
+select-has-genmuons:
+  type: selector
+  expr: "ak.num(events['genmuons']) > 1"
+
 # ---- level 1: depend on level-0 preprocessors ----
 
 # Filter TPs: quality >= 0
@@ -39,10 +44,6 @@ filter-tps:
   expr: "(events['tps']['quality'] >= 0)"
   needs: [compute-tp-BX]
 
-# ---- level 1: keep only events with ≥2 genmuon ----
-select-has-genmuons:
-  type: selector
-  expr: "ak.num(events['genmuons']) > 1"
 
 # ---- level 2: depend on level-1 selectors ----
 compute-muon-DR:

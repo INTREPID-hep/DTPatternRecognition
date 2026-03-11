@@ -15,87 +15,103 @@ Typical workflow
 
     # Job fails? Re-run — existing partition files are skipped automatically.
     # Merge when all partitions are done:
-    dtpr merge-histos --checkpoint-dir results/histograms/ -o results/
+    dtpr merge-histos --i results/histograms -o results/
 """
 
 from __future__ import annotations
-
 import glob
 import os
+import uproot
+import warnings
 
 from natsort import natsorted
 
 from ..utils.functions import color_msg, create_outfolder
+from ..utils.tqdm import ProgressBarFactory
+from ..base.histos import to_root
 
+def _resolve_inputs(inputs: str | list[str]) -> list[str]:
+    """Resolve input paths, supporting glob patterns."""
+    if isinstance(inputs, str):
+        inputs = [inputs]
+
+    resolved = []
+    for inp in inputs:
+        matched = glob.glob(inp)
+        if not matched:
+            raise ValueError(f"No files matched {inp!r}")
+        else:
+            resolved.extend(os.path.abspath(f) for f in matched if f.endswith(".root"))
+
+    return natsorted(resolved)
 
 def merge_histos(
-    checkpoint_dir: str,
+    inputs: str | list[str],
     outfolder: str,
     tag: str = "",
+    verbose: bool = True,
 ) -> None:
-    """Merge per-partition histogram ROOT files into a single ROOT file.
+    """Merge per-partition histogram ROOT files into a single ROOT file."""
+    if verbose:
+        color_msg("Running merge-histos...", "green")
 
-    Parameters
-    ----------
-    checkpoint_dir : str
-        Directory containing per-partition ``*.root`` histogram files
-        written by ``fill-histos --per-partition``.
-    outfolder : str
-        Output directory.  A ``histograms/`` sub-folder is created.
-    tag : str
-        String appended to the output filename,
-        e.g. ``"_v2"`` → ``histograms_v2.root``.
-    """
-    import uproot
+    # ── Define output path early so we can protect against it ───────────────
+    out_dir = os.path.abspath(os.path.join(outfolder, "histograms"))
+    create_outfolder(out_dir)  # Ensure output directory exists
+    root_path = os.path.join(out_dir, f"histograms{tag}.root")
 
-    color_msg("Running merge-histos...", "green")
+    # ── Discover ROOT files ─────────────────────────────────────────────────
+    root_files = _resolve_inputs(inputs)
 
-    # ── Discover ROOT files ──────────────────────────────────────────────────
-    pattern = os.path.join(checkpoint_dir, "*.root")
-    root_files = natsorted(glob.glob(pattern))
+    # Prevent double-counting if the user runs merge twice in the same directory!
+    if root_path in root_files:
+        warnings.warn(f"Output file {root_path!r} found among input files. It will be excluded from merging to prevent double-counting.")
+        root_files.remove(root_path)
 
     if not root_files:
-        color_msg(
-            f"No ROOT files found in {checkpoint_dir!r}.",
-            color="red", indentLevel=1,
-        )
-        return
+        raise ValueError(f"No ROOT files found in {inputs!r}")
 
-    color_msg(
-        f"Found {len(root_files)} file(s) in {checkpoint_dir!r}.",
-        color="blue", indentLevel=1,
-    )
+    if verbose:
+        color_msg(f"Found {len(root_files)} file(s)", color="blue", indentLevel=1)
 
-    # ── Load and sum histograms key-by-key ───────────────────────────────────
+    # ── Load and sum histograms key-by-key ──────────────────────────────────
     merged: dict = {}
-    for path in root_files:
-        try:
-            with uproot.open(path) as f:
-                for key in f.keys(cycle=False):
-                    h = f[key].to_hist()
-                    merged[key] = (merged[key] + h) if key in merged else h
-        except Exception as exc:
-            color_msg(
-                f"Skipping corrupt file {path!r}: {exc}",
-                color="yellow", indentLevel=2,
-            )
+
+    desc = color_msg("Merging partitions", "purple", 1, return_str=True)
+    
+    # factory in eager mode for a synchronous progress bar
+    with ProgressBarFactory(
+        mode="eager", 
+        show=verbose, 
+        total=len(root_files), 
+        desc=desc, 
+        ascii=True, 
+        unit=" file"
+    ) as pbar:
+        for path in root_files:
+            try:
+                with uproot.open(path) as f:
+                    for key in f.keys(cycle=False):
+                        h = f[key].to_hist()
+                        # Sum histograms (or initialize if first time seeing this key)
+                        merged[key] = (merged[key] + h) if key in merged else h
+            except Exception as exc:
+                if verbose:
+                    color_msg(f"Skipping corrupt file {path!r}: {exc}", color="yellow", indentLevel=2)
+
+            pbar.update(1)
 
     if not merged:
-        color_msg("No valid histograms to merge.", color="red", indentLevel=1)
+        if verbose:
+            color_msg("No valid histograms to merge.", color="red", indentLevel=1)
         return
 
-    color_msg(
-        f"Merged {len(root_files)} file(s) × {len(merged)} histogram(s).",
-        color="blue", indentLevel=1,
-    )
+    if verbose:
+        color_msg(f"Merged {len(root_files)} file(s) × {len(merged)} histogram(s).", color="blue", indentLevel=1)
 
-    # ── Write merged ROOT file ───────────────────────────────────────────────
-    out_path = os.path.join(outfolder, "histograms")
-    create_outfolder(out_path)
-    root_path = os.path.join(out_path, f"histograms{tag}.root")
-    with uproot.recreate(root_path) as f:
-        for key, h in merged.items():
-            f[key] = h
-    color_msg(f"Histograms saved → {root_path}", color="green", indentLevel=1)
+    # ── Write merged ROOT file ──────────────────────────────────────────────
+    to_root(merged, root_path)
 
-    color_msg("Done!", color="green")
+    if verbose:
+        color_msg(f"Histograms saved → {root_path}", color="green", indentLevel=1)
+        color_msg("Done!", color="green")

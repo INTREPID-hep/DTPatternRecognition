@@ -1,85 +1,69 @@
 """
-NTuple — file loader using coffea + Awkward Arrays.
+NTuple — file loader for ROOT and Parquet files using coffea and dask-awkward.
 
-Loading
--------
-**ROOT** (``.root`` files):
+Overview:
+---------
+ROOT (.root):
+    - Parses schema from config or per-dataset key.
+    - Optionally partitions fileset if step_size is set.
+    - Loads events lazily with NanoEventsFactory (dask mode).
+    - Injects constant fields from schema.
+    - Executes pre-steps pipeline.
 
-1. Parse ``Schema:`` from config (or per-dataset ``schema:`` key) →
-   build allow-list + PatternSchema subclass.
-2. Optionally partition the fileset (via ``coffea.dataset_tools``) when
-   ``step_size`` is set.
-3. Call ``NanoEventsFactory.from_root`` in ``mode='dask'`` (fully lazy).
-4. Inject constant fields declared in the Schema.
-5. Execute the ``pre-steps:`` pipeline.
+Parquet (.parquet):
+    - Loads lazily with dask_awkward.from_parquet.
+    - Executes pre-steps pipeline.
 
-**Parquet** (``.parquet`` files):
+Input resolution:
+    - inputs: explicit files → dak.Array
+    - datasets: named filesets from config → dict[str, dak.Array]
+    - neither: loads all filesets from config → dict[str, dak.Array]
 
-1. Read lazily with ``dask_awkward.from_parquet``.
-2. Execute the ``pre-steps:`` pipeline.
+Multiple datasets:
+    - events is dict[str, dak.Array], keeping datasets separate.
 
-Input resolution
-----------------
-1. *inputs* given → used directly → ``events`` is ``dak.Array``.
-2. *datasets* given → each named entry in ``config.filesets`` loaded
-   independently → ``events`` is ``dict[str, dak.Array]``.
-3. Neither given → load **all** filesets from config, same as
-   ``datasets=[]`` → ``events`` is ``dict[str, dak.Array]``.
+Per-dataset config keys:
+    - treename: tree path
+    - schema: schema override
+    - step_size: entries per partition
+    - split_row_groups: Parquet row-group splitting
+    - metadata: arbitrary dict attached to ntuple.metadata[name]
 
-Multiple datasets
------------------
-``events`` is a ``dict[str, dak.Array]`` so each dataset stays separate
-and identifiable:
+tree_name in constructor is a global override, can be a list[str] matching datasets.
 
-    ntuple = NTuple(datasets=["DY", "Zprime"])
-    dy_events     = ntuple.events["DY"]
-    zprime_events = ntuple.events["Zprime"]
-
-    ntuple = NTuple(datasets=[])   # load ALL filesets defined in config
-
-Per-dataset options (keys inside a ``filesets:`` block entry):
-  - ``treename``        : tree path for this dataset
-  - ``schema``          : schema override (dict, str, or None)
-  - ``step_size``       : entries per partition
-  - ``split_row_groups``: Parquet row-group splitting
-  - ``metadata``        : arbitrary dict attached to ``ntuple.metadata[name]``
-
-``tree_name`` in the constructor is a **global override** and may also be
-a ``list[str]`` whose entries correspond one-to-one with *datasets*.
-
-Public interface::
-
+Public usage:
     ntuple = NTuple("/path/to/dir/", tree_name="dtNtuple/DTTREE")
     ntuple = NTuple(datasets=["DY", "Zprime"])
-    ntuple = NTuple(datasets=[])
+    ntuple = NTuple()
 
     ntuple.events                            # dak.Array or dict[str, dak.Array]
     ntuple.events["digis"]["BX"].compute()   # single dataset
     ntuple.events["DY"]["digis"]["BX"].compute()  # multi-dataset
 
-Input formats (for *inputs* / fileset ``files:`` values):
-  - ``"file.root"``                              single ROOT file
-  - ``"/dir/*.root"``                            glob pattern
-  - ``"/dir/"``                                  directory (``*.root`` or ``*.parquet``)
-  - ``["a.root", "b.root"]``                     list of files
-  - ``{"file.root": "tree", ...}``              dict (uproot-native)
-  - ``"output.parquet"``                         single Parquet file
-  - ``["a.parquet", "b.parquet"]``               list of Parquet files
+Input formats:
+    - "file.root"                              single ROOT file
+    - "/dir/*.root"                            glob pattern
+    - "/dir/"                                  directory (finds *.root or *.parquet)
+    - ["a.root", "b.root"]                     list of files
+    - {"file.root": "tree", ...}              dict (uproot-native)
+    - {"file.root": {"object_path": "ttree_v1", "steps": [[0, 10000], [15000, 20000], …]}},
+    - "output.parquet"                         single Parquet file
+    - ["a.parquet", "b.parquet"]               list of Parquet files
 """
 
 from __future__ import annotations
 
 import glob as _glob
 import os
-
+import dask_awkward as dak
+from pathlib import Path
 from coffea.nanoevents import NanoEventsFactory
 from natsort import natsorted
 
-from .config import RUN_CONFIG
+from .config import RUN_CONFIG, Config
 from .schema import PatternSchema, _branches_from_schema, _inject_constants
 from .pipeline import execute_pipeline
-from ..utils.functions import color_msg
-from ..utils.paths import config_dir as _config_dir, resolve_file_paths, ensure_config_on_syspath
+from ..utils.functions import color_msg, ensure_on_syspaths
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -89,102 +73,85 @@ def _format_input(
     files,
     tree_path: str | None,
     max_files: int = -1,
-):
+    base_dir: str | None = None,
+    parquet: bool = False,
+    root: bool = True,
+) -> dict:
     """
-    Normalize files into an uproot-native {file: tree_path} dict.
-
-    Handles:
-      - dict: {filepath: tree_spec} (tree_spec can be a string or {"object_path": ..., steps: ...} dict)
-      - list: [filepath, ...], ["file:tree", ...], or [{file: tree}, ...]
-      - str: single path, glob pattern, directory, or "file.root:tree"
-
-    tree_path always takes priority over any tree name embedded in the path ("file.root:tree")
-    or declared per-file in a dict spec ({"object_path": "tree"}). When tree_path is None,
-    the embedded/per-file value is used as the fallback.
-
-    The function is recursive: list elements and dict values are each resolved by delegating
-    back here, so every branch ultimately reaches the str leaf which handles glob expansion.
+    Normalize files into an uproot-native {file: tree_path} dict. 
+    For parquet inputs, tree_path is always None and ignored.
     """
-    # ── dict: {filepath: tree_spec} ─────────────────────────────────────────
+    # ── dict: {filepath: tree_spec} ──────────────────────────────────────────
     if isinstance(files, dict):
         result = {}
-        for file_path, tree_spec in files.items():
-            # Extract embedded tree from plain string or {"object_path": ...} dict
-            embedded = (
-                tree_spec.get("object_path") if isinstance(tree_spec, dict)
-                else tree_spec
-            )
-            effective_tree = tree_path if tree_path is not None else embedded
-            result[file_path] = effective_tree
-        return result
+        for file_path, tree_spec in files.items(): 
+            effective_tree = tree_path if tree_path is not None else tree_spec
+            # Recursion: pass all flags, but disable max_files locally to slice at the end
+            result.update(_format_input(
+                file_path, effective_tree, max_files=-1, base_dir=base_dir, 
+                parquet=parquet, root=root
+            ))
+        return dict(list(result.items())[:max_files]) if max_files > 0 else result
 
-    # ── list: [filepath, ...] or ["file:tree", ...] or [{file: tree}, ...] ──
+    # ── list: [filepath, ...] or [{"file": "tree"}, ...] ───────────────────
     if isinstance(files, list):
-        files = files[:max_files] if max_files > 0 else files
         result = {}
         for item in files:
-            result.update(_format_input(item, tree_path, max_files))
-        return result
+            result.update(_format_input(
+                item, tree_path, max_files=-1, base_dir=base_dir, 
+                parquet=parquet, root=root
+            ))
+        return dict(list(result.items())[:max_files]) if max_files > 0 else result
 
-    # ── str: single path, glob pattern, or "file.root:tree" ─────────────────
-    if isinstance(files, str):
-        glob_part = files
+    # ── str: single path, glob pattern, Path, or "file.root:tree" ──────────
+    if isinstance(files, (str, Path)):
+        files_str = str(files)
         effective_tree = tree_path
-        if os.path.isdir(files):
-            glob_part = os.path.join(files, "*.root")
-        elif ":" in files:
-            glob_part, embedded = files.rsplit(":", 1)
-            effective_tree = tree_path if tree_path is not None else embedded
 
-        if not effective_tree:
+        # 1. Strip embedded tree BEFORE path resolution
+        if ":" in files_str and root:
+            files_str, embedded_tree = files_str.rsplit(":", 1)
+            effective_tree = tree_path if tree_path is not None else embedded_tree
+
+        if not effective_tree and root:
             raise ValueError(
-                f"No tree name provided. Supply it via --tree TREEPATH, "
-                "fileset 'treename:' key, or embedding it in the file(s) path(s) 'file.root:treepath'."
+                "No tree name provided. Supply it via --tree TREEPATH, "
+                "fileset 'treename:' key, or embed it in the file path 'file.root:treepath'."
             )
 
-        file_list = natsorted(_glob.glob(glob_part))
+        # 2. Resolve absolute path
+        _base_dir = os.getcwd() if base_dir is None else os.path.abspath(base_dir)
+        absolute_path = os.path.abspath(os.path.join(_base_dir, files_str))
+
+        # 3. Handle directories
+        if os.path.isdir(absolute_path):
+            ext = "*.root" if root else "*.parquet"
+            absolute_path = os.path.join(absolute_path, ext)
+
+        # 4. Glob expansion
+        file_list = natsorted(_glob.glob(absolute_path))
+
         if not file_list:
-            raise FileNotFoundError(f"No .root files found in directory: {files}")
-        if max_files > 0:
-            file_list = file_list[:max_files]
+            ext_name = ".root" if root else ".parquet"
+            raise FileNotFoundError(f"No {ext_name} file(s) found at {absolute_path}")
 
-        return {f: effective_tree for f in file_list}
+        # If a glob expands to multiple files, process them as a list to ensure flattening
+        if len(file_list) > 1:
+            return _format_input(
+                file_list, effective_tree, max_files=max_files, base_dir=_base_dir, 
+                parquet=parquet, root=root
+            )
 
-
-def _is_parquet_input(input_path) -> bool:
-    """Return True if *input_path* points at parquet data.
-
-    Handles: single ``.parquet`` file, list of ``.parquet`` files, or a
-    directory that contains at least one ``.parquet`` file.
-    """
-    if isinstance(input_path, str):
-        if input_path.endswith(".parquet"):
-            return True
-        if os.path.isdir(input_path):
-            try:
-                return any(
-                    f.endswith(".parquet")
-                    for f in os.listdir(input_path)
-                )
-            except OSError:
-                return False
-        return False
-    if isinstance(input_path, list):
-        return bool(input_path) and all(
-            str(p).endswith(".parquet") for p in input_path
-        )
-    return False
-
+        # Single resolved file
+        return {file_list[0]: effective_tree if root else None}
 
 def _resolve_schema(schema_section):
-    """Resolve a raw schema value into ``(schema_section, schema_cls, uproot_opts)``.
-
-    Parameters
-    ----------
-    schema_section : None, str, or dict
-        - ``None``  → coffea ``BaseSchema`` (reads all branches).
-        - ``str``   → named coffea schema class (e.g. ``"NanoAODSchema"``).
-        - ``dict``  → PatternSchema config (branch allow-list + constants).
+    """
+    Resolve a raw schema value into (schema_section, schema_cls, uproot_opts).
+    schema_section: None, str, or dict
+        - None: coffea BaseSchema (reads all branches)
+        - str: named coffea schema class / config section (e.g. "SchemaA" or "MySchema")
+        - dict: PatternSchema config (branch allow-list + constants)
     """
     uproot_opts: dict = {}
 
@@ -208,25 +175,10 @@ def _resolve_schema(schema_section):
 
 
 def _partition_inputs(files, step_size: int):
-    """Run ``coffea.dataset_tools.preprocess`` and return the files dict.
-
-    Converts the internal ``{file: treepath}`` dict into a coffea fileset,
-    preprocesses it (discovers entry counts and computes chunk boundaries),
-    and returns the preprocessed files dict ready for
-    ``NanoEventsFactory.from_root``.
-
-    Parameters
-    ----------
-    files : str or dict
-        A ``"file:tree"`` string or ``{file: treepath, ...}`` dict as
-        produced by :func:`_format_input`.
-    step_size : int
-        Target number of entries per partition.
-
-    Returns
-    -------
-    dict
-        Coffea-style ``{filepath: {object_path, steps, ...}}`` dict.
+    """
+    Partition ROOT files using coffea.dataset_tools.preprocess.
+    Converts {file: treepath} dict into a coffea fileset, discovers entry counts,
+    computes chunk boundaries, and returns the preprocessed files dict.
     """
     from coffea.dataset_tools import preprocess
 
@@ -252,18 +204,11 @@ def _load_from_root(
     step_size: int | None = None,
     schema_section=None,
 ):
-    """Build a lazy dask-awkward graph from an already-formatted ROOT fileset.
-
-    Parameters
-    ----------
-    formatted_files : dict
-        ``{abs_path: treepath}`` dict as produced by :func:`_format_input`.
-    schema_section : None, str, or dict, optional
-        Per-call schema override. ``None`` (default) falls back to
-        ``config.Schema``.
-    step_size : int or None
-        If given, ``coffea.dataset_tools.preprocess`` splits each file
-        into chunks of approximately *step_size* entries.
+    """
+    Build a lazy dask-awkward graph from a formatted ROOT fileset.
+    formatted_files: {abs_path: treepath} dict from _format_input.
+    schema_section: schema override (None falls back to config.Schema).
+    step_size: partitions files if set.
     """
     if schema_section is not None:
         # str → look up as named schema in config first, else treat as coffea class name
@@ -295,47 +240,35 @@ def _load_from_root(
     return events
 
 
-def _load_from_parquet(files, *, split_row_groups: bool | None = None):
-    """Load parquet input as a lazy ``dask_awkward.Array``.
-
-    Parameters
-    ----------
-    split_row_groups : bool or None
-        If ``True``, each Parquet row group becomes its own dask
-        partition.  If ``False``, each file is one partition.
-        ``None`` (default) lets ``dask_awkward`` decide.
-    """
-    import dask_awkward as dak
-    kwargs = {}
-    if split_row_groups is not None:
-        kwargs["split_row_groups"] = split_row_groups
-    return dak.from_parquet(files, **kwargs)
-
-
 # ---------------------------------------------------------------------------
 # Fileset inspector
 # ---------------------------------------------------------------------------
 
 def _print_files_block(loaded_files: dict, ds_treename: str = "", max_files: int = 3) -> None:
-    """Render the indented file listing for one dataset block.
-
-    *loaded_files* is always a ``{abs_path: tree_or_none}`` dict as stored in
-    ``NTuple._loaded_files``.  Per-file tree annotations are shown only when
-    they differ from *ds_treename*.
     """
-    items  = list(loaded_files.items())
-    show   = items if max_files < 0 else items[:max_files]
+    Render the indented file listing for one dataset block.
+    Shows up to max_files, with tree name annotation if different from dataset tree.
+    """
+    if not loaded_files:
+        return
+
+    items = list(loaded_files.items())
+    show = items if max_files < 0 else items[:max_files]
     hidden = len(items) - len(show)
 
     for i, (path, file_tree) in enumerate(show):
-        is_last   = (i == len(show) - 1) and hidden == 0
+        # If there are hidden files, the last visible file still gets a "├"
+        # because the "└" is reserved for the "+X more" line.
+        is_last = (i == len(show) - 1) and hidden == 0
         connector = "└" if is_last else "├"
-        fname     = os.path.basename(path)
-        tree_part = (
-            color_msg(f"  →  {file_tree}", "purple", return_str=True)
-            if file_tree and file_tree != ds_treename
-            else ""
-        )
+        
+        fname = os.path.basename(path)
+        
+        # Only show the tree name if it differs from the parent dataset tree
+        tree_part = ""
+        if file_tree and file_tree != ds_treename:
+            tree_part = color_msg(f"  →  {file_tree}", "purple", return_str=True)
+            
         print(
             color_msg(f"      {connector}  ", "cyan", return_str=True)
             + color_msg(fname, "white", return_str=True)
@@ -345,103 +278,100 @@ def _print_files_block(loaded_files: dict, ds_treename: str = "", max_files: int
     if hidden > 0:
         color_msg(f"      └  … +{hidden} more", "cyan")
 
-
-def _print_dataset_block(ds_name: str, loaded_files: dict, ds_cfg: dict, max_files: int = 3, indent: int = 0) -> None:
-    """Print the header, info line, and file listing for one dataset entry.
-
-    *loaded_files* is the ``{abs_path: tree}`` dict from ``NTuple._loaded_files``.
-    *ds_cfg* is the raw YAML entry, used only for metadata and display options.
+def _print_dataset_block(
+    ds_name: str, 
+    loaded_files: dict, 
+    npart: int | str,
+    ds_cfg: dict | None = None, 
+    max_files: int = 3, 
+    indent: int = 0
+) -> None:
     """
-    meta        = ds_cfg.get("metadata") or {}
+    Print the header, info line, and file listing for one dataset or input block.
+    Shows dataset name, file count, config info, file listing, and partition count.
+    """
+    ds_cfg = ds_cfg or {}
+    meta = ds_cfg.get("metadata", {})
+    
+    # Resolve tree name for display
     ds_treename = ds_cfg.get("treename") or ds_cfg.get("tree_name") or ""
     if not ds_treename and loaded_files:
         trees = {t for t in loaded_files.values() if t}
         if len(trees) == 1:
             ds_treename = next(iter(trees))
-    n       = len(loaded_files)
-    label   = meta.get("label", "")
+            
+    n = len(loaded_files)
+    label = meta.get("label", "")
     version = meta.get("version", "")
-    tag     = (f"  {label}" if label else "") + (f"  [v{version}]" if version else "")
+    tag = (f"  {label}" if label else "") + (f"  [v{version}]" if version else "")
 
+    # 1. Print Header
+    icon = "  ▸ " if ds_name != "inputs" else "▸ "
     print(
-        color_msg("  ▸ ", "cyan", return_str=True, indentLevel=indent)
+        color_msg(icon, "cyan", return_str=True, indentLevel=indent)
         + color_msg(ds_name, "yellow", bold=True, return_str=True)
         + color_msg(f"  ({n} file{'s' if n != 1 else ''})", "white", return_str=True)
         + color_msg(tag, "white", return_str=True)
     )
-    info_parts = [
-        *([ f"tree: {ds_treename}"] if ds_treename else []),
-        *([ f"step_size={ds_cfg['step_size']}"] if ds_cfg.get("step_size") else []),
-        *([ "split_row_groups=True"] if ds_cfg.get("split_row_groups") else []),
-    ]
+
+    # 2. Print Config Info (cleaner list construction)
+    info_parts = []
+    if ds_treename: 
+        info_parts.append(f"tree: {ds_treename}")
+    if ds_cfg.get("step_size"): 
+        info_parts.append(f"step_size={ds_cfg['step_size']}")
+    if ds_cfg.get("split_row_groups"): 
+        info_parts.append("split_row_groups=True")
+
     if info_parts:
         color_msg("      " + "  ·  ".join(info_parts), "purple", indentLevel=indent)
+        
+    # 3. Print Files and Partitions
     _print_files_block(loaded_files, ds_treename, max_files)
-
-
+    
+    # Adjust indentation based on whether this is a nested dataset or the root input
+    part_indent = indent + 3 if ds_name != "inputs" else indent
+    color_msg(f"      {npart} partition(s)", "green", indentLevel=part_indent)
 # ---------------------------------------------------------------------------
 # NTuple class
 # ---------------------------------------------------------------------------
 
 class NTuple:
     """
-    NTuple loader.
+    NTuple loader for ROOT and Parquet files.
 
-    Loads ROOT files lazily via ``coffea.NanoEventsFactory`` and Parquet
-    files lazily via ``dask_awkward.from_parquet``.
+    Loads ROOT files lazily via coffea.NanoEventsFactory or Parquet files via dask_awkward.from_parquet.
 
-    Input resolution
-    ~~~~~~~~~~~~~~~~
-    - *inputs* given → explicit files → ``events`` is ``dak.Array``.
-    - *datasets* given → named filesets from config → ``events`` is
-      ``dict[str, dak.Array]`` (each dataset stays separate).
-    - Neither given → load **all** filesets from config, same as
-      ``datasets=[]`` → ``events`` is ``dict[str, dak.Array]``.
+    Input resolution:
+        - inputs: explicit files → dak.Array
+        - datasets: named filesets from config → dict[str, dak.Array]
+        - neither: loads all filesets from config → dict[str, dak.Array]
 
-    Multiple datasets
-    -----------------
-    ``events`` is a ``dict[str, dak.Array]`` that keeps every dataset
-    individually accessible:
+    Multiple datasets:
+        - events is dict[str, dak.Array], keeping datasets separate.
 
-        ntuple = NTuple(datasets=["DY", "Zprime"])
-        ntuple.events["DY"]["digis"]["BX"].compute()
+    Per-dataset config keys:
+        - treename: tree path
+        - schema: schema override
+        - step_size: entries per partition
+        - split_row_groups: Parquet row-group splitting
+        - metadata: arbitrary dict attached to ntuple.metadata[name]
 
-        ntuple = NTuple(datasets=[])   # load ALL filesets from config
+    Parameters:
+        inputs: str, list, dict, or None (explicit input path, mutually exclusive with datasets)
+        maxfiles: int (cap on files per dataset, -1 = all)
+        datasets: str, list[str], or None (named datasets to load, [] = all filesets)
+        tree_name: str | list[str] | None (TTree path, str = same for all, list = one per dataset)
+        step_size: int (ROOT: entries per partition)
+        split_row_groups: bool (Parquet: one partition per row group)
+        root: bool (load ROOT files)
+        parquet: bool (load Parquet files)
+        CONFIG: Config (defaults to RUN_CONFIG)
+        verbose: bool (print info summary)
 
-    Per-dataset YAML keys (inside a ``filesets:`` block entry):
-      - ``treename``        : tree path for this dataset
-      - ``schema``          : schema override (dict, str, or None)
-      - ``step_size``       : entries per partition
-      - ``split_row_groups``: Parquet row-group splitting
-      - ``metadata``        : arbitrary dict → ``ntuple.metadata[name]``
-
-    Parameters
-    ----------
-    inputs : str, list, dict, or None
-        Explicit input path. Mutually exclusive with *datasets*.
-    maxfiles : int, optional
-        Cap on files per dataset (``-1`` = all).
-    datasets : str, list[str], or None, optional
-        Named datasets to load.  A bare string is treated as a single-element
-        list.  ``[]`` → all filesets in config.
-        When given, ``events`` / ``metadata`` are dicts keyed by name.
-    tree_name : str | list[str] | None, optional
-        TTree path.  ``str`` → same for all datasets.  ``list[str]`` →
-        one entry per dataset (must match *datasets* length).  Overrides
-        fileset ``treename:`` keys.
-    step_size : int, optional
-        ROOT: entries per partition (triggers ``preprocess``).
-    split_row_groups : bool, optional
-        Parquet: one partition per row group.
-    CONFIG : Config, optional
-        Defaults to global ``RUN_CONFIG``.
-
-    Attributes
-    ----------
-    events : dak.Array or dict[str, dak.Array]
-        Single lazy array or per-dataset mapping.
-    metadata : dict or dict[str, dict]
-        Flat dict (single dataset) or ``{name: {…}, …}`` (multi).
+    Attributes:
+        events: dak.Array or dict[str, dak.Array] (single lazy array or per-dataset mapping)
+        metadata: dict or dict[str, dict] (flat dict or per-dataset mapping)
     """
 
     def __init__(
@@ -452,85 +382,104 @@ class NTuple:
         tree_name: str | list[str] | None = None,
         step_size: int | None = None,
         split_row_groups: bool | None = None,
-        CONFIG=None,
+        root: bool = False,
+        parquet: bool = False,
+        CONFIG: Config | None = None,
+        verbose: bool = True,
     ):
-        self.CONFIG    = CONFIG if CONFIG is not None else RUN_CONFIG
-        self._maxfiles = maxfiles
+        if not (root ^ parquet): # xor
+            raise ValueError("Either root or parquet must be True, both can not be True or False.")
 
         if inputs is not None and datasets is not None:
             raise ValueError("'inputs' and 'datasets' are mutually exclusive.")
 
-        # ── explicit inputs: bypass all dataset resolution ────────────────
-        if inputs is not None:
+        self.CONFIG    = CONFIG if CONFIG is not None else RUN_CONFIG
+        ensure_on_syspaths(self.CONFIG)
+        self._maxfiles = maxfiles
+
+        self.events:        dict = {}
+        self.metadata:      dict = {}
+        self._loaded_files: dict = {}
+
+        # ── 1. Build a unified list of tasks to load ──────────────────────────
+        load_tasks = []
+        is_single_input = inputs is not None
+
+        if is_single_input:
             if isinstance(tree_name, list):
                 raise ValueError(
                     "tree_name as a list is only supported with 'datasets'. "
                     "Pass a single string when using 'inputs'."
                 )
-            self.metadata      = {}
-            self._loaded_files = {}
-            ensure_config_on_syspath(self.CONFIG)
-            self.events = self._load_events(inputs, tree_name, step_size, split_row_groups, name="inputs")
-            self._loaded_files = self._loaded_files["inputs"]
+            load_tasks.append({
+                "name": "inputs",
+                "files": inputs,
+                "tree": tree_name.lstrip("/") if tree_name else tree_name,
+                "step": step_size,
+                "split_rg": split_row_groups,
+                "schema": None,
+                "base_dir": None,
+                "metadata": {}
+            })
+        else:
+            filesets = getattr(self.CONFIG, "filesets", None) or {}
+            if not filesets:
+                raise ValueError("No input path provided and no 'filesets' section in config.")
+
+            # Normalize datasets
+            if not datasets:
+                datasets = list(filesets.keys())
+            elif isinstance(datasets, str):
+                datasets = [datasets]
+            elif not (isinstance(datasets, list) and all(isinstance(d, str) for d in datasets)):
+                raise ValueError(f"Invalid 'datasets' value: {datasets!r}. Must be a string or list of strings.")
+
+            invalid = [name for name in datasets if name not in filesets]
+            if invalid:
+                raise KeyError(f"Dataset(s) {invalid} not found in config filesets. Available: {list(filesets.keys())}")
+
+            if isinstance(tree_name, list) and len(tree_name) != len(datasets):
+                raise ValueError(f"tree_name list length ({len(tree_name)}) must match datasets length ({len(datasets)}).")
+            
+            tree_names = tree_name if isinstance(tree_name, list) else [tree_name] * len(datasets)
+            base_dir = self.CONFIG.path
+
+            for ds_name, ds_tree in zip(datasets, tree_names):
+                ds_cfg = filesets[ds_name]
+                if not ds_cfg.get("files"):
+                    raise ValueError(f"Dataset '{ds_name}' has no 'files' key.")
+                
+                load_tasks.append({
+                    "name": ds_name,
+                    "files": ds_cfg["files"],
+                    "tree": ds_tree if ds_tree is not None else ds_cfg.get("treename"),
+                    "step": step_size if step_size is not None else ds_cfg.get("step_size"),
+                    "split_rg": split_row_groups if split_row_groups is not None else ds_cfg.get("split_row_groups"),
+                    "schema": ds_cfg.get("schema"),
+                    "base_dir": base_dir,
+                    "metadata": ds_cfg.get("metadata", {})
+                })
+
+        # ── 2. Execute loading ───────────────────────────────
+        for task in load_tasks:
+            name = task["name"]
+            self._loaded_files[name] = _format_input(
+                task["files"], tree_path=task["tree"], max_files=maxfiles, 
+                base_dir=task["base_dir"], root=root, parquet=parquet
+            )
+            self.events[name] = self._load_events(
+                self._loaded_files[name], step_size=task["step"], split_row_groups=task["split_rg"], 
+                schema=task["schema"], name=name, root=root, parquet=parquet
+            )
+            if not is_single_input:
+                self.metadata[name] = task["metadata"]
+
+        # ── 3. Post-process and print info ────────────────────────────────────
+        if is_single_input:
+            self.events = self.events["inputs"]  # Flatten dict to single dak.Array for explicit inputs
+
+        if verbose:
             self.info()
-            return
-
-        # ── resolve filesets once ─────────────────────────────────────────
-        filesets = getattr(self.CONFIG, "filesets", None) or {}
-        if not filesets:
-            raise ValueError(
-                "No input path provided and no 'filesets' section in config."
-            )
-
-        # ── normalise datasets → always a non-empty list ──────────────────
-        if isinstance(datasets, str):
-            datasets = [datasets]
-
-        if not datasets:  # None or []  →  load all
-            datasets = list(filesets.keys())
-
-        # ── validate dataset names ────────────────────────────────────────
-        for name in datasets:
-            if name not in filesets:
-                raise KeyError(
-                    f"Dataset '{name}' not found in config filesets. "
-                    f"Available: {list(filesets.keys())}"
-                )
-
-        # ── per-dataset tree_name (list → one per dataset, else broadcast) ─
-        if isinstance(tree_name, list) and len(tree_name) != len(datasets):
-            raise ValueError(
-                f"tree_name list length ({len(tree_name)}) must match "
-                f"datasets length ({len(datasets)})."
-            )
-        tree_names = tree_name if isinstance(tree_name, list) else [tree_name] * len(datasets)
-
-        # ── load ──────────────────────────────────────────────────────────
-        ensure_config_on_syspath(self.CONFIG)
-        base_dir = _config_dir(self.CONFIG)
-
-        events_map:        dict = {}
-        meta_map:          dict = {}
-        self._loaded_files: dict = {}
-        for ds_name, ds_tree in zip(datasets, tree_names):
-            ds_cfg    = filesets[ds_name]
-            raw_files = ds_cfg.get("files")
-            if not raw_files:
-                raise ValueError(f"Dataset '{ds_name}' has no 'files' key.")
-            files = resolve_file_paths(raw_files, base_dir)
-            # per-dataset fallbacks: constructor args win, then ds_cfg keys
-            eff_tree     = ds_tree          if ds_tree is not None          else ds_cfg.get("treename")
-            eff_step     = step_size        if step_size is not None        else ds_cfg.get("step_size")
-            eff_split_rg = split_row_groups if split_row_groups is not None else ds_cfg.get("split_row_groups")
-            eff_schema   = ds_cfg.get("schema")
-            events_map[ds_name] = self._load_events(
-                files, eff_tree, eff_step, eff_split_rg, schema=eff_schema, name=ds_name,
-            )
-            meta_map[ds_name] = ds_cfg.get("metadata", {})
-
-        self.events   = events_map
-        self.metadata = meta_map
-        self.info()
 
     # ------------------------------------------------------------------
     # Internal loading
@@ -539,84 +488,53 @@ class NTuple:
     def _load_events(
         self,
         files,
-        tree_name: str | None,
         step_size: int | None,
         split_row_groups: bool | None,
         schema=None,
         name: str = "inputs",
-        verbose: bool = True,
+        root: bool = False,
+        parquet: bool = False,
     ):
         """Format files, load (ROOT or Parquet), apply pre-steps → ``dak.Array``.
-
-        Side-effect: populates ``self._loaded_files[name]`` with the resolved
-        ``{abs_path: tree_or_none}`` dict so callers never need a tuple return.
         """
-        if tree_name:
-            tree_name = tree_name.lstrip("/")
-
-        if _is_parquet_input(files):
-            # Normalize for display; pass original paths to loader
-            if isinstance(files, str):
-                self._loaded_files[name] = {files: None}
-            elif isinstance(files, list):
-                self._loaded_files[name] = {f: None for f in files}
-            else:
-                self._loaded_files[name] = {}
-            events = _load_from_parquet(files, split_row_groups=split_row_groups)
+        if parquet:
+            # For Parquet, we ignore tree names so only keys (file paths) are relevant.
+            events = dak.from_parquet(list(files.keys()), split_row_groups=split_row_groups)
         else:
-            formatted = _format_input(files, tree_name, self._maxfiles)
-            self._loaded_files[name] = formatted
             events = _load_from_root(
-                formatted, self.CONFIG,
+                files, self.CONFIG,
                 step_size=step_size, schema_section=schema,
             )
 
         pre_steps = getattr(self.CONFIG, "pre-steps", None) or {}
-        return execute_pipeline(events, pre_steps, dataset=name if name != "inputs" else None)
+
+        if pre_steps:
+            return execute_pipeline(events, pre_steps, dataset=name if name != "inputs" else None)
+
+        return events
+
 
     def info(self, max_files: int = 3, indent: int = -1) -> None:
-        """Print a human-readable summary of the loaded NTuple.
-
-        **Inputs mode** (explicit ``inputs=`` path): shows the files passed
-        in and the resulting partition count.
-
-        **Filesets mode** (``datasets=`` or config-driven): shows only the
-        datasets that were loaded, then appends per-dataset partition counts.
-
-        Parameters
-        ----------
-        max_files : int, optional
-            File paths to show per dataset / inputs block.  Default 3.
         """
+        Print a human-readable summary of the loaded NTuple.
+        Shows loaded datasets, file listing, and partition counts.
+        """
+        
+        # ── filesets mode ─────────────────────────────────────────────
         if isinstance(self.events, dict):
-            # ── filesets mode — only show the datasets that were loaded ───
             filesets = getattr(self.CONFIG, "filesets", None) or {}
             color_msg(f"Loaded — {len(self.events)} dataset(s)", "cyan", bold=True, indentLevel=indent)
+            
             for ds_name, evts in self.events.items():
                 loaded = self._loaded_files.get(ds_name, {})
                 ds_cfg = filesets.get(ds_name, {})
-                _print_dataset_block(ds_name, loaded, ds_cfg, max_files, indent)
-                try:
-                    npart = evts.npartitions
-                except Exception:
-                    npart = "?"
-                color_msg(f"{ds_name}  →  {npart} partition(s)", "green", indentLevel=indent+3)
+                npart = getattr(evts, "npartitions", "?")
+                
+                _print_dataset_block(ds_name, loaded, npart, ds_cfg, max_files, indent)
+                
+        # ── inputs mode ───────────────────────────────────────────────
         else:
-            # ── inputs mode ───────────────────────────────────────────────
-            loaded = self._loaded_files  # always {abs_path: tree}
-            n      = len(loaded)
-            trees  = {t for t in loaded.values() if t}
-            tree   = next(iter(trees)) if len(trees) == 1 else ""
-            try:
-                npart = self.events.npartitions
-            except Exception:
-                npart = "?"
-
-            print(
-                color_msg("▸ ", "cyan", return_str=True, indentLevel=indent)
-                + color_msg("inputs", "yellow", bold=True, return_str=True)
-                + color_msg(f"  ({n} file{'s' if n != 1 else ''})", "white", return_str=True)
-                + (color_msg(f"  →  {tree}", "purple", return_str=True) if tree else "")
-            )
-            _print_files_block(loaded, tree, max_files)
-            color_msg(f"      {npart} partition(s)", "green")
+            loaded = self._loaded_files.get("inputs", {})
+            npart = getattr(self.events, "npartitions", "?")
+            
+            _print_dataset_block("inputs", loaded, npart, max_files=max_files, indent=indent)

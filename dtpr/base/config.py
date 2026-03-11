@@ -111,7 +111,7 @@ class Config:
         :param config_path: The path to the configuration file.
         :type config_path: str
         """
-        self.path = config_path
+        self.path = os.path.abspath(config_path)
         self._setup()
 
     def _setup(self):
@@ -148,7 +148,7 @@ class Config:
         """
         try:
             self._delete_existing_attributes()
-            self.path = config_path
+            self.path = os.path.abspath(config_path)
             self._setup()
         except Exception as e:
             warnings.warn(
@@ -171,8 +171,6 @@ class Config:
         :raises yaml.YAMLError: If there's an error parsing the YAML.
         :raises ValueError: If circular includes are detected.
         """
-        config_dir = os.path.dirname(os.path.abspath(config_path))
-        
         try:
             with open(config_path, "r") as file:
                 content = file.read()
@@ -183,7 +181,7 @@ class Config:
         
         # Recursively resolve all !include directives
         try:
-            resolved_content = _resolve_includes(content, config_dir)
+            resolved_content = _resolve_includes(content, os.path.dirname(config_path))
         except (FileNotFoundError, ValueError, IOError) as e:
             raise type(e)(f"Error processing includes in {config_path}: {e}") from e
         

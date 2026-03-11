@@ -1,23 +1,38 @@
 """Example histogram definitions using the columnar dtpr histogram API.
 
-Each entry in ``histos`` is an instance of a class from
-:mod:`dtpr.utils.histograms_base` (:class:`Distribution`,
-:class:`Efficiency`, :class:`Distribution2D`).
+Each entry in ``histos`` is an instance of the :class:`Histogram` wrapper from
+:mod:`dtpr.base.histos`.
 
-The ``func`` callable receives a **materialised** ``ak.Array`` (one
-partition) and must return awkward / numpy arrays — *not* per-event
-scalars.  Jagged results are automatically flattened before filling.
+The ``func`` callable maps the input events array to a dictionary of 1D arrays 
+that correspond to the defined axes. 
+
+**Important:** Depending on the execution mode, ``events`` will be either a 
+materialized ``awkward.Array`` (eager / per-partition modes) or a completely 
+lazy ``dask_awkward.Array`` (in-memory mode). Therefore, the slicing and math 
+inside ``func`` must be array-agnostic (standard ``ak.*`` functions handle both).
+
+**Note on Jagged Arrays:**
+If extracting variables from jagged/nested collections (e.g., all muons per event 
+rather than just the leading one), you must explicitly flatten them into 1D arrays 
+(e.g., using ``ak.flatten``) before returning them.
+
+**Note on Efficiencies:**
+Histograms defined with a ``hist.axis.Boolean`` (like ``Muon_pt20_eff`` below) 
+are automatically recognized by the framework's ROOT serialization. When saved, 
+they are split dynamically into ``<name>_num`` (True bins) and ``<name>_den`` 
+(Total bins) without user intervention.
 
 These histograms assume:
   - ``events["genmuons"]`` exists with fields ``pt``, ``eta``, ``phi``.
   - ``events["dR"]`` exists (added by the ``add_genmuon_dR`` preprocessor).
-  - Events have already been filtered to those with ≥ 2 gen-muons (via
+  - Events have already been filtered to those with >= 2 gen-muons (via
     the ``select-has-genmuons`` pre-step), so ``[:, 0]`` and ``[:, 1]``
     are always valid.
 """
 
 import hist
-from dtpr.utils.histograms_base import Distribution
+import awkward as ak
+from dtpr.base.histos import Histogram
 
 # ---------------------------------------------------------------------------
 # Histogram list
@@ -25,32 +40,46 @@ from dtpr.utils.histograms_base import Distribution
 
 histos = [
     # --- Leading muon properties
-    Distribution(
+    Histogram(
+        hist.axis.Regular(20, 0, 1000, name="pt", label=r"Leading muon $p_T$ [GeV]"),
         name="LeadingMuon_pt",
-        axis=hist.axis.Regular(20, 0, 1000, label=r"Leading muon $p_T$ [GeV]"),
-        func=lambda events: events["genmuons"]["pt"][:, 0],
+        func=lambda events: {"pt": events["genmuons"]["pt"][:, 0]},
     ),
-    Distribution(
+    Histogram(
+        hist.axis.Regular(10, -3, 3, name="eta", label=r"Leading muon $\eta$"),
         name="LeadingMuon_eta",
-        axis=hist.axis.Regular(10, -3, 3, label=r"Leading muon $\eta$"),
-        func=lambda events: events["genmuons"]["eta"][:, 0],
+        func=lambda events: {"eta": events["genmuons"]["eta"][:, 0]},
     ),
+    
     # --- Subleading muon properties
-    # (safe after select-has-genmuons pre-step guarantees ≥2 gen-muons)
-    Distribution(
+    # (safe after select-has-genmuons pre-step guarantees >=2 gen-muons)
+    Histogram(
+        hist.axis.Regular(20, 0, 1000, name="pt", label=r"Subleading muon $p_T$ [GeV]"),
         name="SubLeadingMuon_pt",
-        axis=hist.axis.Regular(20, 0, 1000, label=r"Subleading muon $p_T$ [GeV]"),
-        func=lambda events: events["genmuons"]["pt"][:, 1],
+        func=lambda events: {"pt": events["genmuons"]["pt"][:, 1]},
     ),
-    Distribution(
+    Histogram(
+        hist.axis.Regular(10, -3, 3, name="eta", label=r"Subleading muon $\eta$"),
         name="SubLeadingMuon_eta",
-        axis=hist.axis.Regular(10, -3, 3, label=r"Subleading muon $\eta$"),
-        func=lambda events: events["genmuons"]["eta"][:, 1],
+        func=lambda events: {"eta": events["genmuons"]["eta"][:, 1]},
     ),
+    
     # --- Muon dR  (computed by add_genmuon_dR preprocessor)
-    Distribution(
+    Histogram(
+        hist.axis.Regular(20, 1, 6, name="dR", label=r"$\Delta R$ (both muons)"),
         name="muon_DR",
-        axis=hist.axis.Regular(20, 1, 6, label=r"$\Delta R$ (both muons)"),
-        func=lambda events: events["dR"],
+        func=lambda events: {"dR": events["dR"]},
+    ),
+    
+    # --- Efficiency example: pT > 20 GeV
+    # Shows explicit flattening of a jagged array and boolean axis usage!
+    Histogram(
+        hist.axis.Regular(200, 0, 1000, name="pt", label=r"muon $p_T$ [GeV]"),
+        hist.axis.Boolean(name="pt20", label=r"muon $p_T > 20$ GeV"),
+        name="Muon_pt20_eff",
+        func=lambda events: {
+            "pt": ak.flatten(events["genmuons"]["pt"]), 
+            "pt20": ak.flatten(events["genmuons"]["pt"] > 20)
+        },
     ),
 ]

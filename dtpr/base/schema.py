@@ -27,12 +27,11 @@ arguments, config injection is done via :meth:`PatternSchema.with_config`:
     schema_cls = PatternSchema.with_config(schema_map)        # schema_map = config["Schema"] dict
     factory = NanoEventsFactory.from_root(files, schemaclass=schema_cls, ...)
 """
-
 from __future__ import annotations
 
+import awkward as ak
 from warnings import warn
 from coffea.nanoevents.schemas.base import BaseSchema, zip_forms
-
 
 # ---------------------------------------------------------------------------
 # Module-level helpers (also imported by ntuple.py)
@@ -62,7 +61,7 @@ def _inject_constants(events, schema_map: dict):
     dask array.  Numeric values have no ROOT branch behind them — they are
     added as virtual constant columns directly into the dask graph.
     """
-    import awkward as ak
+   
     for key, val in schema_map.items():
         if isinstance(val, (int, float)):
             events = ak.with_field(events, val, key)        # event-level constant

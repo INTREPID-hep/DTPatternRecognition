@@ -15,3 +15,5 @@ histo_names:
   - SubLeadingMuon_eta
   # ============= other_vars =========== #
   - muon_DR
+  # ============ efficiency example =========== #
+  - Muon_pt20_eff

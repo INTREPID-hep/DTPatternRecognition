@@ -1,7 +1,7 @@
 Base
 ====
 
-The ``dtpr.base`` module provides a collection of core classes designed to simplify and enhance the manipulation
+The ``ydana.base`` module provides a collection of core classes designed to simplify and enhance the manipulation
 of **Event** data extracted from ROOT TTrees of **NTuples**. These classes enable efficient extraction,
 transformation, and analysis of event information in a structured, object-oriented way.
 
@@ -20,7 +20,7 @@ The main abstractions are:
 .. rubric:: Visual Overview
 
 .. mermaid::
-    :name: dtpr_visual_overview
+    :name: ydana_visual_overview
     :align: center
     :zoom: true
 

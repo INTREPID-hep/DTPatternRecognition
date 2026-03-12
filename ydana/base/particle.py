@@ -73,7 +73,10 @@ class ParticleRecord(ak.Record):
         parts = ", ".join(f"{f}={self[f]!r}" for f in self.fields)
         return f"<{collection}[{self.id}] {parts}>"
 
-    def __str__(
+    def __str__(self) -> str:
+        return self.__repr__()
+
+    def show(
         self,
         indentLevel: int = 0,
         include: Iterable[str] | None = None,
@@ -100,7 +103,7 @@ class ParticleRecord(ak.Record):
             indentLevel=indentLevel + 1,
             return_str=True,
         )
-        return "\n".join([header, body])
+        print("\n".join([header, body]))
 
 
 class ParticleArray(ak.Array):

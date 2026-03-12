@@ -14,10 +14,11 @@ array determines the fill path:
 
 Module-level functions
 ----------------------
-fill        : lazy or eager fill + optional ROOT output
-to_root     : write materialised (or eagerly filled) histograms to ROOT
-from_config : load a ``histos`` list from a dotted module path
-expand      : parametrised histogram factory (replaces ``foreach``)
+Histogram   : wrapper (public; usually imported directly by users)
+expand      : parametrised histogram factory (public; replaces ``foreach``)
+fill        : lazy or eager fill + optional ROOT output (public)
+to_root     : write materialised histograms to ROOT (public)
+from_config : load histogram list from Config (internal only)
 
 Lazy fill mechanics
 -------------------
@@ -59,7 +60,7 @@ from ..utils.functions import (
     make_dask_sched_kwargs,
 )
 from ..utils.tqdm import ProgressBarFactory
-from .config import RUN_CONFIG, Config
+from .config import Config, get_run_config
 
 # ---------------------------------------------------------------------------
 # Histogram wrapper
@@ -246,43 +247,74 @@ def expand(histo: Histogram, **kwargs: object) -> list[Histogram]:
 
 
 # ---------------------------------------------------------------------------
-# from_config — load histogram list from dotted module path or RUN_CONFIG
+# from_config — internal histogram loading from Config
 # ---------------------------------------------------------------------------
 
 
-def from_config(
-    config_src: str | None = None, config: Config | None = None
-) -> list[Histogram]:
-    """Load a ``histos`` list from a dotted Python module path.
+def from_config(config: Config | None = None) -> list[Histogram]:
+    """Load histogram list from a Config instance.
 
     Parameters
     ----------
-    config_src : str or None
-        Dotted module path, e.g. ``"my_analysis.histos"``.
-        The module must expose a ``histos`` attribute that is a list of
-        :class:`Histogram` instances.
+    config : Config or None
+        Configuration object with histogram loading metadata.
+        If ``None``, uses :data:`~ydana.base.config.RUN_CONFIG`.
 
-        When ``None`` (default) the function falls back to reading
-        ``histo_sources`` and ``histo_names`` from
-        :data:`~ydana.base.config.RUN_CONFIG`.
+        Expected attributes/keys:
+
+        - ``histo_sources`` : list[str]
+            Dotted module paths to load histograms from.
+        - ``histo_names`` : list[str], optional
+            If provided, only histograms with these names are included.
+        - ``histograms`` : object or dict, optional
+            Container holding ``histo_sources`` and ``histo_names``.
 
     Returns
     -------
     list[Histogram]
-        Histogram instances ready to be filled.
+        Histogram instances from config, optionally filtered by name.
 
-    Warnings
-    --------
-    - If a source module has no valid ``histos`` attribute.
-    - If any requested histogram names are not found in any source.
+    Raises
+    ------
+    RuntimeError
+        If *config* is ``None`` and global :data:`RUN_CONFIG` was not set.
     """
-    if config_src is not None:
-        # Simple path: import the module and return its histos list.
-        module = import_module(config_src)
-        result = getattr(module, "histos", [])
-        return result if isinstance(result, list) else [result]
 
-    cfg = config or RUN_CONFIG
+    def _import_and_collect(source: str) -> list[Histogram]:
+        """Import module and extract Histogram list."""
+        try:
+            module = import_module(source)
+            result = getattr(module, "histos", [])
+
+            if not result:
+                warnings.warn(
+                    f"Source module {source!r} has no 'histos' attribute or it is empty. Skipping.",
+                    stacklevel=2,
+                )
+                return []
+
+            if isinstance(result, list):
+                good_result = [h for h in result if isinstance(h, Histogram)]
+                if len(good_result) < len(result):
+                    warnings.warn(
+                        f"Source module {source!r} has a 'histos' attribute, but it contains non-Histogram items. Only {len(good_result)}/{len(result)} are valid and will be used.",
+                        stacklevel=2,
+                    )
+            elif isinstance(result, Histogram):
+                good_result = [result]
+            else:
+                raise ValueError(
+                    f"Source module {source!r} has a 'histos' attribute, but it is neither a list nor a Histogram instance."
+                )
+
+            return good_result
+
+        except Exception as exc:
+            raise ValueError(
+                f"Failed to load histograms from {source!r}: {exc}"
+            ) from exc
+    cfg = config or get_run_config()
+
     h_cfg = getattr(cfg, "histograms", None) or cfg
 
     if isinstance(h_cfg, dict):
@@ -292,21 +324,12 @@ def from_config(
         sources = list(getattr(h_cfg, "histo_sources", None) or [])
         names_filter = set(getattr(h_cfg, "histo_names", None) or [])
 
+    # Load all histograms from all sources (flatten via loop)
     all_histos: list[Histogram] = []
     for source in sources:
-        module = import_module(source)
-        module_histos = getattr(module, "histos", [])
-        if isinstance(module_histos, Histogram):
-            module_histos = [module_histos]
-        elif not isinstance(module_histos, list):
-            warnings.warn(
-                f"Source module {source!r} has no 'histos' attribute or it is not "
-                "a list / Histogram instance. Skipping.",
-                stacklevel=2,
-            )
-            continue
-        all_histos.extend(module_histos)
+        all_histos.extend(_import_and_collect(source))
 
+    # Filter by name if requested
     if names_filter:
         all_histos = [h for h in all_histos if h.name in names_filter]
         found = {h.name for h in all_histos}

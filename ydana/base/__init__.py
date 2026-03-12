@@ -1,80 +1,50 @@
 """Public base-layer API for YDANA."""
 
 __all__ = [
-    "CLI_CONFIG",
     "Config",
-    "Event",
-    "EventRecord",
-    "Histogram",
+    "get_run_config",
+    "set_run_config",
     "NTuple",
-    "Particle",
+    "EventRecord",
     "ParticleArray",
     "ParticleRecord",
-    "YAMLSchema",
-    "RUN_CONFIG",
-    "expand",
-    "fill",
-    "from_config",
-    "histos",
-    "to_root",
+    "Histogram",
 ]
 
 
 def __getattr__(name: str) -> object:
-    if name in {"CLI_CONFIG", "Config", "RUN_CONFIG"}:
-        from .config import CLI_CONFIG, RUN_CONFIG, Config
+    if name == "Config":
+        from .config import Config
+        return Config
 
-        exports = {
-            "CLI_CONFIG": CLI_CONFIG,
-            "Config": Config,
-            "RUN_CONFIG": RUN_CONFIG,
-        }
-        return exports[name]
+    if name == "get_run_config":
+        from .config import get_run_config
 
-    if name in {"Event", "EventRecord"}:
-        from .event import EventRecord
+        return get_run_config
 
-        exports = {
-            "Event": EventRecord,
-            "EventRecord": EventRecord,
-        }
-        return exports[name]
+    if name == "set_run_config":
+        from .config import set_run_config
 
-    if name in {"Particle", "ParticleArray", "ParticleRecord"}:
-        from .particle import ParticleArray, ParticleRecord
-
-        exports = {
-            "Particle": ParticleRecord,
-            "ParticleArray": ParticleArray,
-            "ParticleRecord": ParticleRecord,
-        }
-        return exports[name]
+        return set_run_config
 
     if name == "NTuple":
         from .ntuple import NTuple
 
         return NTuple
 
-    if name == "YAMLSchema":
-        from .schema import YAMLSchema
+    if name == "EventRecord":
+        from .event import EventRecord
 
-        return YAMLSchema
+        return EventRecord
 
-    if name in {"Histogram", "expand", "fill", "from_config", "to_root"}:
-        from .histos import Histogram, expand, fill, from_config, to_root
+    # Grouping things from the same file is fine, just return explicitly
+    if name in {"ParticleArray", "ParticleRecord"}:
+        from .particle import ParticleArray, ParticleRecord
+        return ParticleArray if name == "ParticleArray" else ParticleRecord
 
-        exports = {
-            "Histogram": Histogram,
-            "expand": expand,
-            "fill": fill,
-            "from_config": from_config,
-            "to_root": to_root,
-        }
-        return exports[name]
+    if name == "Histogram":
+        from .histos import Histogram
 
-    if name == "histos":
-        from importlib import import_module
-
-        return import_module(".histos", __name__)
+        return Histogram
 
     raise AttributeError(f"module 'ydana.base' has no attribute {name!r}")

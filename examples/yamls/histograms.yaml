@@ -1,6 +1,6 @@
 histo_sources:
   # define the source modules of the histograms
-  - dtpr.utils.histograms
+  - histograms
   # - Others if needed...
   # ...
 

@@ -213,15 +213,68 @@ class Config:
 
         return config if config else {}
 
+class _LazyRunConfig:
+    """Lazy singleton proxy for the runtime config.
 
-# ------- create CLI_CONFIG -------
-cli_config_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../yamls/config_cli.yaml")
-)
-CLI_CONFIG = Config(cli_config_path)
+    The underlying :class:`Config` instance is created on first access,
+    avoiding eager file I/O at import time.
+    """
 
-# ------- create RUN_CONFIG and customize its method -------
-run_config_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../yamls/run_config.yaml")
-)
-RUN_CONFIG = Config(run_config_path)
+    def __init__(self) -> None:
+        self._instance: Config | None = None
+
+    def _get_instance(self) -> Config:
+        if self._instance is None:
+            raise RuntimeError(
+                "RUN_CONFIG is not initialized. Set it first with "
+                "ydana.base.config.set_run_config(<config_path_or_Config>) or "
+                "run via CLI with --config-file."
+            )
+        return self._instance
+
+    def set(self, config: Config | str) -> Config:
+        """Set/replace the singleton instance.
+
+        Parameters
+        ----------
+        config : Config or str
+            Existing config instance or path to a YAML config file.
+        """
+        if isinstance(config, Config):
+            self._instance = config
+        else:
+            self._instance = Config(os.path.abspath(config))
+        return self._instance
+
+    def reset(self) -> None:
+        """Drop current instance so it is recreated on next access."""
+        self._instance = None
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._get_instance(), name)
+
+    def __repr__(self) -> str:
+        instance = self.__dict__.get("_instance")
+        if instance is None:
+            return "_LazyRunConfig(uninitialized)"
+        return f"_LazyRunConfig({instance!r})"
+
+
+def get_run_config() -> Config:
+    """Return the active singleton run config instance."""
+    return RUN_CONFIG._get_instance()
+
+
+def set_run_config(config: Config | str) -> Config:
+    """Replace the active singleton run config instance.
+
+    Parameters
+    ----------
+    config : Config or str
+        Existing config instance or path to a YAML config file.
+    """
+    return RUN_CONFIG.set(config)
+
+
+# ------- create lazy RUN_CONFIG singleton proxy -------
+RUN_CONFIG = _LazyRunConfig()

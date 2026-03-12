@@ -15,5 +15,3 @@ Schema: !include schema.yaml
 pre-steps: !include pre_steps.yaml
 
 histograms: !include histograms.yaml
-
-plot_configs: !include plot_configs.yaml

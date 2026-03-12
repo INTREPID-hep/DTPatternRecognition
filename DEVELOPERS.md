@@ -1,83 +1,67 @@
-# Developers' guide
+# Developer Guide
 
-[[_TOC_]]
+## Overview
 
-## Development setup
+YDANA is a YAML-driven framework for columnar analysis workflows with `dask-awkward`.
+This guide covers local setup, test execution, formatting, and docs workflow.
 
-The recommended way of development is under a virtual environment. Bear in mind that you will need PyROOT.
+## Local setup
 
-### Quick start
-
-**Option 1: Using venv and pip**
-
-1. Clone the repository:
-    ```shell
-    git clone https://github.com/INTREPID-hep/DTPatternRecognition.git && cd DTPatternRecognition
-    ```
-2. Create and activate a virtual environment (with access to system-wide ROOT):
-    ```shell
-    python -m venv --system-site-packages ENV_DIR
-    source ENV_DIR/bin/activate
-    ```
-3. Install the package in editable mode (this will install main dependencies only):
-    ```shell
-    pip install -e .
-    ```
-    > The auxiliary package `mplDTs` is listed as a dependency in `pyproject.toml` and will be installed from GitHub automatically.
-    > If you need to work with it in editable mode as well, you can clone it from [here](https://github.com/INTREPID-hep/mplDTs) and install it in editable mode similarly.
-
-4. If you also want to install development dependencies (for testing, linting, etc.), run:
-    ```shell
-    pip install .[dev]
-    ```
-
-**Option 2: Using Poetry**
-
-1. Clone the repository:
-    ```shell
-    git clone https://github.com/INTREPID-hep/DTPatternRecognition.git && cd DTPatternRecognition
-    ```
-2. Install dependencies and activate the environment:
-    ```shell
-    poetry install
-    $(poetry env active)
-    ```
-    > If you don't need to activate the Poetry environment, you can prefix commands with `poetry run`, e.g., `poetry run pytest`.
-    > The auxiliary package `mplDTs` is listed as a dependency in `pyproject.toml` and will be installed from GitHub automatically.
-    > If you need to work with it in editable mode as well, you can clone it from [here](https://github.com/INTREPID-hep/mplDTs) and ensure to replace in the `pyproject.toml` file the dependency line with `mplDTs = {path = "PATH_TO_MPLDTS_FOLDER", develop = true}`.
-   > If you need PyROOT, make sure it is available in your environment. You may need to install ROOT system-wide or ensure your Poetry environment can access it. For this, the easiest way is to enable system site packages before installing with the command `poetry config virtualenvs.options.system-site-packages true`.
-
-## Development guidelines
-
-### Coding style
-
-You can check and fix your code formatting through the usage of `Black`:
+### Option 1: uv
 
 ```shell
-# If using Poetry
-poetry run black --check -l 100 dtpr
-
-# Or, if using pip/venv
-black --check -l 100 dtpr
+git clone https://github.com/INTREPID-hep/ydana.git
+cd ydana
+uv venv
+source .venv/bin/activate
+uv sync --extra dev
 ```
 
-### Documentation Writing
+### Option 2: venv + pip
 
-We use [Sphinx](https://www.sphinx-doc.org/en/master/usage/quickstart.html) with the Read the Docs theme for Python code documentation.
+```shell
+git clone https://github.com/INTREPID-hep/ydana.git
+cd ydana
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+pip install .[dev]
+```
 
-To update the documentation, edit the files in the `docs/src` directory. To preview your changes, build the source files by running:
+## Common commands
+
+```shell
+# tests
+uv run pytest
+
+# lint + import/order checks
+uv run ruff check ydana
+
+# auto-fix lint/import issues when possible
+uv run ruff check ydana --fix
+
+# format check
+uv run ruff format --check ydana
+
+# apply formatting
+uv run ruff format ydana
+
+# CLI smoke
+uv run ydana --help
+```
+
+## Documentation workflow
 
 ```shell
 cd docs
 make html
 ```
 
-The generated files will be placed in the `docs/_build` directory. You can view the main `index.html` file at `docs/_build/html/index.html`.
+Generated HTML is available under `docs/_build/html`.
 
-Once your changes are ready, commit and push them. The updates will be automatically deployed to the online documentation via GitHub Actions when the main branch is updated.
+## Recommended practices
 
-## Tips
-
-- For a smoother development experience, consider using an IDE or code editor with Python and Git integration, such as [Visual Studio Code](https://code.visualstudio.com/) or [PyCharm](https://www.jetbrains.com/pycharm/).
-- Regularly pull the latest changes from the main branch to keep your local repository up to date.
-- Use descriptive commit messages and commit often to avoid losing your work.
+- Keep PRs small and focused.
+- Add tests for behavioral changes.
+- Keep docstrings and CLI help aligned with actual behavior.
+- Prefer declarative configuration changes over hardcoded values where possible.

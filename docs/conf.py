@@ -1,7 +1,7 @@
-project = 'DTPatternRecognition'
-copyright = '2025, Daniel Estrada, Universidad de Oviedo'
+project = 'YDANA'
+copyright = '2026, Daniel Estrada, Universidad de Oviedo'
 author = 'Daniel Estrada'
-release = '3.0.0'
+release = '0.1.0'
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -21,5 +21,5 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 html_show_sourcelink=False
 rst_prolog = """
-:github_url: https://github.com/INTREPID-hep/DTPatternRecognition
+:github_url: https://github.com/INTREPID-hep/ydana
 """

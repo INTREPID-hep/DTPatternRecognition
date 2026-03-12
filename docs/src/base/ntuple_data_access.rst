@@ -25,13 +25,13 @@ Both preprocessors and selectors maps should contain a ``src`` key specifying th
 
     ntuple_preprocessors:
       test-preprocessor:
-        src: 'dtpr.utils.preprocessors.test_preprocessor'
+        src: 'ydana.utils.preprocessors.test_preprocessor'
         kwargs:
           dummy_val: -999
 
     ntuple_selectors:
       test-selector:
-        src: 'dtpr.utils.selectors.test_selector'
+        src: 'ydana.utils.selectors.test_selector'
 
 .. _preprocessor_selector_examples:
 
@@ -40,13 +40,13 @@ Example: Preprocessor and Selector Functions
 
 A preprocessor can be used to compute new event-level quantities before selection or analysis. For example, to compute the deltaR between the two generator muons and store it as an attribute in the event:
 
-.. literalinclude:: ../../../dtpr/utils/preprocessors.py
+.. literalinclude:: ../../../ydana/utils/preprocessors.py
     :language: python
     :lines: 1-10
 
 A selector can be used to filter events, for example, to keep only those with at least two generator muons:
 
-.. literalinclude:: ../../../dtpr/utils/selectors.py
+.. literalinclude:: ../../../ydana/utils/selectors.py
     :language: python
     :lines: 1-7
 
@@ -97,7 +97,7 @@ only the requested events are loaded and processed.
 
 The following example shows how to use the ``NTuple`` class to read DT Ntuples and access events:
 
-.. literalinclude:: ../../../dtpr/base/ntuple.py
+.. literalinclude:: ../../../ydana/base/ntuple.py
     :language: python
     :dedent:
     :start-after: [start-example-1]
@@ -106,7 +106,7 @@ The following example shows how to use the ``NTuple`` class to read DT Ntuples a
 
 .. code-block:: text
 
-    + Opening input file /root/DTPatternRecognition/test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root
+    + Opening input file /root/ydana/test/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root
     >> ------ Event 39954 info ------
     + Index: 9
     + Digis
@@ -192,5 +192,5 @@ are required. The preprocessing function is applied to each generated ``Event`` 
     This class is not intended to be instantiated directly by the user. It is used internally by the 
     ``NTuple`` class to manage events.
 
-.. autoclass:: dtpr.base.EventList
+.. autoclass:: ydana.base.EventList
     :members:

@@ -1,44 +1,49 @@
-# Pattern Recognition for DTs
-This package is intended to serve as a base framework for Trigger pattern recognition processes in the CMS Drift Tubes system,
-using as input data `.root` NTuples in a format similar to [this one](test-ntuple). It is basically a flat tree structure, where
-each branch represents a property of a CMS event or particle(s).
+# YDANA (**Y**AML-Driven **D**ask-**A**wkward **N**tuple **A**nalyzer)
 
-Since the framework was developed in the context of the Drift Tube detectors, it also includes visualization tools considering
-the geometrical features of the CMS DT system by using the [mplDTs package](https://danielestrada971102.github.io/mplDTs) and custom implementations in the [`dtpr/utils/dt_plot_functions.py`](plot-functions-folder) module.
+YDANA is a YAML configuration-driven framework for High Energy Physics (HEP) columnar data analysis. 
 
-Comprehensive documentation is available in read-the-docs format at the [GitHub Pages site](https://danielestrada971102.github.io/DTPatternRecognition/).
+It combines the object-oriented event structures of Coffea's `NanoEventsFactory` with the distributed processing power of `dask-awkward`. The main goal of YDANA is to provide a declarative workflow where datasets, schema mappings, preprocessing steps, and histograms are configured directly from YAML files, reducing the need to write custom execution scripts.
 
-The package is under development, so feel free to contribute, report bugs, or suggest improvements.
-Take a look at the [Contributors](CONTRIBUTING.md) and [Developers](DEVELOPERS.md) guides.
+## Motivation
+
+Setting up distributed analysis pipelines can sometimes require a lot of repetitive code for managing data chunks, memory, and output merging. YDANA aims to simplify this process by offering:
+
+- **Simplified configuration:** Define your datasets, cuts, and histograms in readable YAML files.
+- **Automatic scaling:** Test your configuration locally on a single file, then run the exact same YAML on a Dask cluster.
+- **Lazy execution:** By leveraging `dask-awkward`, the framework only reads the specific branches you use, which helps save memory and processing time.
+- **Resume-safe exports:** When saving processed events to ROOT or Parquet, YDANA writes file-by-file (partitioning). If a job is interrupted, you don't lose your progress.
+
+## Core Features
+
+- **YAML-first orchestration:** Manage the analysis behavior from end-to-end using config files.
+- **Schema-aware data access:** Flat ROOT branches are automatically mapped into structured Awkward records.
+- **Composable pipeline:** Preprocessors and selectors are applied sequentially based on your configuration.
+- **Practical CLI:** Common tasks like `fill-histos`, `dump`, and `merge-dumps` are available directly via the `ydana` command.
 
 ## Installation
 
-You can install any version of the package directly from GitHub using pip:
+You can install YDANA directly from GitHub. Using `uv` is recommended for speed:
 
 ```shell
-pip install "git+https://github.com/INTREPID-hep/DTPatternRecognition.git@[TAG_VERSION]"
-# To check if the package was installed successfully, run:
-pip show DTPatternRecognition
-```
-
-Or, if you prefer to use Poetry for dependency and environment management, you can add the package to your existing Poetry project using:
+uv venv
+source .venv/bin/activate
+uv pip install "git+[https://github.com/INTREPID-hep/ydana.git](https://github.com/INTREPID-hep/ydana.git)@[TAG_VERSION]"
+uv pip show ydana
+If you prefer plain pip, the same install works in any active virtual environment:
 
 ```shell
-poetry add "git+https://github.com/INTREPID-hep/DTPatternRecognition.git#[TAG_VERSION]"
-# To check if the package was installed successfully, run:
-poetry show DTPatternRecognition
+pip install "git+https://github.com/INTREPID-hep/ydana.git@[TAG_VERSION]"
+pip show ydana
 ```
 
-If you are dev and and you want to work with the source and editable installs, you can follow the instructions in the [Developers](DEVELOPERS.md) guide.
+## Quick check
 
-> [!IMPORTANT]
-> The package requires PyROOT, so you should have it installed and available in your environment.  
-> If you are working in a Python virtual environment, ensure to include ROOT in it.  
-> For example, to create a venv that can access system-wide ROOT:
->
-> ```shell  
-> python -m venv --system-site-packages ENV_DIR
-> ```
+```shell
+ydana --help
+```
 
-test-ntuple: tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root  
-plot-functions-folder: dtpr/utils/dt_plot_functions.py
+## Documentation and contribution
+
+- Project docs: https://intrepid-hep.github.io/ydana/
+- Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Development guide: [DEVELOPERS.md](DEVELOPERS.md)

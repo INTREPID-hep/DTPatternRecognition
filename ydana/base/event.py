@@ -58,7 +58,10 @@ class EventRecord(ak.Record):
     def __repr__(self) -> str:
         return f"<Event {self.id}>"
 
-    def __str__(self, indentLevel: int = 0) -> str:
+    def __str__(self) -> str:
+        return self.__repr__()
+
+    def show(self, indentLevel: int = 0) -> str:
         """Verbose summary of all fields in this event record.
 
         Visual convention
@@ -109,7 +112,7 @@ class EventRecord(ak.Record):
                         f" {val}", color="none", indentLevel=-1, return_str=True
                     )
                 )
-        return "\n".join(lines)
+        print("\n".join(lines))
 
 
 # ---------------------------------------------------------------------------

@@ -2,7 +2,16 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-__all__ = ["Config", "Histogram", "NTuple", "__version__"]
+__all__ = [
+    "Config",
+    "Histogram",
+    "NTuple",
+    "io",
+    "histos",
+    "get_run_config",
+    "set_run_config",
+    "__version__"
+]
 
 try:
     __version__ = version("ydana")
@@ -15,6 +24,7 @@ def __getattr__(name: str) -> object:
         from .base.config import Config
 
         return Config
+
     if name == "Histogram":
         from .base.histos import Histogram
 
@@ -23,4 +33,25 @@ def __getattr__(name: str) -> object:
         from .base.ntuple import NTuple
 
         return NTuple
+
+    if name == "io":
+        from .base import io
+
+        return io
+
+    if name == "histos":
+        from .base import histos
+
+        return histos
+
+    if name == "get_run_config":
+        from .base.config import get_run_config
+
+        return get_run_config
+
+    if name == "set_run_config":
+        from .base.config import set_run_config
+        
+        return set_run_config
+
     raise AttributeError(f"module 'ydana' has no attribute {name!r}")

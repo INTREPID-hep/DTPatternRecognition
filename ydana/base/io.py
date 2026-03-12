@@ -19,6 +19,7 @@ from .particle import ParticleRecord
 def dump_to_parquet(
     events: ak.Array | dak.Array,
     outfolder: str,
+    tag: str = "",
     ncores: int = -1,
     overwrite: bool = False,
     label: str = "",
@@ -44,6 +45,8 @@ def dump_to_parquet(
     outfolder : str
         Output directory where the Parquet file(s) will be saved. Created
         automatically if it does not exist.
+    tag : str, optional
+        Suffix appended to the output filename stem.
     ncores : int, optional
         Dask scheduler hint for lazy arrays. ``1`` = synchronous (debug),
         ``-1`` = dask default, ``>1`` = N local process workers.
@@ -65,14 +68,34 @@ def dump_to_parquet(
     This allows the framework to execute delayed write operations using the
     specified scheduler environment (``ncores``).
     """
+    # ── 1. Sanity Checks ────────────────────────────────────────────────────
+    if events is None:
+        raise ValueError("No events provided to dump.")
+
+    if len(ak.fields(events)) == 0:
+        raise ValueError("Events array has no columns/fields.")
+
+    _is_eager = False
+    if not _is_dak(events):
+        if len(events) == 0:
+            warnings.warn(
+                "Events array is empty (0 rows). Skipping dump.", stacklevel=2
+            )
+            return
+        _is_eager = True
+    # ────────────────────────────────────────────────────────────────────────
+
+    out_dir = os.path.join(outfolder, "parquets")
+    create_outfolder(out_dir)
+
     log_label = f"[dump|{label}]" if label else "[dump]"
 
     # Ensure parent dirs exist
-    create_outfolder(outfolder)
+    create_outfolder(out_dir)
 
     # ── Eager Path ──────────────────────────────────────────────────────────
-    if not _is_dak(events):
-        outpath = os.path.join(outfolder, "dumpedEvents.parquet")
+    if _is_eager:
+        outpath = os.path.join(out_dir, f"dumpedEvents{tag}.parquet")
         if not overwrite and os.path.exists(outpath):
             if verbose:
                 color_msg(
@@ -100,7 +123,7 @@ def dump_to_parquet(
         )
 
     # By passing compute=False, we get the Delayed object instead of blocking!
-    write_task = dak.to_parquet(events, outfolder, prefix="dumpedEvents", compute=False)
+    write_task = dak.to_parquet(events, out_dir, prefix=f"dumpedEvents{tag}", compute=False)
 
     desc = color_msg(f"{log_label} Writing to Parquet", "purple", 1, return_str=True)
 
@@ -110,7 +133,7 @@ def dump_to_parquet(
         dask.compute(write_task, **sched_kwargs)
 
     if verbose:
-        color_msg(f"{log_label} Parquet saved → {outfolder}", "green", 1)
+        color_msg(f"{log_label} Parquet saved → {out_dir}", "green", 1)
 
 
 def _flatten_awkward_to_dict(
@@ -291,7 +314,7 @@ def dump_to_root(
         _write_root_partition(events, out_path, treepath).compute()
 
         if verbose:
-            color_msg(f"{log_label} ROOT saved → {out_path}", "green", 1)
+            color_msg(f"{log_label} ROOT saved → {out_dir}", "green", 1)
         return
 
     # ------------------------------------------------------------------
@@ -330,7 +353,7 @@ def dump_to_root(
         f"{log_label} Writing ROOT partitions", "purple", 1, return_str=True
     )
     with ProgressBarFactory(
-        mode="lazy", show=verbose, delay=0.25, desc=desc, ascii=True, unit=" part"
+        mode="lazy", show=verbose, delay=0.25, desc=desc, ascii=True, unit=" node"
     ):
         dask.compute(*tasks, **sched_kwargs)
 

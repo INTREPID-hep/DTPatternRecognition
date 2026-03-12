@@ -7,10 +7,9 @@ from functools import lru_cache
 from importlib import import_module
 from typing import Any, Callable, Optional
 
+import awkward as ak
 import dask_awkward as dak
 from dask.distributed import get_client
-
-from ..base.config import Config
 
 
 def color_msg(
@@ -280,22 +279,114 @@ def create_outfolder(outname: str) -> None:
         color_msg(f"Failed to create directory '{outname}': {e}", color="red")
         raise
 
-
-def ensure_on_syspaths(config: Config) -> None:
-    """Add the config file's directory and the working directory to ``sys.path`` (idempotently).
-
-    This makes dotted ``src:`` module paths declared in the YAML importable
-    both when running through the CLI *and* when constructing
-    :class:`~ydana.base.NTuple` (or calling analysis functions) directly in
-    Python, without requiring the user to manipulate ``sys.path`` manually.
+def ensure_on_syspaths(path: str | list[str]) -> None:
+    """Add the paths to ``sys.path`` (idempotently).
     """
-    d = config.path
-    if d not in sys.path:
-        sys.path.insert(0, d)
-    if os.getcwd() not in sys.path:
-        sys.path.insert(0, os.getcwd())
-
+    paths = path if isinstance(path, list) else [path]
+    for dir in paths:
+        if dir not in sys.path:
+            sys.path.insert(0, dir)
 
 def find_field_by_pattern(fields: list[str], pattern: re.Pattern) -> str | None:
     """Return the first field in *fields* whose name matches *pattern*, or None."""
     return next((f for f in fields if pattern.search(f)), None)
+
+
+# ---------------------------------------------------------------------------
+# Nested-ids reconstruction preprocessor factory
+# ---------------------------------------------------------------------------
+
+
+def reconstruct_nested_ids(
+    flat_field: str,
+    n_field: str,
+    col: str,
+    out_field: str | None = None,
+) -> Callable:
+    """Factory: return a preprocessor that rebuilds a doubly-jagged ids field.
+
+    A ROOT TTree (or any data source using the flat+count convention) encodes
+    a ``var * var * int`` field as two **top-level** branches on the events
+    array:
+
+    * ``events[flat_field]``  — ``var * int``, all ids for an event concatenated
+      across all parent particles (e.g. ``[[5], [2, 7]]``).
+    * ``events[n_field]``     — ``var * int``, number of ids contributed by each
+      parent particle in that event (e.g. ``[[1, 0], [2]]``).
+
+    The returned preprocessor reconstructs the original ``var * var * int``
+    field via ``ak.unflatten(flat, counts, axis=1)`` and injects it into the
+    *col* collection under the name *out_field*.
+
+    Parameters
+    ----------
+    flat_field : str
+        Top-level events field with the flat per-event ids,
+        e.g. ``"tps_matched_showers_ids"``  (``var * int``).
+    n_field : str
+        Top-level events field with the per-parent-particle counts,
+        e.g. ``"tps_matched_showers_ids_n"``  (``var * int``).
+    col : str
+        Name of the collection to which the nested field is added,
+        e.g. ``"tps"``.
+    out_field : str, optional
+        Name of the new nested field within *col*.  Defaults to
+        *flat_field* with the trailing ``_ids`` suffix stripped,
+        e.g. ``"tps_matched_showers"`` when *flat_field* is
+        ``"tps_matched_showers_ids"``.
+
+    Returns
+    -------
+    Callable
+        A preprocessor ``fn(events) -> None`` that mutates *events* in-place.
+
+    Examples
+    --------
+    Use in a YAML pre-steps block:
+
+    .. code-block:: yaml
+
+       pre-steps:
+         - name: reconstruct_nested_ids
+           args:
+             - "tps_matched_showers_ids"
+             - "tps_matched_showers_ids_n"
+             - "tps"
+
+    Or programmatically::
+
+        from ydana.utils.preprocessors import reconstruct_nested_ids
+
+        pp = reconstruct_nested_ids(
+            "tps_matched_showers_ids",
+            "tps_matched_showers_ids_n",
+            "tps",
+        )
+        pp(events)
+        # events["tps"]["matched_showers_ids"] is now var * var * int
+    """
+    # Infer the output field name if not provided.
+    # Strip the trailing "_ids" suffix so e.g. "tps_matched_showers_ids" → "tps_matched_showers".
+    resolved_out = (
+        out_field
+        if out_field is not None
+        else (flat_field[:-4] if flat_field.endswith("_ids") else flat_field)
+    )
+
+    def _preprocessor(events: ak.Array | dak.Array) -> None:
+        flat_ids = events[flat_field]  # var * int per event
+        counts = events[n_field]  # var * int per event (count per parent)
+        # ak.unflatten requires 1-D counts.  We have jagged counts (one per TP
+        # per event), so we need a two-step unflatten:
+        #   1. flatten everything to 1D and rebuild per-TP lists
+        #   2. group the per-TP lists back into per-event lists
+        flat_all = ak.flatten(flat_ids)  # 1-D
+        per_tp_counts = ak.flatten(counts)  # 1-D
+        n_tps_per_event = ak.num(counts, axis=1)  # 1-D
+        per_tp_ids = ak.unflatten(flat_all, per_tp_counts)  # var * int
+        nested = ak.unflatten(per_tp_ids, n_tps_per_event)  # var * var * int
+        events[col] = ak.with_field(events[col], nested, resolved_out)
+
+    _preprocessor.__name__ = f"reconstruct_nested_ids({flat_field!r}, {n_field!r} → {col!r}.{resolved_out!r})"
+    _preprocessor.__qualname__ = _preprocessor.__name__
+    return _preprocessor

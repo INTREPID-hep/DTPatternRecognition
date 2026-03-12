@@ -35,6 +35,11 @@ select-has-genmuons:
   type: selector
   expr: "ak.num(events['genmuons']) > 1"
 
+filter-no-muons:
+  type: selector
+  target: genmuons
+  src: cuts.filter_genmuons_pdgid
+
 # ---- level 1: depend on level-0 preprocessors ----
 
 # Filter TPs: quality >= 0
@@ -48,5 +53,5 @@ filter-tps:
 # ---- level 2: depend on level-1 selectors ----
 compute-muon-DR:
   type: preprocessor
-  src: "ydana.utils.preprocessors.add_genmuon_dR"
+  src: "preprocessors.add_genmuon_dR"
   needs: [select-has-genmuons]

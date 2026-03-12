@@ -124,18 +124,25 @@ class TestRepresentation:
     def test_repr_fallback_index(self, events_no_id):
         assert repr(events_no_id[1]) == "<Event 1>"
 
+    def test_str_equals_repr(self, events):
+        """__str__ now delegates to __repr__."""
+        assert str(events[0]) == repr(events[0])
+
     def test_str_contains_label(self, events):
         plain = _strip_ansi(str(events[0]))
         assert "42" in plain
 
-    def test_str_contains_all_field_names(self, events):
-        plain = _strip_ansi(str(events[0]))
+    def test_show_contains_all_field_names(self, events, capsys):
+        """Verbose field listing has moved to show()."""
+        events[0].show()
+        plain = _strip_ansi(capsys.readouterr().out)
         for field in events[0].fields:
             assert field in plain
 
-    def test_str_empty_collection_shown(self, events):
+    def test_show_empty_collection_shown(self, events, capsys):
         """Empty genmuons must still appear as a collection line, not be silently dropped."""
-        plain = _strip_ansi(str(events[1]))
+        events[1].show()
+        plain = _strip_ansi(capsys.readouterr().out)
         assert "genmuons" in plain
         assert "0 items"  in plain
 

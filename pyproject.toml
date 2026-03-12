@@ -1,7 +1,7 @@
 [project]
-name = "DTPatternRecognition"
-version = "3.3.0-beta"
-description = "Set of tools to implement pattern recognition algorithms on CMS DTs"
+name = "ydana"
+version = "0.1.0"
+description = "YAML-Driven Dask-Awkward Ntuple Analyzer for declarative columnar workflows"
 readme = "README.md"
 authors = [
   { name = "Daniel Estrada", email = "destrada@cern.ch" }
@@ -9,21 +9,20 @@ authors = [
 maintainers = [
   { name = "Daniel Estrada", email = "destrada@cern.ch" }
 ]
-documentation = "https://intrepid-hep.github.io/DTPatternRecognition"
+documentation = "https://intrepid-hep.github.io/ydana"
 requires-python = ">=3.9"
 
 dependencies = [
+    "awkward>=2.6",
+    "coffea>=2024.3.0",
+    "dask>=2024.1.0",
+    "dask-awkward>=2024.1.0",
+    "hist>=2.7",
     "numpy>=1.23,<2.0",
-    "pandas>=2.2",
-    "matplotlib>=3.9",
-    "mplhep>=0.3",
-    "PyYAML>=5.4.1",
-    "pyqt5>=5.15",
-    "tqdm>=4.6",
     "natsort>=8.4",
-    "multiprocess>=0.7",
-    "more-itertools>=10.0",
-# # #     "mplDTs @ git+https://github.com/INTREPID-hep/mplDTs.git@v2.2.0-beta"
+    "PyYAML>=5.4.1",
+    "tqdm>=4.6",
+    "uproot>=5.3",
 ]
 
 [project.optional-dependencies]
@@ -36,55 +35,22 @@ docs = [
 ]
 dev = [
     "pytest",
-    "black"
+  "ruff"
 ]
 
 [project.scripts]
-dtpr = "dtpr.cli:main"
+ydana = "ydana.cli:main"
 
-[tool.poetry]
-packages = [
-    { include = "dtpr" }
-]
-
-[tool.poetry.dependencies]
-# It requires ROOT >=6.32 , it is not installable with PyPI, so, install it separately...
-python = ">=3.9"
-numpy = ">=1.23,<2.0"
-pandas = ">=2.2"
-matplotlib = ">=3.9"
-mplhep = ">=0.3"
-PyYAML = ">=5.4.1"
-pyqt5 = ">=5.15"
-tqdm = ">=4.6"
-natsort = ">=8.4"
-multiprocess = ">=0.7"
-more-itertools = ">=10.0"
-# # # mplDTs = { git = "https://github.com/INTREPID-hep/mplDTs.git", rev = "v2.2.0-beta" }
-
-[tool.poetry.group.docs]
-optional = true
-
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.docs.dependencies]
-sphinx = "*"
-sphinx-rtd-theme = "*"
-sphinx-copybutton = "*" 
-sphinx-design = "*"
-sphinxcontrib-mermaid = "*"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "*"
-black = "*"
+[tool.setuptools.packages.find]
+include = ["ydana*"]
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 filterwarnings = [
     "ignore::UserWarning",
     "ignore::DeprecationWarning",
 ]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"

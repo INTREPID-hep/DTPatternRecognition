@@ -1,7 +1,7 @@
 Histogram Filling
 =================
 
-The histogram filling tool in DTPatternRecognition automates the process of extracting physics quantities
+The histogram filling tool in ydana automates the process of extracting physics quantities
 from your events and populating ROOT histograms for further analysis or plotting. You define *what* to 
 fill and *how* to extract the values, and the framework handles the repetitive event loop and output file creation.
 
@@ -56,12 +56,12 @@ You want to fill these into ROOT histograms and save them for later analysis.
 
 .. rubric:: Step 1: Specify Histogram Sources and Names
 
-First, tell DTPatternRecognition where to find your histogram definitions and which ones to fill. In your ``run_config.yaml``:
+First, tell ydana where to find your histogram definitions and which ones to fill. In your ``run_config.yaml``:
 
 .. code-block:: yaml
 
     histo_sources:
-      - dtpr.utils.histograms   # Contains muon-related histograms
+      - ydana.utils.histograms   # Contains muon-related histograms
       - my.path.to.am_histos    # Contains AM efficiency/rate histograms
 
     histo_names:
@@ -73,7 +73,7 @@ This tells the framework to look for histogram definitions in the specified Pyth
 
 .. rubric:: Step 2: Define Histograms in Python
 
-In your source modules (e.g., ``dtpr/utils/histograms.py``), define your histograms in a dictionary called ``histos``. For example:
+In your source modules (e.g., ``ydana/utils/histograms.py``), define your histograms in a dictionary called ``histos``. For example:
 
 .. code-block:: python
 
@@ -130,13 +130,13 @@ Once your configuration and histogram definitions are set, run:
 
 .. code-block:: shell
 
-    dtpr fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] [other options]
+    ydana fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] [other options]
 
 You can also run the histogram filling in parallel by specifying the number of CPU cores with the ``-c`` or ``--ncores`` argument:
 
 .. code-block:: shell
 
-    dtpr fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] -c 4
+    ydana fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] -c 4
 
 This will process your events using 4 CPU cores, speeding up the filling for large datasets.
 
@@ -158,16 +158,16 @@ This will process your events using 4 CPU cores, speeding up the filling for lar
 
     sequenceDiagram
         participant User
-        participant dtpr CLI
+        participant ydana CLI
         participant RUN_CONFIG
         participant NTuple
         participant EventList
         participant Event
         participant Histogram Filler
 
-        User->>dtpr CLI: dtpr fill-histos ...
-        dtpr CLI->>RUN_CONFIG: Load/Update config (histo_sources, histo_names)
-        dtpr CLI->>Histogram Filler: Call fill_histos(inpath, outfolder, ...)
+        User->>ydana CLI: ydana fill-histos ...
+        ydana CLI->>RUN_CONFIG: Load/Update config (histo_sources, histo_names)
+        ydana CLI->>Histogram Filler: Call fill_histos(inpath, outfolder, ...)
         Histogram Filler->>Histogram Filler: Call set_histograms_dict()
         Histogram Filler->>RUN_CONFIG: Request histo_sources and histo_names
         Note over Histogram Filler: Loads Python modules and initializes ROOT histograms
@@ -194,11 +194,11 @@ This will process your events using 4 CPU cores, speeding up the filling for lar
         end
         Histogram Filler->>Histogram Filler: Call save_histograms()
         Histogram Filler->>ROOT File: Write all filled histograms
-        Histogram Filler-->>dtpr CLI: Done
-        dtpr CLI-->>User: Output messages
+        Histogram Filler-->>ydana CLI: Done
+        ydana CLI-->>User: Output messages
 
-You can also use the **methods** ``fill_histograms`` and ``save_histograms`` from the ``dtpr.analysis.fill_histograms`` module directly in your own scripts for more customized workflows.
+You can also use the **methods** ``fill_histograms`` and ``save_histograms`` from the ``ydana.analysis.fill_histograms`` module directly in your own scripts for more customized workflows.
 
-.. automodule:: dtpr.analysis.fill_histograms
+.. automodule:: ydana.analysis.fill_histograms
     :members: fill_histograms, save_histograms
     :member-order: bysource

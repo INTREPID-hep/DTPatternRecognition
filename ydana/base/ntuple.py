@@ -56,14 +56,14 @@ from __future__ import annotations
 import glob as _glob
 import os
 from pathlib import Path
-from typing import TypeAlias
+from typing import Literal, TypeAlias
 
 import dask_awkward as dak
 from coffea.nanoevents import NanoEventsFactory
 from natsort import natsorted
 
 from ..utils.functions import color_msg, ensure_on_syspaths
-from .config import RUN_CONFIG, Config
+from .config import Config, get_run_config
 from .pipeline import execute_pipeline
 from .schema import YAMLSchema, _branches_from_schema, _inject_constants
 
@@ -81,8 +81,7 @@ def _format_input(
     tree_path: str | None,
     max_files: int = -1,
     base_dir: str | None = None,
-    parquet: bool = False,
-    root: bool = True,
+    in_format: Literal["root", "parquet"] = "root",
 ) -> FormattedFiles:
     """
     Normalize files into an uproot-native {file: tree_path} dict.
@@ -100,8 +99,7 @@ def _format_input(
                     effective_tree,
                     max_files=-1,
                     base_dir=base_dir,
-                    parquet=parquet,
-                    root=root,
+                    in_format=in_format,
                 )
             )
         return dict(list(result.items())[:max_files]) if max_files > 0 else result
@@ -116,8 +114,7 @@ def _format_input(
                     tree_path,
                     max_files=-1,
                     base_dir=base_dir,
-                    parquet=parquet,
-                    root=root,
+                    in_format=in_format,
                 )
             )
         return dict(list(result.items())[:max_files]) if max_files > 0 else result
@@ -128,11 +125,11 @@ def _format_input(
         effective_tree = tree_path
 
         # 1. Strip embedded tree BEFORE path resolution
-        if ":" in files_str and root:
+        if ":" in files_str and in_format == "root":
             files_str, embedded_tree = files_str.rsplit(":", 1)
             effective_tree = tree_path if tree_path is not None else embedded_tree
 
-        if not effective_tree and root:
+        if not effective_tree and in_format == "root":
             raise ValueError(
                 "No tree name provided. Supply it via --tree TREEPATH, "
                 "fileset 'treename:' key, or embed it in the file path 'file.root:treepath'."
@@ -144,14 +141,14 @@ def _format_input(
 
         # 3. Handle directories
         if os.path.isdir(absolute_path):
-            ext = "*.root" if root else "*.parquet"
+            ext = "*.root" if in_format == "root" else "*.parquet"
             absolute_path = os.path.join(absolute_path, ext)
 
         # 4. Glob expansion
         file_list = natsorted(_glob.glob(absolute_path))
 
         if not file_list:
-            ext_name = ".root" if root else ".parquet"
+            ext_name = ".root" if in_format == "root" else ".parquet"
             raise FileNotFoundError(f"No {ext_name} file(s) found at {absolute_path}")
 
         # If a glob expands to multiple files, process them as a list to ensure flattening
@@ -161,12 +158,11 @@ def _format_input(
                 effective_tree,
                 max_files=max_files,
                 base_dir=_base_dir,
-                parquet=parquet,
-                root=root,
+                in_format=in_format,
             )
 
         # Single resolved file
-        return {file_list[0]: effective_tree if root else None}
+        return {file_list[0]: effective_tree if in_format == "root" else None}
 
 
 def _resolve_schema(schema_section: object) -> tuple[object, type, dict[str, set[str]]]:
@@ -401,9 +397,8 @@ class NTuple:
         tree_name: str | list[str] | None (TTree path, str = same for all, list = one per dataset)
         step_size: int (ROOT: entries per partition)
         split_row_groups: bool (Parquet: one partition per row group)
-        root: bool (load ROOT files)
-        parquet: bool (load Parquet files)
-        CONFIG: Config (defaults to RUN_CONFIG)
+        in_format: {"root", "parquet"} (input file format)
+        CONFIG: Config (defaults to :data:`~ydana.base.config.RUN_CONFIG - previously set)
         verbose: bool (print info summary)
 
     Attributes:
@@ -419,21 +414,22 @@ class NTuple:
         tree_name: str | list[str] | None = None,
         step_size: int | None = None,
         split_row_groups: bool | None = None,
-        root: bool = False,
-        parquet: bool = False,
+        in_format: Literal["root", "parquet"] = "root",
         CONFIG: Config | None = None,
         verbose: bool = True,
     ) -> None:
-        if not (root ^ parquet):  # xor
-            raise ValueError(
-                "Either root or parquet must be True, both can not be True or False."
-            )
+        if in_format not in {"root", "parquet"}:
+            raise ValueError("in_format must be either 'root' or 'parquet'.")
 
+        # check this if logic..
         if inputs is not None and datasets is not None:
             raise ValueError("'inputs' and 'datasets' are mutually exclusive.")
 
-        self.CONFIG = CONFIG if CONFIG is not None else RUN_CONFIG
-        ensure_on_syspaths(self.CONFIG)
+        self.CONFIG = CONFIG if CONFIG is not None else get_run_config()
+
+        # sanity paths
+        ensure_on_syspaths([self.CONFIG.path, os.getcwd()])
+
         self._maxfiles = maxfiles
 
         self.events: EventsMap | dak.Array = {}
@@ -531,8 +527,7 @@ class NTuple:
                 tree_path=task["tree"],
                 max_files=maxfiles,
                 base_dir=task["base_dir"],
-                root=root,
-                parquet=parquet,
+                in_format=in_format,
             )
             self.events[name] = self._load_events(
                 self._loaded_files[name],
@@ -540,8 +535,7 @@ class NTuple:
                 split_row_groups=task["split_rg"],
                 schema=task["schema"],
                 name=name,
-                root=root,
-                parquet=parquet,
+                in_format=in_format,
             )
             if not is_single_input:
                 self.metadata[name] = task["metadata"]
@@ -566,11 +560,10 @@ class NTuple:
         split_row_groups: bool | None,
         schema: object = None,
         name: str = "inputs",
-        root: bool = False,
-        parquet: bool = False,
+        in_format: Literal["root", "parquet"] = "root",
     ) -> dak.Array:
         """Format files, load (ROOT or Parquet), apply pre-steps → ``dak.Array``."""
-        if parquet:
+        if in_format == "parquet":
             # For Parquet, we ignore tree names so only keys (file paths) are relevant.
             events = dak.from_parquet(
                 list(files.keys()), split_row_groups=split_row_groups

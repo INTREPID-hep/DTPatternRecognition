@@ -4,7 +4,7 @@ Installation
 You can install the latest version of the package directly from GitHub using pip or Poetry.
 
 .. note::
-    Take a look at the available `tagged versions <https://github.com/INTREPID-hep/DTPatternRecognition/tags>`_.
+    Take a look at the available `tagged versions <https://github.com/INTREPID-hep/ydana/tags>`_.
 
 .. tab-set::
 
@@ -12,44 +12,44 @@ You can install the latest version of the package directly from GitHub using pip
 
         .. code-block:: shell
 
-            pip install "git+https://github.com/INTREPID-hep/DTPatternRecognition.git@[TAG_VERSION]"
+            pip install "git+https://github.com/INTREPID-hep/ydana.git@[TAG_VERSION]"
 
         To check if the package was installed successfully, run:
 
         .. code-block:: shell
 
-            pip show DTPatternRecognition
+            pip show ydana
 
-        Or simply run ``dtpr --help``
+        Or simply run ``ydana --help``
 
         If you want to work with the source and editable installs, you can clone the repo and install in editable mode:
 
         .. code-block:: shell
 
-            git clone https://github.com/INTREPID-hep/DTPatternRecognition -b [TAG_VERSION]
-            cd DTPatternRecognition
+            git clone https://github.com/INTREPID-hep/ydana -b [TAG_VERSION]
+            cd ydana
             pip install -e .
 
     .. tab-item:: Poetry
 
         .. code-block:: shell
 
-            poetry add "git+https://github.com/INTREPID-hep/DTPatternRecognition.git@[TAG_VERSION]"
+            poetry add "git+https://github.com/INTREPID-hep/ydana.git@[TAG_VERSION]"
 
         To check if the package was installed successfully, run:
 
         .. code-block:: shell
 
-            poetry show DTPatternRecognition
+            poetry show ydana
 
-        Or simply run ``poetry run dtpr --help``
+        Or simply run ``poetry run ydana --help``
 
         If you want to work with the source and editable installs, you can clone the repository and build the environment with Poetry:
 
         .. code-block:: shell
 
-            git clone https://github.com/INTREPID-hep/DTPatternRecognition -b [TAG_VERSION]
-            cd DTPatternRecognition
+            git clone https://github.com/INTREPID-hep/ydana -b [TAG_VERSION]
+            cd ydana
             poetry install
             poetry shell
 

@@ -32,7 +32,7 @@ def test_dump_to_parquet_eager_writes_single_file(tmp_path: Path) -> None:
 
     dump_to_parquet(_events(), str(outdir), ncores=1, verbose=False)
 
-    outpath = outdir / "dumpedEvents.parquet"
+    outpath = outdir / "parquets" / "dumpedEvents.parquet"
     assert outpath.exists()
 
     loaded = ak.from_parquet(outpath)
@@ -45,7 +45,7 @@ def test_dump_to_parquet_lazy_writes_dataset_directory(tmp_path: Path) -> None:
 
     dump_to_parquet(lazy_events, str(outdir), ncores=1, verbose=False)
 
-    parts = list(outdir.glob("*.parquet"))
+    parts = list((outdir / "parquets").glob("*.parquet"))
     assert parts, "Expected partition parquet files in output directory"
 
 

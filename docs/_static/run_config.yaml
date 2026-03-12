@@ -3,7 +3,7 @@
 # particle_types:
 #   ...
 #   particle_name:
-#     class: 'path.to.particle_class', if not defined it will use the default 'dtpr.particles.Particle' class
+#     class: 'path.to.particle_class', if not defined it will use the default 'ydana.particles.Particle' class
 #     amount: (int, TBranch<int> or TBranch<vector>) that could define how many particles to build  
 #     branches: list of branches to be used as attributes 
 #       attr_name: 'branch_name' 
@@ -40,7 +40,7 @@ particle_types:
     sorter:
       by: 'p.BX'
   segments:
-    class: 'dtpr.particles.Segment'
+    class: 'ydana.particles.Segment'
     amount: 'seg_nSegments'
     branches:
       wh: 'seg_wheel'
@@ -72,7 +72,7 @@ particle_types:
       matches: []
       matches_with_segment: False
   genmuons:
-    class: 'dtpr.particles.GenMuon'
+    class: 'ydana.particles.GenMuon'
     amount: 'gen_nGenParts'
     branches:
       pt: 'gen_pt'
@@ -114,7 +114,7 @@ particle_types:
       particle_type: 'simHit_particleType'
 # ================= available particles - g4ntuple ================= #
   # digis:
-  #   class: 'dtpr.particles.G4Digi'
+  #   class: 'ydana.particles.G4Digi'
   #   amount: 'nSLHit_NHits'
   #   attribute_branches:
   #     sl : 'SLHit_SL'
@@ -128,7 +128,7 @@ particle_types:
   #   sorter:
   #     by: 'p.BX'
   # simhits:
-  #   class: 'dtpr.particles.G4Digi'
+  #   class: 'ydana.particles.G4Digi'
   #   amount: 'nSLHit_NHits'
   #   attribute_branches:
   #     sl : 'SLHit_SL'
@@ -156,22 +156,22 @@ ntuple_tree_name: '/dtNtupleProducer/DTTREE'
 ntuple_preprocessors:
   # # define the event preprocessors to be used in the ntuple
   genmuon_matcher:
-    src: "dtpr.utils.genmuon_functions.analyze_genmuon_matches"
+    src: "ydana.utils.genmuon_functions.analyze_genmuon_matches"
   genmuon_showerer:
-    src: "dtpr.utils.genmuon_functions.analyze_genmuon_showers"
+    src: "ydana.utils.genmuon_functions.analyze_genmuon_showers"
     kwargs:
       method: 2
   real_shower_builder:
-    src: "dtpr.utils.shower_functions.build_real_showers"
+    src: "ydana.utils.shower_functions.build_real_showers"
     kwargs:
       threshold: 8
       debug: False
   # fw_shower_builder:
-  #   src: "dtpr.utils.shower_functions.build_fwshowers"
+  #   src: "ydana.utils.shower_functions.build_fwshowers"
   #   kwargs:
   #     threshold: 6
   # fw_shower_analyzer:
-  #   src: "dtpr.utils.shower_functions.analyze_fwshowers"
+  #   src: "ydana.utils.shower_functions.analyze_fwshowers"
 # ================= available selectors - dtntuple ================= #
 # define the selectors to be used in the ntuple, follow the format:
 # selector_name: Any name, not relevant to the codes
@@ -183,19 +183,19 @@ ntuple_preprocessors:
 ntuple_selectors:
 # comment/uncomment/add as needed...
   baseline:
-    src: "dtpr.utils.filters.base_filters.baseline"
+    src: "ydana.utils.filters.base_filters.baseline"
   # removeShower:
-  #   src: "dtpr.utils.filters.base_filters.removeShower"
+  #   src: "ydana.utils.filters.base_filters.removeShower"
   # baseline_plus_hitsc:
-  #   src: "dtpr.utils.filters.base_filters.baseline_plus_hitsc"
+  #   src: "ydana.utils.filters.base_filters.baseline_plus_hitsc"
   # - ...
 # -------------------------------- configuration for histograms -----------------------------------#
 histo_sources:
   # define the source modules of the histograms
-  # - dtpr.utils.histograms.baseHistos
-  - dtpr.utils.histograms.am_histos
-  # - dtpr.utils.histograms.digi_histos
-  # - dtpr.utils.histograms.shower_histos
+  # - ydana.utils.histograms.baseHistos
+  - ydana.utils.histograms.am_histos
+  # - ydana.utils.histograms.digi_histos
+  # - ydana.utils.histograms.shower_histos
 
 histo_names:
   # Histogram to fill - Uncomment or add histograms as needed. 
@@ -293,7 +293,7 @@ histo_names:
 # inspector-functions:
   # define the functions to be used in the event inspector in the format:
   # func1:
-  #   src: "dtpr.utils.inspector_functions.digi_inspector"
+  #   src: "ydana.utils.inspector_functions.digi_inspector"
   #   kwargs:
   #     arg1: value1
   #     ...

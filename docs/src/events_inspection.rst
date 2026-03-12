@@ -19,7 +19,7 @@ the source (Python import path) and optional keyword arguments:
 
     inspector-functions:
       func1:
-        src: "dtpr.utils.inspector_functions.digi_inspector"
+        src: "ydana.utils.inspector_functions.digi_inspector"
         kwargs:
           arg1: value1
       # Add more inspector functions as needed
@@ -33,7 +33,7 @@ To inspect events, use the following command:
 
 .. code-block:: bash
 
-    dtpr inspect-events -i [INPATH] -cf [CONFIG] -evn [EVENT INDEX]
+    ydana inspect-events -i [INPATH] -cf [CONFIG] -evn [EVENT INDEX]
 
 Where:
 
@@ -58,7 +58,7 @@ Inspector functions receive the event as their first argument and can accept add
 
 .. code-block:: python
 
-    # File: dtpr/utils/inspector_functions.py
+    # File: ydana/utils/inspector_functions.py
     def digi_inspector(event, arg1=None, tqdm_pbar=None):
         print(f"Event {event.index}: Number of digis = {len(getattr(event, 'digis', []))}")
         # Additional inspection logic here

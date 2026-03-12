@@ -65,16 +65,20 @@ opt_args:
         dest: "per_partition"
         action: "store_true"
         help: "Write one output file per dask partition instead of a single merged file. Default is False."
-    root: &root
-        flags: ["-r", "--root"]
-        dest: "root"
-        action: "store_true"
-        help: "Use ROOT format."
-    parquet: &parquet
-        flags: ["-p", "--parquet"]
-        dest: "parquet"
-        action: "store_true"
-        help: "Use Parquet format."
+    in-format: &in_format
+        flags: ["--in-format"]
+        dest: "in_format"
+        type: str
+        choices: ["root", "parquet"]
+        default: "root"
+        help: "Format of the input files (default: root)."
+    out-format: &out_format
+        flags: ["--out-format"]
+        dest: "out_format"
+        type: str
+        choices: ["root", "parquet"]
+        default: "root"
+        help: "Format for the dumped output files (default: root)."
     scheduler-address: &scheduler_address
         flags: ["--scheduler-address"]
         dest: "scheduler_address"
@@ -97,7 +101,7 @@ pos_args:
     fill-histos:
         name: "fill-histos"
         help: "Fill predefined ROOT histograms based on event-by-event information from DT NTuple files."
-        func: "ydana.analysis.fill_histograms.fill_histos"
+        func: "ydana.analysis.histos_filler.fill_histos"
         opt_args:
             config-path: *config_path
             inputs: *inputs
@@ -110,13 +114,12 @@ pos_args:
             per-partition: *per_partition
             overwrite: *overwrite
             scheduler-address: *scheduler_address
-            root: *root
-            parquet: *parquet
+            in-format: *in_format
             verbose: *nverbose
     dump-events:
         name: "dump-events"
-        help: "Load DT NTuple files and export the event array. Use -r for ROOT or -p for Parquet."
-        func: "ydana.analysis.dumper.dump_events"
+        help: "Load DT NTuple files and export the event array. Choose --in-format and --out-format."
+        func: "ydana.analysis.events_dumper.dump_events"
         opt_args:
             config-path: *config_path
             inputs: *inputs
@@ -125,15 +128,16 @@ pos_args:
             tag: *tag
             max-files: *max_files
             tree-name: *tree_name
-            root: *root
-            parquet: *parquet
+            in-format: *in_format
+            out-format: *out_format
             cores-number: *cores_number
             overwrite: *overwrite
             scheduler-address: *scheduler_address
+            verbose: *nverbose
     merge-histos:
         name: "merge-histos"
         help: "Merge per-partition histogram ROOT files into a single ROOT output."
-        func: "ydana.analysis.merge_histos.merge_histos"
+        func: "ydana.analysis.histos_merger.merge_histos"
         opt_args:
             inputs: *inputs
             output-path: *output_path
@@ -143,22 +147,10 @@ pos_args:
     merge-roots:
         name: "merge-roots"
         help: "Merge per-partition event ROOT files into a single ROOT output."
-        func: "ydana.analysis.merge_roots.merge_roots"
+        func: "ydana.analysis.roots_merger.merge_roots"
         opt_args:
             inputs: *inputs
             output-path: *output_path
             config-path: *config_path
             tag: *tag
             verbose: *nverbose
-    # -------------------------------- dev/debug ------------------------------------------------- #
-    test-cli:
-        name: "test-cli"
-        help: "Print all parsed CLI arguments — smoke-test for argument wiring."
-        func: "ydana.analysis.test_cli.test_cli"
-        opt_args:
-            config-path: *config_path
-            inputs: *inputs
-            max-files: *max_files
-            tree-name: *tree_name
-            output-path: *output_path
-            tag: *tag

@@ -1,8 +1,9 @@
 """Analysis dispatch for the ``ydana fill-histos`` command.
 
 This module acts as the CLI entry-point for histogramming. It loads the
-event NTuples, reads histogram definitions via :func:`ydana.base.histos.from_config`,
-and delegates all distributed filling logic to :func:`ydana.base.histos.fill`.
+event NTuples, reads histogram definitions from the active config via
+:func:`ydana.base.histos.from_config`, and delegates all distributed filling logic 
+to :func:`ydana.base.histos.fill`.
 
 Output formatting
 -----------------
@@ -38,6 +39,7 @@ is ignored (unless ``ncores == 1``).
 
 from __future__ import annotations
 
+from typing import Literal
 from typing import Any
 
 from ..base import histos as _histos
@@ -51,8 +53,7 @@ def fill_histos(
     tag: str = "",
     maxfiles: int = -1,
     datasets: str | list[str] | None = None,
-    root: bool = True,
-    parquet: bool = False,
+    in_format: Literal["root", "parquet"] = "root",
     tree_name: str | list[str] | None = None,
     ncores: int = -1,
     per_partition: bool = False,
@@ -79,11 +80,9 @@ def fill_histos(
     datasets : str or list[str] or None
         Named datasets from ``filesets:`` in the config.
         ``[]`` / ``None`` (with no *inputs*) → load all filesets.
-    root : bool
-        Load ROOT files via coffea.NanoEventsFactory.
-    parquet : bool
-        Load Parquet files via dask_awkward.from_parquet.
-         Mutually exclusive with *root*.
+    in_format : {"root", "parquet"}
+        Input file format. ROOT uses coffea.NanoEventsFactory and Parquet uses
+        dask_awkward.from_parquet.
     tree_name : str or list[str] or None
         TTree path.  Falls back to config or embedded ``"file.root:treepath"``
         syntax.
@@ -93,10 +92,6 @@ def fill_histos(
         Write one ROOT file per partition (resume-safe).
     overwrite : bool
         Re-process and overwrite existing per-partition files.
-    histos_src : str or None
-        Dotted module path for histogram definitions,
-        e.g. ``"my_analysis.histos"``.
-        ``None`` → read sources from :data:`~ydana.base.config.RUN_CONFIG`.
     """
     if verbose:
         color_msg("Running fill-histos...", "green")
@@ -107,12 +102,11 @@ def fill_histos(
         maxfiles=maxfiles,
         tree_name=tree_name,
         datasets=datasets,
-        root=root,
-        parquet=parquet,
+        in_format=in_format,
         verbose=verbose,
     )
 
-    histos = _histos.from_config(None)
+    histos = _histos.from_config()
 
     if not histos:
         if verbose:
@@ -148,7 +142,7 @@ def fill_histos(
             histos,
             ds_events,
             outfolder=outfolder,
-            tag=f"{tag}_{ds_name}",
+            tag=f"_{ds_name}{tag}",
             per_partition=per_partition,
             overwrite=overwrite,
             ncores=ncores,

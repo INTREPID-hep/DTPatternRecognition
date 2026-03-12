@@ -79,21 +79,28 @@ class TestParticleRecordRepr:
 
 class TestParticleRecordStr:
 
-    def test_str_full(self, digis):
-        plain = _strip_ansi(str(digis[0][0]))
-        assert "Particle" in plain
-        assert "Wh"   in plain
-        assert "Sl"   in plain
-        assert "Time" in plain
+    def test_str_equals_repr(self, digis):
+        """__str__ now delegates to __repr__."""
+        assert str(digis[0][0]) == repr(digis[0][0])
 
-    def test_str_include(self, digis):
-        plain = _strip_ansi(digis[0][0].__str__(include=["wh", "time"]))
+    def test_str_contains_fields_and_values(self, digis):
+        s = str(digis[0][0])
+        assert "wh=1"     in s
+        assert "sl=1"     in s
+        assert "time=100" in s
+
+    def test_show_include(self, digis, capsys):
+        """Filtering is now in show(), not __str__."""
+        digis[0][0].show(include=["wh", "time"])
+        plain = _strip_ansi(capsys.readouterr().out)
         assert "Wh"   in plain
         assert "Time" in plain
         assert "Sl"   not in plain
 
-    def test_str_exclude(self, digis):
-        plain = _strip_ansi(digis[0][0].__str__(exclude=["sl"]))
+    def test_show_exclude(self, digis, capsys):
+        """Filtering is now in show(), not __str__."""
+        digis[0][0].show(exclude=["sl"])
+        plain = _strip_ansi(capsys.readouterr().out)
         assert "Wh"   in plain
         assert "Time" in plain
         assert "Sl"   not in plain

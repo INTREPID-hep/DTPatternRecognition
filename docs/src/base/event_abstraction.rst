@@ -19,7 +19,7 @@ This should list each type of particle to be created with its respective specifi
     particle_types:
       # ...
       particle_name:
-        class: 'path.to.particle_class'  # Optional: custom class, defaults to 'dtpr.particles.Particle'
+        class: 'path.to.particle_class'  # Optional: custom class, defaults to 'ydana.particles.Particle'
         amount: (int, TBranch<int> or TBranch<vector>)  # How many particles to build per event
         attributes:
           attr_name:
@@ -50,7 +50,7 @@ the ``__getattr__`` and ``__setattr__`` methods are overridden, you can access c
 To iterate over a TTree and create event instances with particles specified in the 
 :download:`configuration file <../../_static/run_config.yaml>`, you can use the following code:
 
-.. literalinclude:: ../../../dtpr/base/event.py
+.. literalinclude:: ../../../ydana/base/event.py
     :language: python
     :dedent:
     :start-after: [start-example-2]
@@ -126,7 +126,7 @@ define any type of attribute mapping in the configuration file or even create an
 
 .. rubric:: Example: manual event creation
 
-.. literalinclude:: ../../../dtpr/base/event.py
+.. literalinclude:: ../../../ydana/base/event.py
     :language: python
     :dedent:
     :start-after: [start-example-1]
@@ -145,7 +145,7 @@ define any type of attribute mapping in the configuration file or even create an
     >> Shower 4 info -->
         + Wh: 1, Sc: 1, St: 1
 
-.. autoclass:: dtpr.base.Event
+.. autoclass:: ydana.base.Event
     :members:
     :member-order: bysource
     :private-members: _build_particles

@@ -4,7 +4,7 @@ This package is intended to serve as a base framework for Trigger pattern recogn
 using as input data ``.root`` NTuples in a format similar to :download:`this one <./_static/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root>`.
 Since the framework was developed in the context of the Drift Tube detectors, it also includes visualization tools considering
 the geometrical features of the CMS DT system by using another auxiliary package `mplDTs <https://danielestrada971102.github.io/mplDTs>`_ 
-and custom implementations in the ``dtpr/utils/dt_plot_functions.py`` module.
+and custom implementations in the ``ydana/utils/dt_plot_functions.py`` module.
 
 The core idea of this framework is to simplify the analysis of input data by adopting an event-by-event approach 
 using Python classes. This approach makes the code more intuitive and readable. For example:
@@ -29,13 +29,13 @@ see along the different sections. The idea is that this allows users to adapt th
 
 Some useful, and as general as possible, tools using the framework have been implemented to facilitate some common tasks 
 such as filling ROOT histograms, or inspecting or visualizing information from the NTuples. They are accessible through the 
-``dtpr`` CLI command and are described in the :doc:`src/command_line_interface` section. Reading, manipulating, and mapping
+``ydana`` CLI command and are described in the :doc:`src/command_line_interface` section. Reading, manipulating, and mapping
 the information from the input files into the respective classes are handled
 by central classes, just go around the :doc:`src/base/main` section to know more about them.
 
 Bear in mind that the package is under development, so feel free to contribute, report bugs, or suggest improvements.
-Take a look at the `Contributors <https://github.com/INTREPID-hep/DTPatternRecognition/blob/main/CONTRIBUTING.md>`_ 
-and `Developers <https://github.com/INTREPID-hep/DTPatternRecognition/blob/main/DEVELOPERS.md>`_ guides.
+Take a look at the `Contributors <https://github.com/INTREPID-hep/ydana/blob/main/CONTRIBUTING.md>`_ 
+and `Developers <https://github.com/INTREPID-hep/ydana/blob/main/DEVELOPERS.md>`_ guides.
 
 .. toctree::
    :maxdepth: 2

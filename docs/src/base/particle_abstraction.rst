@@ -12,7 +12,7 @@ A ``Particle`` object can be created from scratch, defining its properties direc
 
 .. code-block:: python
 
-    from dtpr.base import Particle
+    from ydana.base import Particle
 
     # Create a Particle instance named "Shower" with an index and some attributes
     my_shower = Particle(index=0, wh=1, sc=3, st=4, nDigis=10, name="Shower")
@@ -57,7 +57,7 @@ allows attributes to be defined dynamically. For each attribute, its value can b
 Understanding this mechanism enables the definition of particle initialization through the configuration file or passing directly.
 the dictionary-like structure to read from a ROOT TTree entry.
 
-.. literalinclude:: ../../../dtpr/base/particle.py
+.. literalinclude:: ../../../ydana/base/particle.py
     :language: python
     :lines: 181-205
     :dedent:
@@ -73,7 +73,7 @@ The following snippet from ``run_config.yaml`` demonstrates how "digis" (detecto
 
 .. code-block:: yaml
 
-    # File: dtpr/utils/yamls/run_config.yaml
+    # File: ydana/utils/yamls/run_config.yaml
     particle_types:
       digis:
         amount: 'digi_nDigis' # How many digis to create, read from 'digi_nDigis' branch
@@ -101,7 +101,7 @@ A custom particle class skeleton can be generated using the CLI:
 
 .. code-block:: bash
 
-    dtpr create-particle -o [output_folder] --name TestParticle
+    ydana create-particle -o [output_folder] --name TestParticle
 
 This command creates a file ``testparticle.py`` with a template for your new class.
 
@@ -111,7 +111,7 @@ This command creates a file ``testparticle.py`` with a template for your new cla
 By inheriting from ``Particle``, your class can initialize attributes from NTuple data and provides 
 useful methods such as a colored string representation and equality comparison.
 
-.. autoclass:: dtpr.base.Particle
+.. autoclass:: ydana.base.Particle
     :members:
     :member-order: bysource
     :private-members: _init_from_ev, _init_from_dict

@@ -8,7 +8,7 @@ import warnings
 from collections.abc import Callable
 from copy import deepcopy
 
-from .base.config import CLI_CONFIG, RUN_CONFIG
+from .base.config import Config, get_run_config, set_run_config
 from .utils.functions import (
     color_msg,
     create_outfolder,
@@ -23,6 +23,42 @@ warnings.filterwarnings(action="once", category=UserWarning)
 warnings.showwarning = warning_handler
 # Set the custom error handler
 sys.excepthook = error_handler
+
+# ------- load CLI_CONFIG -------
+CLI_CONFIG = Config(os.path.join(os.path.dirname(__file__), "config_cli.yaml"))
+
+
+def _resolve_cli_value(
+    args: argparse.Namespace, param: inspect.Parameter
+) -> object:
+    """Resolve a parser value while preserving callable defaults.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Parsed CLI namespace.
+    param : inspect.Parameter
+        Callable parameter to resolve.
+
+    Returns
+    -------
+    object
+        Value to pass into the wrapped callable.
+
+    Raises
+    ------
+    ValueError
+        If a required callable parameter has no matching CLI value.
+    """
+    if hasattr(args, param.name):
+        value = getattr(args, param.name)
+        if value is not None or param.default is None:
+            return value
+
+    if param.default is not inspect.Parameter.empty:
+        return param.default
+
+    raise ValueError(f"Missing required CLI argument for parameter: {param.name}")
 
 
 def add_arguments(
@@ -104,7 +140,6 @@ def main() -> None:
             "dump-events",
             "merge-histos",
             "merge-roots",
-            "test-cli",
         ],
     )
 
@@ -113,34 +148,39 @@ def main() -> None:
 
     verbose = getattr(args, "verbose", True)
 
-    if "create" not in args.command:
-        change_cfg = False
+    paths = [os.getcwd()]
+
+    if not "merge" in args.command:
+        # verify if a config file is provided or can be found in the output folder
+        _cfg_provided = False
         if args.config_file:
-            change_cfg = True
+            _cfg_provided = True
         else:
             if getattr(args, "outfolder", None):
                 create_outfolder(args.outfolder)
                 with os.scandir(args.outfolder) as entries:
                     for entry in entries:
                         if entry.is_file() and entry.name.endswith(".yaml"):
-                            change_cfg = True
+                            _cfg_provided = True
                             args.config_file = entry.path
                         break
-        if change_cfg:
-            if verbose:
-                color_msg(f"Using configuration file: {args.config_file}", "yellow")
-            RUN_CONFIG.change_config_file(config_path=args.config_file)
-        else:
-            if verbose:
-                color_msg(
-                    f"No configuration file provided or found in the output path. Using default configuration file: {RUN_CONFIG.path}",
-                    "yellow",
-                )
 
-    # Ensure config dir and (optionally) outfolder are importable
-    ensure_on_syspaths(RUN_CONFIG)
+        if not _cfg_provided:
+            raise FileNotFoundError(f"No configuration file provided or found in the output path.")
+
+        config_path = os.path.abspath(args.config_file)
+        if verbose:
+            color_msg(f"Using configuration file: {config_path}", "yellow")
+        # Intialize RUN_CONFIG singleton with the provided config file
+        set_run_config(config_path)
+
+        paths.append(get_run_config().path)
+
     if hasattr(args, "outfolder") and args.outfolder:
-        sys.path.append(args.outfolder)
+        paths.append(os.path.abspath(args.outfolder))
+
+    # Ensure config, cwd and (optionally) outfolder dirs are importable
+    ensure_on_syspaths(paths)
 
     # Run the function — wrap in a Dask distributed client if requested
     scheduler_address = getattr(args, "scheduler_address", None)

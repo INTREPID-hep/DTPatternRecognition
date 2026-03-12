@@ -1,11 +1,11 @@
 Configuration Management
 ========================
 
-The DTPatternRecognition framework uses a centralized configuration system to manage all analysis settings,
+The ydana framework uses a centralized configuration system to manage all analysis settings,
 ensuring consistency and flexibility throughout your workflow. This is handled by a global configuration
 class, ``Config``, which loads YAML files and exposes their contents as Python attributes.
 
-The configuration is managed by a single global instance, ``RUN_CONFIG``, imported from ``dtpr.base.config``.
+The configuration is managed by a single global instance, ``RUN_CONFIG``, imported from ``ydana.base.config``.
 This instance is initialized at startup with a specific YAML configuration file (typically ``run_config.yaml``),
 and all top-level keys in this file become attributes of ``RUN_CONFIG``. This design allows you to access and
 modify configuration parameters from anywhere in your codebase without hardcoding values.
@@ -36,7 +36,7 @@ A snippet from ``run_config.yaml`` might look like:
 
     ntuple_preprocessors:
       genmuon_matcher:
-        src: "dtpr.utils.genmuon_functions.analyze_genmuon_matches"
+        src: "ydana.utils.genmuon_functions.analyze_genmuon_matches"
 
     histo_names:
       - seg_eff_MB1
@@ -52,7 +52,7 @@ You can access these settings directly in your Python code:
 
 .. code-block:: python
 
-    from dtpr.base.config import RUN_CONFIG
+    from ydana.base.config import RUN_CONFIG
 
     # Accessing particle type definitions
     digi_config = RUN_CONFIG.particle_types["digis"]
@@ -75,7 +75,7 @@ You can access these settings directly in your Python code:
 
     Digi particle amount source: digi_nDigis
     Digi BX attribute expression: time // 25 if time is not None else None
-    Genmuon matcher function source: dtpr.utils.genmuon_functions.analyze_genmuon_matches
+    Genmuon matcher function source: ydana.utils.genmuon_functions.analyze_genmuon_matches
     First histogram to fill: seg_eff_MB1
     Matplotlib HEP style: CMS
 
@@ -91,7 +91,7 @@ You can change the configuration file using the ``change_config_file`` method:
 
 .. code-block:: python
 
-    from dtpr.base.config import RUN_CONFIG
+    from ydana.base.config import RUN_CONFIG
     import os
 
     # Print initial config file and style
@@ -105,14 +105,14 @@ You can change the configuration file using the ``change_config_file`` method:
     print(f"New Matplotlib HEP style: {RUN_CONFIG.plot_configs['mplhep-style']}")
 
     # Switch back to the default config
-    RUN_CONFIG.change_config_file(config_path=os.path.abspath("dtpr/utils/yamls/run_config.yaml"))
+    RUN_CONFIG.change_config_file(config_path=os.path.abspath("ydana/utils/yamls/run_config.yaml"))
     print(f"\nSwitched back to default. Matplotlib HEP style: {RUN_CONFIG.plot_configs['mplhep-style']}")
 
 **Output:**
 
 .. code-block:: text
 
-    Initial config file: .../dtpr/utils/yamls/run_config.yaml
+    Initial config file: .../ydana/utils/yamls/run_config.yaml
     Initial Matplotlib HEP style: CMS
 
     New config file: .../my_custom_config.yaml
@@ -127,7 +127,7 @@ There is also a separate configuration instance, ``CLI_CONFIG``, intended for in
 command-line interface tools. Regular users should interact only with ``RUN_CONFIG`` for analysis 
 configuration. ``CLI_CONFIG`` is primarily for developers and advanced CLI customization.
 
-.. automodule:: dtpr.base.config
+.. automodule:: ydana.base.config
     :members:
     :undoc-members:
     :exclude-members: __weakref__

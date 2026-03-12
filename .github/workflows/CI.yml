@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'dtpr/**'
+      - 'ydana/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'dtpr/**'
+      - 'ydana/**'
 
 jobs:
   black:
@@ -28,7 +28,7 @@ jobs:
         run: pip install black
 
       - name: Check code formatting with black
-        run: black --check -l 100 dtpr
+        run: black --check -l 100 ydana
 
   pytest: # NEED TO BE FIXED - DISABLE AT THE MOMENT
     runs-on: ubuntu-latest

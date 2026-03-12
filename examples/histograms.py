@@ -1,25 +1,25 @@
-"""Example histogram definitions using the columnar dtpr histogram API.
+"""Example histogram definitions using the columnar ydana histogram API.
 
 Each entry in ``histos`` is an instance of the :class:`Histogram` wrapper from
-:mod:`dtpr.base.histos`.
+:mod:`ydana.base.histos`.
 
-The ``func`` callable maps the input events array to a dictionary of 1D arrays 
-that correspond to the defined axes. 
+The ``func`` callable maps the input events array to a dictionary of 1D arrays
+that correspond to the defined axes.
 
-**Important:** Depending on the execution mode, ``events`` will be either a 
-materialized ``awkward.Array`` (eager / per-partition modes) or a completely 
-lazy ``dask_awkward.Array`` (in-memory mode). Therefore, the slicing and math 
+**Important:** Depending on the execution mode, ``events`` will be either a
+materialized ``awkward.Array`` (eager / per-partition modes) or a completely
+lazy ``dask_awkward.Array`` (in-memory mode). Therefore, the slicing and math
 inside ``func`` must be array-agnostic (standard ``ak.*`` functions handle both).
 
 **Note on Jagged Arrays:**
-If extracting variables from jagged/nested collections (e.g., all muons per event 
-rather than just the leading one), you must explicitly flatten them into 1D arrays 
+If extracting variables from jagged/nested collections (e.g., all muons per event
+rather than just the leading one), you must explicitly flatten them into 1D arrays
 (e.g., using ``ak.flatten``) before returning them.
 
 **Note on Efficiencies:**
-Histograms defined with a ``hist.axis.Boolean`` (like ``Muon_pt20_eff`` below) 
-are automatically recognized by the framework's ROOT serialization. When saved, 
-they are split dynamically into ``<name>_num`` (True bins) and ``<name>_den`` 
+Histograms defined with a ``hist.axis.Boolean`` (like ``Muon_pt20_eff`` below)
+are automatically recognized by the framework's ROOT serialization. When saved,
+they are split dynamically into ``<name>_num`` (True bins) and ``<name>_den``
 (Total bins) without user intervention.
 
 These histograms assume:
@@ -30,9 +30,10 @@ These histograms assume:
     are always valid.
 """
 
-import hist
 import awkward as ak
-from dtpr.base.histos import Histogram
+import hist
+
+from ydana.base.histos import Histogram
 
 # ---------------------------------------------------------------------------
 # Histogram list
@@ -50,7 +51,6 @@ histos = [
         name="LeadingMuon_eta",
         func=lambda events: {"eta": events["genmuons"]["eta"][:, 0]},
     ),
-    
     # --- Subleading muon properties
     # (safe after select-has-genmuons pre-step guarantees >=2 gen-muons)
     Histogram(
@@ -63,14 +63,12 @@ histos = [
         name="SubLeadingMuon_eta",
         func=lambda events: {"eta": events["genmuons"]["eta"][:, 1]},
     ),
-    
     # --- Muon dR  (computed by add_genmuon_dR preprocessor)
     Histogram(
         hist.axis.Regular(20, 1, 6, name="dR", label=r"$\Delta R$ (both muons)"),
         name="muon_DR",
         func=lambda events: {"dR": events["dR"]},
     ),
-    
     # --- Efficiency example: pT > 20 GeV
     # Shows explicit flattening of a jagged array and boolean axis usage!
     Histogram(
@@ -78,8 +76,8 @@ histos = [
         hist.axis.Boolean(name="pt20", label=r"muon $p_T > 20$ GeV"),
         name="Muon_pt20_eff",
         func=lambda events: {
-            "pt": ak.flatten(events["genmuons"]["pt"]), 
-            "pt20": ak.flatten(events["genmuons"]["pt"] > 20)
+            "pt": ak.flatten(events["genmuons"]["pt"]),
+            "pt20": ak.flatten(events["genmuons"]["pt"] > 20),
         },
     ),
 ]

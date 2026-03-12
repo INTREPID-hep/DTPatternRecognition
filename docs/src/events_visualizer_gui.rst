@@ -16,7 +16,7 @@ To open the GUI, run the following command:
 
 .. code-block:: bash
 
-    dtpr event-visualizer -i [INPATH] -cf [CONFIG]
+    ydana event-visualizer -i [INPATH] -cf [CONFIG]
 
 .. warning::
     The GUI was primarily designed for debugging purposes. So, it is not cleanly implemented yet and

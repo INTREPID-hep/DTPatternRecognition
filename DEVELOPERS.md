@@ -53,11 +53,16 @@ uv run ydana --help
 ## Documentation workflow
 
 ```shell
-cd docs
+# strict build (fails on warnings)
+cd ../docs
+python -m sphinx -W -b html . _build/html
+
+# equivalent via Makefile helper
+cd ../docs
 make html
 ```
 
-Generated HTML is available under `docs/_build/html`.
+Generated HTML is available under `../docs/_build/html`.
 
 ## Recommended practices
 

@@ -39,6 +39,20 @@ git commit -m "Describe change"
 git push origin feature/my-change
 ```
 
+Before opening a PR with documentation changes, build docs locally:
+
+```shell
+cd ../docs
+python -m sphinx -W -b html . _build/html
+```
+
+If you prefer Make targets:
+
+```shell
+cd ../docs
+make html
+```
+
 ## Helpful links
 
 - Repository: https://github.com/INTREPID-hep/ydana

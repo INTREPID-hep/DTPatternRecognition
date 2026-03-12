@@ -61,19 +61,20 @@ def topological_sort(steps: dict[str, dict]) -> list[list[dict]]:
     Parameters
     ----------
     steps : dict[str, dict]
-        Mapping of step-name → step-body as parsed from the YAML ``pre-steps:``
-        key.  Each value must not contain a redundant ``name`` key — the dict
-        key *is* the name.
+        Mapping from step name to step body as parsed from YAML ``pre-steps``.
+        The dict key is the canonical step name.
 
-    Returns a list of *levels*.  Each level is a list of ``(name, step)``
-    tuples whose maximum dependency depth equals the level index.  Pairs
-    within a level are independent of each other.
+    Returns
+    -------
+    list[list[tuple[str, dict]]]
+        Dependency levels. Each level contains ``(name, step)`` pairs that can
+        run in any order relative to each other.
 
     Raises
     ------
     ValueError
-        If a step references an unknown ``needs`` name, or if a cycle
-        is detected in the dependency graph.
+        Raised when a step references unknown dependencies, when ``needs`` is
+        not a list, or when a cycle is detected in the graph.
     """
     if not steps:
         return []

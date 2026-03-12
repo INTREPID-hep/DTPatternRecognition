@@ -41,14 +41,14 @@ Public usage:
     ntuple.events["DY"]["digis"]["BX"].compute()  # multi-dataset
 
 Input formats:
-    - "file.root"                              single ROOT file
-    - "/dir/*.root"                            glob pattern
-    - "/dir/"                                  directory (finds *.root or *.parquet)
-    - ["a.root", "b.root"]                     list of files
-    - {"file.root": "tree", ...}              dict (uproot-native)
-    - {"file.root": {"object_path": "ttree_v1", "steps": [[0, 10000], [15000, 20000], …]}},
-    - "output.parquet"                         single Parquet file
-    - ["a.parquet", "b.parquet"]               list of Parquet files
+    - ``file.root``                              single ROOT file
+    - ``/dir/*.root``                            glob pattern
+    - ``/dir/``                                  directory (finds ROOT or Parquet files)
+    - ``["a.root", "b.root"]``                 list of files
+    - ``{"file.root": "tree", ...}``          dict (uproot-native)
+    - ``{"file.root": {"object_path": "ttree_v1", "steps": [[0, 10000], [15000, 20000], ...]}}``
+    - ``output.parquet``                         single Parquet file
+    - ``["a.parquet", "b.parquet"]``           list of Parquet files
 """
 
 from __future__ import annotations
@@ -398,7 +398,7 @@ class NTuple:
         step_size: int (ROOT: entries per partition)
         split_row_groups: bool (Parquet: one partition per row group)
         in_format: {"root", "parquet"} (input file format)
-        CONFIG: Config (defaults to :data:`~ydana.base.config.RUN_CONFIG - previously set)
+        CONFIG: Config (defaults to :func:`~ydana.base.config.get_run_config`)
         verbose: bool (print info summary)
 
     Attributes:

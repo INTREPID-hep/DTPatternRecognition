@@ -94,9 +94,11 @@ class YAMLSchema(BaseSchema):
         The Awkward form dict produced by uproot/coffea (already pre-filtered
         to the allow-listed branches before this class is instantiated).
 
-    The *schema_map* (the value of the ``Schema:`` key in the YAML) is bound
-    at the class level via :meth:`with_config` before this constructor is
-    called by coffea.
+    Notes
+    -----
+    The ``schema_map`` (the value of the ``Schema:`` key in YAML) is bound at
+    the class level via :meth:`with_config` before this constructor is called
+    by coffea.
     """
 
     __dask_capable__ = True

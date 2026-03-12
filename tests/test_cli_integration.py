@@ -1,66 +1,76 @@
-import subprocess
+from __future__ import annotations
+
 import os
-import pytest
+import subprocess
 import sys
+from pathlib import Path
 
-# Resolve the dtpr binary from the same venv as the running Python interpreter,
-# so tests work regardless of whether the venv is activated in the shell.
-DTPR_BIN = os.path.join(os.path.dirname(sys.executable), "dtpr")
+import pytest
 
-# Paths to config and test ntuple
-NTUPLE = os.path.abspath(os.path.join(
-    os.path.dirname(__file__),
-    "ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"
-    )
-)
 
-def test_dtpr_cli_entry_point():
-    result = subprocess.run([DTPR_BIN, "--help"], capture_output=True, text=True)
-    assert result.returncode == 0, f"Failed: {result.stderr}"
+YDANA_BIN = os.path.join(os.path.dirname(sys.executable), "ydana")
+
+
+def _run(args: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(args, capture_output=True, text=True)
+
+
+def test_ydana_cli_entrypoint_help() -> None:
+    result = _run([YDANA_BIN, "--help"])
+
+    assert result.returncode == 0
+    assert "fill-histos" in result.stdout
+    assert "dump-events" in result.stdout
+
 
 @pytest.mark.parametrize(
-    "command, extra_args, expect",
-    [
-        (
-            "fill-histos",
-            ["--maxevents", "10", "--tree", "dtNtupleProducer/DTTREE"],
-            "Done"
-        ),
-        (
-            "plot-dt",
-            ["-evn", "9", "-sc", "6", "-st", "3", "--artist-names", "all", "--save"],
-            "Done"
-        ),
-        (
-            "plot-dts",
-            ["-evn", "9", "--artist-names", "all", "--save"],
-            "Done"
-        ),
-    ]
+    "subcommand",
+    ["fill-histos", "dump-events", "merge-histos", "merge-roots", "test-cli"],
 )
-def test_dtpr_cli_analysis_commands(command, extra_args, expect):
-    args = [
-        DTPR_BIN,
-        command,
-        "-i", NTUPLE,
-    ] + extra_args
-    result = subprocess.run(args, capture_output=True, text=True)
-    assert result.returncode == 0, f"Failed: {result.stderr}"
-    # Check for expected output in stdout or stderr
-    assert expect.lower() in (result.stdout + result.stderr).lower()
+def test_ydana_subcommand_help(subcommand: str) -> None:
+    result = _run([YDANA_BIN, subcommand, "--help"])
 
-def test_events_visualizer_command():
-    args = [
-        DTPR_BIN,
-        "events-visualizer",
-        "-i", NTUPLE
-    ]
-    if not os.environ.get("DISPLAY"):
-        pytest.skip("No display available for GUI tests")
+    assert result.returncode == 0
 
-    env = os.environ.copy()
-    env["DTPR_TEST_AUTOCLOSE_GUI"] = "1"
 
-    result = subprocess.run(args, capture_output=True, text=True, env=env)
-    del env["DTPR_TEST_AUTOCLOSE_GUI"]
-    assert result.returncode == 0, f"Failed: {result.stderr}"
+def test_ydana_test_cli_smoke(sample_root_file: str, tmp_path: Path) -> None:
+    result = _run(
+        [
+            YDANA_BIN,
+            "test-cli",
+            "-i",
+            sample_root_file,
+            "-tr",
+            "dtNtupleProducer/DTTREE",
+            "--maxfiles",
+            "1",
+            "-o",
+            str(tmp_path / "cli-out"),
+        ]
+    )
+
+    assert result.returncode == 0, result.stderr
+    text = (result.stdout + result.stderr).lower()
+    assert "cli argument dump" in text
+
+
+def test_ydana_fill_histos_smoke(sample_root_file: str, tmp_path: Path) -> None:
+    result = _run(
+        [
+            YDANA_BIN,
+            "fill-histos",
+            "-i",
+            sample_root_file,
+            "-tr",
+            "dtNtupleProducer/DTTREE",
+            "-r",
+            "--maxfiles",
+            "1",
+            "-o",
+            str(tmp_path / "fill-out"),
+            "--no-verbose",
+        ]
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "fill-out" / "histograms").exists()

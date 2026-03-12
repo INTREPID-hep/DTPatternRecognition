@@ -497,7 +497,7 @@ class NTuple:
                 if isinstance(tree_name, list)
                 else [tree_name] * len(datasets)
             )
-            base_dir = self.CONFIG.path
+            base_dir = os.path.dirname(self.CONFIG.path)
 
             for ds_name, ds_tree in zip(datasets, tree_names):
                 ds_cfg = filesets[ds_name]

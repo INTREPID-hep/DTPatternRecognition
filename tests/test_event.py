@@ -1,5 +1,5 @@
 """
-Unit tests for dtpr.base.event.EventRecord.
+Unit tests for ydana.base.event.EventRecord.
 
 Pure awkward-Array construction — no ROOT file needed.
 Run with:  pytest tests/test_event.py -v
@@ -8,8 +8,8 @@ Run with:  pytest tests/test_event.py -v
 import re
 import pytest
 import awkward as ak
-from dtpr.base.event import EventRecord, behavior
-from dtpr.utils.functions import find_field_by_pattern
+from ydana.base.event import EventRecord, behavior
+from ydana.utils.functions import find_field_by_pattern
 
 
 # ---------------------------------------------------------------------------

@@ -1,11 +1,11 @@
 """
-Unit tests for dtpr.utils.functions.get_callable_from_src.
+Unit tests for ydana.utils.functions.get_callable_from_src.
 """
 
 import os
 import pytest
 
-from dtpr.utils.functions import get_callable_from_src
+from ydana.utils.functions import get_callable_from_src
 
 
 def test_get_callable_from_src_success():

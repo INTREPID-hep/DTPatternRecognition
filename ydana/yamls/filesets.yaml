@@ -6,8 +6,8 @@
 simulation:
   treename: "dtNtupleProducer/DTTREE"
   files:
-    - "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"
-    - "../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_110.root"
+    - "../../tests/ntuples/Zprime/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_1.root"
+    - "../../tests/ntuples/Zprime/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_2.root"
   metadata:
     label: "Phase2 Concentrator thr6 simulation"
     version: "12_4_2"

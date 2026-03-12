@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from dtpr.base.config import Config
+from ydana.base.config import Config
 
 
 def test_config_loader():

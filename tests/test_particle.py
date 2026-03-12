@@ -1,5 +1,5 @@
 """
-Unit tests for dtpr.base.particle.ParticleRecord and ParticleArray.
+Unit tests for ydana.base.particle.ParticleRecord and ParticleArray.
 
 Pure awkward-Array construction — no ROOT file needed.
 Run with:  pytest tests/test_particle.py -v
@@ -8,7 +8,7 @@ Run with:  pytest tests/test_particle.py -v
 import re
 import pytest
 import awkward as ak
-from dtpr.base.particle import ParticleRecord, ParticleArray, behavior
+from ydana.base.particle import ParticleRecord, ParticleArray, behavior
 
 
 # ---------------------------------------------------------------------------

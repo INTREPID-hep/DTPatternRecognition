@@ -1,12 +1,12 @@
 """
-Unit tests for dtpr.base.schema.PatternSchema.
+Unit tests for ydana.base.schema.YAMLSchema.
 
 Pure form-manipulation tests — no ROOT file, no awkward arrays.
 Run with:  pytest tests/test_schema.py -v
 """
 
 import pytest
-from dtpr.base.schema import PatternSchema
+from ydana.base.schema import YAMLSchema
 
 
 # ---------------------------------------------------------------------------
@@ -65,8 +65,8 @@ BASE_FORM = {
 
 @pytest.fixture(scope="module")
 def form() -> dict:
-    """Build the PatternSchema form once and share it across all tests."""
-    schema_cls = PatternSchema.with_config(SCHEMA_MAP)
+    """Build the YAMLSchema form once and share it across all tests."""
+    schema_cls = YAMLSchema.with_config(SCHEMA_MAP)
     schema = schema_cls(BASE_FORM)
     return schema._form
 
@@ -80,7 +80,7 @@ def contents_by_field(form) -> dict:
 # Tests
 # ---------------------------------------------------------------------------
 
-class TestPatternSchemaForm:
+class TestYAMLSchemaForm:
 
     def test_top_level_record_name(self, form):
         assert form["parameters"]["__record__"] == "Event"
@@ -114,21 +114,21 @@ class TestPatternSchemaForm:
         assert "metadata" in form["parameters"]
 
 
-class TestPatternSchemaContract:
+class TestYAMLSchemaContract:
 
     def test_raises_without_config(self):
-        """Calling PatternSchema directly (no with_config) must raise RuntimeError."""
+        """Calling YAMLSchema directly (no with_config) must raise RuntimeError."""
         with pytest.raises(RuntimeError, match="with_config"):
-            PatternSchema(BASE_FORM)
+            YAMLSchema(BASE_FORM)
 
     def test_with_config_returns_subclass(self):
-        cls = PatternSchema.with_config(SCHEMA_MAP)
-        assert issubclass(cls, PatternSchema)
+        cls = YAMLSchema.with_config(SCHEMA_MAP)
+        assert issubclass(cls, YAMLSchema)
 
     def test_bound_schema_name_unchanged(self):
         """The dynamic subclass keeps the parent's __name__ for readable tracebacks."""
-        cls = PatternSchema.with_config(SCHEMA_MAP)
-        assert cls.__name__ == "PatternSchema"
+        cls = YAMLSchema.with_config(SCHEMA_MAP)
+        assert cls.__name__ == "YAMLSchema"
 
 
 class TestCollectionParams:
@@ -158,7 +158,7 @@ class TestCollectionParams:
             "parameters": {},
             "form_key": None,
         }
-        form = PatternSchema.with_config(schema_map)(base)._form
+        form = YAMLSchema.with_config(schema_map)(base)._form
         contents = dict(zip(form["fields"], form["contents"]))
         inner = contents["digis"].get("content", contents["digis"])
         assert inner["parameters"]["__collection__"] == "DT Digis"
@@ -181,4 +181,4 @@ class TestCollectionParams:
         }
         with warnings.catch_warnings():
             warnings.simplefilter("error")   # any warning becomes an error
-            PatternSchema.with_config(schema_map)(base)
+            YAMLSchema.with_config(schema_map)(base)

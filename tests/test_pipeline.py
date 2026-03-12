@@ -1,9 +1,9 @@
-"""Unit tests for dtpr.base.pipeline."""
+"""Unit tests for ydana.base.pipeline."""
 
 import pytest
 import awkward as ak
 
-from dtpr.base.pipeline import topological_sort, execute_pipeline
+from ydana.base.pipeline import topological_sort, execute_pipeline
 
 
 def test_topological_sort_parallel_level():

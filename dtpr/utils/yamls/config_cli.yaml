@@ -9,6 +9,7 @@ opt_args:
         flags: ["-i", "--inputpath"]
         dest: "inpath"
         type: str
+        nargs: "+"
         default: "/lustrefs/hdd_pool_dir/L1T/Filter/ZprimeToMuMu_M-6000_simHits/"
         help: "Path to DTNTuple files (.root). This can be either a specific file or a directory containing multiple .root files."
     output-path: &output_path

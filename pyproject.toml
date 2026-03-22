@@ -1,6 +1,6 @@
 [project]
 name = "DTPatternRecognition"
-version = "3.3.0-beta"
+version = "3.3.1-beta"
 description = "Set of tools to implement pattern recognition algorithms on CMS DTs"
 readme = "README.md"
 authors = [
@@ -23,7 +23,9 @@ dependencies = [
     "natsort>=8.4",
     "multiprocess>=0.7",
     "more-itertools>=10.0",
-    "mplDTs @ git+https://github.com/INTREPID-hep/mplDTs.git@v2.2.0-beta"
+    "uproot>=4.0",
+    "awkward>=2.0",
+#     #"mplDTs @ git+https://github.com/INTREPID-hep/mplDTs.git@v2.2.0-beta"
 ]
 
 [project.optional-dependencies]
@@ -60,7 +62,9 @@ tqdm = ">=4.6"
 natsort = ">=8.4"
 multiprocess = ">=0.7"
 more-itertools = ">=10.0"
-mplDTs = { git = "https://github.com/INTREPID-hep/mplDTs.git", rev = "v2.2.0-beta" }
+uproot = ">=4.0"
+awkward = ">=2.0"
+# mplDTs = { git = "https://github.com/INTREPID-hep/mplDTs.git", rev = "v2.2.0-beta" }
 
 [tool.poetry.group.docs]
 optional = true

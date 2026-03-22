@@ -55,27 +55,54 @@ class Particle:
                 f"'attributes' field must specify exactly one of 'branch', 'expr', or 'src' for attribute definition : '{attr}'."
             )
 
+        # Helper function to materialize PyROOT/cppyy proxy objects into plain Python values
+        def _materialize(obj):
+            """Convert PyROOT/cppyy proxy containers into plain Python values."""
+            if isinstance(obj, (str, bytes, dict)):
+                return obj
+            if hasattr(obj, "__iter__") or hasattr(obj, "__getitem__") or hasattr(obj, "__len__"):
+                return [_materialize(x) for x in obj]
+            return obj
+
         if branch:
             # If a branch is provided, set the attribute to the value from the event
             if event is None:
                 raise ValueError(
                     f"Event must be provided to set attribute '{attr}' from branch '{branch}'."
                 )
-            value = getattr(event, branch, None)
-            if value is None:
-                raise ValueError(f"Branch '{branch}' not found in the event entry.")
 
-            # elif not isinstance(value, Number):
-            type_name = type(value).__name__.lower()
-            if "vector" in type_name or "array" in type_name:
-                if "vector<vector<" in type_name:
-                    # If the branch is a nested vector, set the attribute to the value at the current index
-                    value = list(value[self.index])
-                else:
-                    # If the branch is a vector, set the attribute to the value at the current index
-                    value = value[self.index]
+            if isinstance(branch, list): # Special handling for attributes defined by a pair of branches (flat_ids + flat_counts)
+                if len(branch) != 2:
+                    raise ValueError(
+                        f"Branch list for attribute '{attr}' must contain exactly two entries: [flat_ids, flat_counts]."
+                    )
+                ids_branch, counts_branch = branch
+                flat_ids = _materialize(getattr(event, ids_branch, None))
+                counts = _materialize(getattr(event, counts_branch, None))
+                if flat_ids is None:
+                    raise ValueError(f"Branch '{ids_branch}' not found in the event entry.")
+                if counts is None:
+                    raise ValueError(
+                        f"Companion branch '{counts_branch}' not found for '{ids_branch}'."
+                    )
 
-        if expr:
+                if self.index >= len(counts):
+                    raise IndexError(
+                        f"Particle index {self.index} out of bounds for '{counts_branch}' "
+                        f"with length {len(counts)}"
+                    )
+                start = sum(counts[: self.index])
+                end = start + counts[self.index]
+                value = flat_ids[start:end]
+            else:
+                value = _materialize(getattr(event, branch, None))
+                if value is None:
+                    raise ValueError(f"Branch '{branch}' not found in the event entry.")
+                elif hasattr(value, "__getitem__"):
+                    if not isinstance(value, (str, bytes, dict)):
+                        value = value[self.index]
+
+        elif expr:
             try:
                 # Validate the expression by compiling it
                 compile(expr, "<string>", "eval")

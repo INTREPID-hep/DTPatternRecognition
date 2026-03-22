@@ -79,6 +79,7 @@ def main():
         [
             # ---- analysis commands ----
             "fill-histos",
+            "dump-events",
             "plot-dts",
             "plot-dt",
             "inspect-events",

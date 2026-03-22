@@ -148,6 +148,7 @@ class NTuple(object):
         # expand patterns
         all_files = []
         for p in paths:
+            p = os.path.abspath(p)
             if os.path.isfile(p):
                 all_files.append(p)
                 continue

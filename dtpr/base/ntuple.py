@@ -6,6 +6,7 @@ from .event_list import EventList
 from .config import RUN_CONFIG
 from ..utils.functions import color_msg, get_callable_from_src
 from natsort import natsorted
+import glob
 import warnings
 
 
@@ -140,30 +141,47 @@ class NTuple(object):
         :param inpath: The path to the input files.
         :type inpath: str
         """
+        """Return a glob pattern for a given path."""
+        # normalize input
+        paths = [inpath] if isinstance(inpath, str) else list(inpath)
 
-        def get_root_files(directory):
-            """Helper function to recursively collect .root files using os.scandir."""
-            root_files = []
-            for entry in os.scandir(directory):
-                if entry.is_dir():
-                    root_files.extend(get_root_files(entry.path))
-                elif entry.is_file() and entry.name.endswith(".root"):
-                    root_files.append(entry.path)
-            return root_files
+        # expand patterns
+        all_files = []
+        for p in paths:
+            if os.path.isfile(p):
+                all_files.append(p)
+                continue
+            if os.path.isdir(p):
+                p = os.path.join(p, "**", "*.root")
 
-        if "root" in inpath:
-            color_msg(f"Opening input file {inpath}", "blue", 1)
-            self.tree.Add(inpath + self._tree_name)
-            self._maxfiles = 1
-        else:
-            color_msg(f"Opening input files from {inpath}", "blue", 1)
-            allFiles = natsorted(get_root_files(inpath))
-            nFiles = len(allFiles) if self._maxfiles == -1 else min(len(allFiles), self._maxfiles)
-            self._maxfiles = nFiles
+            matches = glob.glob(p, recursive=True)
 
-            for iF in range(nFiles):
-                color_msg(f"File {allFiles[iF].split('/')[-1]} added", indentLevel=2)
-                self.tree.Add(allFiles[iF] + self._tree_name)
+            if matches:
+                all_files.extend([f for f in matches if f.lower().endswith(".root")])
+                continue
+
+            warnings.warn(f"No ROOT files found for '{p}'")
+
+        # remove duplicates + sort  
+        all_files = natsorted(dict.fromkeys(all_files))
+
+        # filter out non-files and non-root files (in case of directories with mixed content)
+        all_files = [f for f in all_files if os.path.isfile(f) and f.lower().endswith(".root")]
+
+        # apply maxfiles
+        if self._maxfiles != -1:
+            all_files = all_files[:self._maxfiles]
+
+        self._maxfiles = len(all_files)
+
+        if not all_files:
+            raise FileNotFoundError(f"No .root files found for input: {inpath}")
+
+        color_msg(f"Opening {len(all_files)} input files...", "blue", 1)
+
+        for f in all_files:
+            color_msg(f"File {os.path.basename(f)} added", indentLevel=2)
+            self.tree.Add(f"{f}/{self._tree_name.strip('/')}")
 
 
 if __name__ == "__main__":

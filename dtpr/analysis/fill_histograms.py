@@ -234,8 +234,9 @@ def fill_histos(
         displayed_msg = f"{', '.join(histo_keys)}"
     color_msg(displayed_msg, color="yellow", indentLevel=2)
 
+    # DEPRECATED: Parallel processing is currently disabled due to bad performance.
     # Determine number of cores for processing
-    _ncores = min(ncores, cpu_count()) if ncores > 1 else None
+    _ncores = None # min(ncores, cpu_count()) if ncores > 1 else None
 
     # Process events with progress bar
     with tqdm(

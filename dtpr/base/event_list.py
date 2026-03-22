@@ -29,6 +29,18 @@ class EventList:
         """
         return self._length
 
+    def _make_event(self, index):
+        """Internal helper to build and process the event object."""
+        # Load the data into the tree's internal buffers
+        if self._tree.GetEntry(index) <= 0:
+            raise RuntimeError(f"Failed to retrieve event at index {index}")
+
+        # Create the event
+        event = Event(self._tree, index, use_config=True, CONFIG=self.CONFIG)
+        
+        # Return processed or raw
+        return self._processor(event) if self._processor else event
+
     def __getitem__(self, index):
         """
         Retrieve an event or a generator of events by index.
@@ -43,28 +55,23 @@ class EventList:
         :raises: TypeError: If the index type is invalid.
         """
         if isinstance(index, slice):
-            return (self[i] for i in range(*index.indices(self._length)))  # Return a generator
-        elif isinstance(index, int):
-            if abs(index) >= self._length:
-                raise IndexError("Event index out of range")
-            if index < 0:
-                index += self._length
+            return (self[i] for i in range(*index.indices(self._length)))
+        
+        if not isinstance(index, int):
+            raise TypeError(f"Invalid argument type: {type(index)}")
 
-            for iev, ev in enumerate(self._tree):
-                if iev == index:
-                    event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
-                    if self._processor:
-                        return self._processor(event)
-                    else:
-                        return event
+        # Handle negative indexing
+        if index < 0:
+            index += self._length
+            
+        if index < 0 or index >= self._length:
             raise IndexError("Event index out of range")
-        else:
-            raise TypeError("Invalid argument type")
+
+        return self._make_event(index)
 
     def get_by_number(self, number):
         """
-        Retrieve an event by its number attribute. Becareful, this method requires to instantiate events one by one
-        and can be slow for large datasets.
+        Retrieve an event by its number attribute (event_eventNumber).
 
         :param number: The number attribute of the event to retrieve.
         :type number: int
@@ -73,22 +80,22 @@ class EventList:
 
         :raises: ValueError: If no event with the specified number is found.
         """
-        for iev, ev in enumerate(self._tree):
-            if getattr(ev, "event_eventNumber", None) == number:
-                event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
-                return self._processor(event)
-        raise ValueError(f"No event found with number: {number}")
+        if self._tree.GetTreeIndex() is None:
+            self._tree.BuildIndex("event_eventNumber", "0")
+
+        index = self._tree.GetEntryNumberWithIndex(number, 0)
+
+        if index < 0:
+            raise ValueError(f"No event found with number: {number}")
+
+        return self._make_event(index)
 
     def __iter__(self):
         """
-        Iterate over the events in the EventList.
+        Iterate over the events safely. 
         """
-        for iev, ev in enumerate(self._tree):
-            event = Event(ev, iev, use_config=True, CONFIG=self.CONFIG)
-            yield self._processor(event)
+        for i in range(self._length):
+            yield self._make_event(i)
 
     def __repr__(self):
-        """
-        Return a string representation of the EventList.
-        """
         return f"<EventList with {self._length} events>"

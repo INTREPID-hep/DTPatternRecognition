@@ -150,6 +150,7 @@ def _build_yaml_schema_from_branches(branches: dict[str, ak.Array]) -> dict:
 def dump_events(
     events,
     outpath: str,
+    tag: str = "",
     fRNTuple=False,
     include_emptybranches: bool = False,
     dump_yaml_schema: bool = False,
@@ -160,7 +161,7 @@ def dump_events(
     color_msg(f"Dumping events to {outpath}", "green")
 
     if os.path.isdir(outpath):
-        outpath = os.path.join(outpath, "dtpr_events_dumped.root")
+        outpath = os.path.join(outpath, f"dtpr_events_dumped.root")
 
     create_outfolder(os.path.abspath(os.path.dirname(outpath)))
 
@@ -184,7 +185,7 @@ def dump_events(
     output_data = _flatten_awkward_to_dict(events_array, skip_empty=not include_emptybranches)
 
     # 5. Write to ROOT
-    with uproot.recreate(outpath) as f:
+    with uproot.recreate(outpath.replace(".root", f"{tag}.root")) as f:
         if fRNTuple:
             f.mkrntuple("dtprDumper/Events", output_data)
         else:
@@ -193,7 +194,7 @@ def dump_events(
         color_msg(f"Successfully saved {len(clean_event_dicts)} events", "green")
 
     if dump_yaml_schema:
-        yaml_path = os.path.dirname(outpath) + "/dumps_events_config.yaml"
+        yaml_path = os.path.dirname(outpath) + f"/dumps_events_config{tag}.yaml"
         if os.path.exists(yaml_path):
             color_msg(f"YAML schema already exists at {yaml_path}, skipping dump.", "yellow")
             return

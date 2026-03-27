@@ -93,6 +93,18 @@ opt_args:
         dest: "use_executable"
         action: "store_true"
         help: "Use the pre-built executable. Default is False."
+    format: &format
+        flags: ["-f", "--format"]
+        dest: "format"
+        type: str
+        choices: ["ttree", "rntuple"]
+        default: "ttree"
+        help: "Output format for dumped events. Choose 'ttree' or 'rntuple'. Default is 'ttree'."
+    dump-yaml: &dump_yaml
+        flags: ["--no-yaml"]
+        dest: "dump_yaml"
+        action: "store_false"
+        help: "Not dump the YAML schema for the dumped events. By default, the YAML schema will be dumped alongside the ROOT file."
 
 # ---------------------------------- posible analysis ---------------------------------------- #
 pos_args:
@@ -108,6 +120,19 @@ pos_args:
             max-files: *max_files
             max-events: *max_events
             cores-number: *cores_number
+    dump-events:
+        name: "dump-events"
+        help: "Dump events from DT NTuple files into a new ROOT file after processing."
+        func: "dtpr.analysis.dump_events.dump"
+        opt_args:
+            config-path: *config_path
+            input-path: *input_path
+            output-path: *output_path
+            tag: *tag
+            max-files: *max_files
+            max-events: *max_events
+            format: *format
+            dump-yaml: *dump_yaml
     plot-dt:
         name: "plot-dt"
         help: "Produce CMS DT chamber plot (local view) for a specific event digis information from a DT NTuple files."

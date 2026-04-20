@@ -460,6 +460,7 @@ window.runMermaid = runMermaid;</script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Histogram Filling" href="histogram_filling.html" />
     <link rel="prev" title="Configuration Management" href="base/configuration_management.html" /> 
 </head>
 
@@ -486,7 +487,12 @@ window.runMermaid = runMermaid;</script>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base/main.html">Base</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Command Line Interface (CLI)</a><ul class="simple">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Command Line Interface (CLI)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="histogram_filling.html">Histogram Filling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events_dumping.html">Event Dumping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events_inspection.html">Event Inspection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="matplotlib_plotting.html">Matplotlib Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
 </ul>
 </li>
 </ul>
@@ -561,7 +567,7 @@ If you specify a configuration file with <code class="docutils literal notransla
 The CLI knows which Python function to call for each subcommand (e.g.,
 <code class="docutils literal notranslate"><span class="pre">dtpr.analysis.fill_histograms.fill_histos</span></code>) and executes it, passing all relevant arguments.</p></li>
 </ol>
-<pre align="center" data-zoom-id="id-cb1be50c-5f45-44f4-93b9-eeecacd90e15" id="cli-view" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-2bc6f618-9d4f-4e47-b6da-ddae9f616636" id="cli-view" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI
@@ -588,6 +594,14 @@ The CLI knows which Python function to call for each subcommand (e.g.,
     </pre><p class="rubric">Available Analyses and Tools</p>
 <p>The following analyses and utilities are available via the CLI:</p>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Analyses:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="histogram_filling.html">Histogram Filling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_dumping.html">Event Dumping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_inspection.html">Event Inspection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="matplotlib_plotting.html">Matplotlib Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
+</ul>
 </div>
 <p>For a full list of commands and options, run:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>--help
@@ -601,6 +615,7 @@ dtpr<span class="w"> </span><span class="o">[</span>ANALYSIS-NAME<span class="o"
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="base/configuration_management.html" class="btn btn-neutral float-left" title="Configuration Management" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="histogram_filling.html" class="btn btn-neutral float-right" title="Histogram Filling" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

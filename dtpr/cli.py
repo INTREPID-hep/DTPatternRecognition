@@ -16,10 +16,10 @@ from .utils.functions import (
 )
 
 warnings.filterwarnings(action="once", category=UserWarning)
-# Set the custom warning handler
-warnings.showwarning = warning_handler
-# Set the custom error handler
-sys.excepthook = error_handler
+# # Set the custom warning handler
+# warnings.showwarning = warning_handler
+# # Set the custom error handler
+# sys.excepthook = error_handler
 
 
 def add_arguments(parser: argparse.ArgumentParser, args: dict) -> None:

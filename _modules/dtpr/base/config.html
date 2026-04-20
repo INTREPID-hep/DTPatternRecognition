@@ -521,15 +521,15 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_includes</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">base_dir</span><span class="p">,</span> <span class="n">visited</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Recursively resolves !include directives in YAML content.</span>
-<span class="sd">    </span>
+
 <span class="sd">    The !include directive inlines the content from the referenced file at the same</span>
 <span class="sd">    indentation level, allowing merging with sibling keys.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Examples:</span>
 <span class="sd">      parent:</span>
 <span class="sd">        !include file.yaml    # Content of file.yaml is inlined here</span>
 <span class="sd">        extra_key: value      # This merges with included content</span>
-<span class="sd">    </span>
+
 <span class="sd">    :param content: The YAML content as a string.</span>
 <span class="sd">    :param base_dir: The base directory for resolving relative paths.</span>
 <span class="sd">    :param visited: Set of already visited files to prevent circular includes.</span>
@@ -540,30 +540,32 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">visited</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    
+
     <span class="c1"># Pattern to match !include directives (standalone or after key:)</span>
-    <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^(\s*)(?:(\w+):\s*)?!include\s+(.+)$&#39;</span>
-    
-    <span class="n">lines</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;^(\s*)(?:(\w+):\s*)?!include\s+(.+)$&quot;</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">processed_lines</span> <span class="o">=</span> <span class="p">[]</span>
-    
+
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
         <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
             <span class="n">indent</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">key_part</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Just the key name (no colon)</span>
-            <span class="n">include_path</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>  <span class="c1"># Remove comments and strip whitespace</span>
-            
+            <span class="n">include_path</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="k">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="p">)</span>  <span class="c1"># Remove comments and strip whitespace</span>
+
             <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">include_path</span><span class="p">))</span>
-            
+
             <span class="c1"># Check for circular includes</span>
             <span class="k">if</span> <span class="n">full_path</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Circular include detected: </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            
+
             <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
-            
+
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">inc_file</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">inc_file</span><span class="p">:</span>
                     <span class="n">included_content</span> <span class="o">=</span> <span class="n">inc_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
@@ -573,30 +575,33 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Cannot read included file &#39;</span><span class="si">{</span><span class="n">include_path</span><span class="si">}</span><span class="s2">&#39; (resolved to: </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s2">)&quot;</span>
                 <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-            
+
             <span class="n">included_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
             <span class="n">resolved_content</span> <span class="o">=</span> <span class="n">_resolve_includes</span><span class="p">(</span><span class="n">included_content</span><span class="p">,</span> <span class="n">included_dir</span><span class="p">,</span> <span class="n">visited</span><span class="p">)</span>
-            
+
             <span class="k">if</span> <span class="n">key_part</span><span class="p">:</span>
                 <span class="c1"># Case: key: !include file.yaml</span>
                 <span class="c1"># Add the key line, then indent the content</span>
                 <span class="n">processed_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}{</span><span class="n">key_part</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
                 <span class="n">nested_indent</span> <span class="o">=</span> <span class="n">indent</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span>
-                <span class="n">indented_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">nested_indent</span> <span class="o">+</span> <span class="n">line</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="n">line</span> 
-                                 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">resolved_content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)]</span>
+                <span class="n">indented_lines</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">nested_indent</span> <span class="o">+</span> <span class="n">line</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="n">line</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">resolved_content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
                 <span class="n">processed_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">indented_lines</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Case: !include file.yaml (standalone)</span>
                 <span class="c1"># Inline the content at the same indentation level</span>
-                <span class="n">indented_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">indent</span> <span class="o">+</span> <span class="n">line</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="n">line</span> 
-                                 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">resolved_content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)]</span>
+                <span class="n">indented_lines</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">indent</span> <span class="o">+</span> <span class="n">line</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">resolved_content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
                 <span class="n">processed_lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">indented_lines</span><span class="p">)</span>
-            
+
             <span class="n">visited</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">processed_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processed_lines</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">processed_lines</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Config">
@@ -664,7 +669,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loads the configuration from a YAML file supporting !include directives.</span>
-<span class="sd">        </span>
+
 <span class="sd">        All !include directives (both top-level and nested) are resolved before</span>
 <span class="sd">        parsing the YAML, with paths relative to the file containing the directive.</span>
 
@@ -677,7 +682,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        :raises ValueError: If circular includes are detected.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">config_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">config_path</span><span class="p">))</span>
-        
+
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
                 <span class="n">content</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -685,21 +690,19 @@ window.runMermaid = runMermaid;</script>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration file not found: </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
         <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot read configuration file: </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        
+
         <span class="c1"># Recursively resolve all !include directives</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">resolved_content</span> <span class="o">=</span> <span class="n">_resolve_includes</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">config_dir</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="sa">f</span><span class="s2">&quot;Error processing includes in </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        
+
         <span class="c1"># Parse the final YAML with standard loader</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">resolved_content</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">yaml</span><span class="o">.</span><span class="n">YAMLError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">yaml</span><span class="o">.</span><span class="n">YAMLError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Error parsing YAML configuration from </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        
+            <span class="k">raise</span> <span class="n">yaml</span><span class="o">.</span><span class="n">YAMLError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error parsing YAML configuration from </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
         <span class="k">return</span> <span class="n">config</span> <span class="k">if</span> <span class="n">config</span> <span class="k">else</span> <span class="p">{}</span></div>
 
 

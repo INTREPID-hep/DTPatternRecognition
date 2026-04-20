@@ -164,31 +164,31 @@ callable.</p></td>
 </table>
 <p>Understanding this mechanism enables the definition of particle initialization through the configuration file or passing directly.
 the dictionary-like structure to read from a ROOT TTree entry.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
-    <span class="p">:</span><span class="n">param</span> <span class="n">other</span><span class="p">:</span> <span class="n">The</span> <span class="n">other</span> <span class="n">Particle</span> <span class="n">instance</span> <span class="n">to</span> <span class="n">compare</span><span class="o">.</span>
-    <span class="p">:</span><span class="nb">type</span> <span class="n">other</span><span class="p">:</span> <span class="n">Particle</span>
-    <span class="p">:</span><span class="k">return</span><span class="p">:</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">the</span> <span class="n">instances</span> <span class="n">are</span> <span class="n">equal</span> <span class="p">(</span><span class="n">excluding</span> <span class="n">index</span> <span class="ow">and</span> <span class="n">name</span><span class="p">),</span> <span class="kc">False</span> <span class="n">otherwise</span><span class="o">.</span>
-    <span class="p">:</span><span class="n">rtype</span><span class="p">:</span> <span class="nb">bool</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    if not isinstance(other, Particle):</span>
-<span class="sd">        return NotImplemented</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compare two Particle instances for equality, excluding the index and name attribute.</span>
 
-<span class="sd">    # Compare all attributes except &#39;index&#39; and &#39;name&#39;</span>
-<span class="sd">    return {</span>
-<span class="sd">        key: value for key, value in self.__dict__.items() if key not in {&quot;index&quot;, &quot;name&quot;}</span>
-<span class="sd">    } == {key: value for key, value in other.__dict__.items() if key not in {&quot;index&quot;, &quot;name&quot;}}</span>
-
-<span class="sd">def __hash__(self):</span>
+<span class="sd">    :param other: The other Particle instance to compare.</span>
+<span class="sd">    :type other: Particle</span>
+<span class="sd">    :return: True if the instances are equal (excluding index and name), False otherwise.</span>
+<span class="sd">    :rtype: bool</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">Generate</span> <span class="n">a</span> <span class="nb">hash</span> <span class="k">for</span> <span class="n">the</span> <span class="n">Particle</span> <span class="n">instance</span> <span class="n">based</span> <span class="n">on</span> <span class="n">its</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">excluding</span> <span class="n">index</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Particle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">NotImplemented</span>
 
-    <span class="p">:</span><span class="k">return</span><span class="p">:</span> <span class="n">The</span> <span class="nb">hash</span> <span class="n">value</span> <span class="n">of</span> <span class="n">the</span> <span class="n">Particle</span> <span class="n">instance</span><span class="o">.</span>
-    <span class="p">:</span><span class="n">rtype</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    return hash(</span>
-<span class="s2">        frozenset(</span>
-<span class="s2">            (key, value) for key, value in self.__dict__.items() if key not in {&quot;index&quot;, &quot;name&quot;}</span>
-<span class="s2">        )</span>
+    <span class="c1"># Compare all attributes except &#39;index&#39; and &#39;name&#39;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">}</span>
+    <span class="p">}</span> <span class="o">==</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">}}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a hash for the Particle instance based on its attributes, excluding index and name.</span>
+
+<span class="sd">    :return: The hash value of the Particle instance.</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span>
+        <span class="nb">frozenset</span><span class="p">(</span>
 </pre></div>
 </div>
 <p class="rubric">Output</p>

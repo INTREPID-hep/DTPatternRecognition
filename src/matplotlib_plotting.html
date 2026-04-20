@@ -584,7 +584,7 @@ You can add your own artists by defining new functions and referencing them in t
 <p>DTPatternRecognition combines your configuration, the event data, and Matplotlib to create these visualizations.</p>
 <p>The plotting process involves the <code class="docutils literal notranslate"><span class="pre">dtpr</span></code> CLI dispatching to the <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> function, which then
 consults <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code> for plotting instructions and uses artist-builder functions to draw on Matplotlib axes.</p>
-<pre align="center" data-zoom-id="id-415d6423-c615-4d08-a1af-b2b6541ba3c3" id="dtpr-plotting" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-0c80a888-a397-4ae1-af2a-9183a192e71f" id="dtpr-plotting" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI
@@ -689,7 +689,25 @@ your configuration (use <code class="docutils literal notranslate"><span class="
 </ul>
 <p class="rubric">Example: Adding a Custom Artist</p>
 <p>Suppose you want to overlay a scatter plot of simHits on top of your digis. First, define a function, for instance, in <code class="docutils literal notranslate"><span class="pre">dtpr/utils/dt_plot_functions.py</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">am_segs</span> <span class="o">=</span> <span class="n">AMDTSegments</span><span class="p">(</span><span class="n">segs_info</span><span class="p">,</span> <span class="n">reference_frame</span><span class="o">=</span><span class="n">reference_frame</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">_validate_axes</span><span class="p">(</span><span class="n">ax_eta</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ax_phi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ax_eta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one of &#39;ax_phi&#39; or &#39;ax_eta&#39; must be provided.&quot;</span><span class="p">)</span>
+
+    <span class="n">particles</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">filter_particles</span><span class="p">(</span><span class="n">particle_type</span><span class="p">,</span> <span class="n">wh</span><span class="o">=</span><span class="n">wheel</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="n">sector</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">station</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">particles</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">segs_info</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">map_seg_attrs</span><span class="p">(</span>
+            <span class="n">part</span><span class="p">,</span> <span class="n">particle_type</span><span class="o">=</span><span class="n">particle_type</span><span class="p">,</span> <span class="n">pos_argname</span><span class="o">=</span><span class="n">pos_argname</span><span class="p">,</span> <span class="n">angle_argname</span><span class="o">=</span><span class="n">angle_argname</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">particles</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">segs_info</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="n">am_segs</span> <span class="o">=</span> <span class="n">AMDTSegments</span><span class="p">(</span><span class="n">segs_info</span><span class="p">,</span> <span class="n">reference_frame</span><span class="o">=</span><span class="n">reference_frame</span><span class="p">)</span>
     <span class="n">phi_patch</span><span class="p">,</span> <span class="n">eta_patch</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">ax_phi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -737,24 +755,6 @@ your configuration (use <code class="docutils literal notranslate"><span class="
 <span class="sd">    :rtype: Tuple[Optional[List[PathCollection]], Optional[List[PathCollection]]]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_validate_axes</span><span class="p">(</span><span class="n">ax_phi</span><span class="p">)</span>
-    <span class="n">_validate_axes</span><span class="p">(</span><span class="n">ax_eta</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">ax_phi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ax_eta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one of &#39;ax_phi&#39; or &#39;ax_eta&#39; must be provided.&quot;</span><span class="p">)</span>
-
-    <span class="n">particles</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">filter_particles</span><span class="p">(</span><span class="n">particle_type</span><span class="p">,</span> <span class="n">wh</span><span class="o">=</span><span class="n">wheel</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="n">sector</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">station</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">particles</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-
-    <span class="n">style_map</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="mi">13</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">35</span><span class="p">,</span> <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;*&quot;</span><span class="p">},</span>
-        <span class="mi">11</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;yellow&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;o&quot;</span><span class="p">},</span>
-        <span class="mi">22</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;s&quot;</span><span class="p">},</span>
-    <span class="p">}</span>
-
-    <span class="n">_parent_station</span> <span class="o">=</span> <span class="n">stations_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">wheel</span><span class="p">,</span> <span class="n">sector</span><span class="p">,</span> <span class="n">station</span><span class="p">)</span>
-
-    <span class="n">patch_phi</span><span class="p">,</span> <span class="n">patch_eta</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 </pre></div>
 </div>
 <p>Then, add it to your configuration:</p>

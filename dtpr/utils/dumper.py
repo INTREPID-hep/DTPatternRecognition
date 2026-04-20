@@ -9,7 +9,7 @@ from dtpr.utils.functions import color_msg, create_outfolder
 def _sanitize_for_awkward(data):
     """
     Recursively traverse dictionaries and lists. If a Particle instance
-    is found, replace it with its 'index' attribute to prevent awkward array 
+    is found, replace it with its 'index' attribute to prevent awkward array
     from crashing on custom Python objects and avoid duplicating data.
     """
     if isinstance(data, list):
@@ -17,8 +17,8 @@ def _sanitize_for_awkward(data):
     elif isinstance(data, dict):
         # We also filter out "name" and private attributes starting with "_"
         return {
-            key: _sanitize_for_awkward(value) 
-            for key, value in data.items() 
+            key: _sanitize_for_awkward(value)
+            for key, value in data.items()
             if key != "name" and not key.startswith("_")
         }
     elif isinstance(data, Particle):
@@ -26,6 +26,7 @@ def _sanitize_for_awkward(data):
     else:
         # Base case: ints, floats, strings, booleans, etc.
         return data
+
 
 def _clean_awkward_nulls(array: ak.Array) -> ak.Array:
     """
@@ -38,10 +39,10 @@ def _clean_awkward_nulls(array: ak.Array) -> ak.Array:
         for field in array.fields:
             # Recursively drill down into each field
             cleaned_fields[field] = _clean_awkward_nulls(array[field])
-            
+
         # Recombine the cleaned sub-fields back into a Record array at this level
         return ak.zip(cleaned_fields, depth_limit=1)
-    
+
     # Base Case: It's a leaf node (actual data array)
     else:
         # ndim > 1 indicates a jagged array (lists). Replace None with empty list []
@@ -51,12 +52,10 @@ def _clean_awkward_nulls(array: ak.Array) -> ak.Array:
         else:
             return ak.fill_none(array, -999)
 
+
 def _flatten_awkward_to_dict(
-    array: ak.Array,
-    prefix: str = "",
-    depth: int = 0,
-    skip_empty: bool = True
-) -> dict[str, ak.Array ]:
+    array: ak.Array, prefix: str = "", depth: int = 0, skip_empty: bool = True
+) -> dict[str, ak.Array]:
     """Recursively flatten an Awkward array into a dictionary of 1D columns.
 
     Parameters
@@ -73,7 +72,9 @@ def _flatten_awkward_to_dict(
     dict
         A dictionary mapping flattened branch names (strings) to Awkward arrays.
     """
-    skip_empty = True # Whether to skip branches that are completely empty since not supported by uproot. 
+    skip_empty = (
+        True  # Whether to skip branches that are completely empty since not supported by uproot.
+    )
     branches = {}
 
     for field in ak.fields(array):
@@ -90,7 +91,7 @@ def _flatten_awkward_to_dict(
             type_str = str(ak.type(col))
             if "unknown" in type_str:
                 if skip_empty:
-                    #SHOULD SKIP EMPTY BRANCHES, NOT POSSIBLE TO CAST TO [] of INT64
+                    # SHOULD SKIP EMPTY BRANCHES, NOT POSSIBLE TO CAST TO [] of INT64
                     color_msg(f"Skipping empty branch '{new_name}' (type unknown).", "yellow")
                     continue
 
@@ -108,7 +109,11 @@ def _flatten_awkward_to_dict(
             # Recursive Case: It's a collection / record
 
             # Top-level collections (depth 0) OR fallback if ID extraction is missing.
-            branches.update(_flatten_awkward_to_dict(col, prefix=new_name, depth=depth + 1, skip_empty=skip_empty))
+            branches.update(
+                _flatten_awkward_to_dict(
+                    col, prefix=new_name, depth=depth + 1, skip_empty=skip_empty
+                )
+            )
 
     return branches
 
@@ -127,7 +132,7 @@ def _build_yaml_schema_from_branches(branches: dict[str, ak.Array]) -> dict:
 
         particle_type, attr_name = branch_name.split("_", 1)
         if particle_type not in particle_types:
-            particle_types[particle_type] = { "amount": "n" + branch_name, "attributes": {} }
+            particle_types[particle_type] = {"amount": "n" + branch_name, "attributes": {}}
 
         if attr_name == "index":
             attr_name = "idx"
@@ -136,7 +141,9 @@ def _build_yaml_schema_from_branches(branches: dict[str, ak.Array]) -> dict:
             if "_counts" in attr_name:
                 continue
             attr_name = attr_name.replace("_flat_ids", "")
-            particle_types[particle_type]["attributes"][attr_name] = {"branch": [branch_name, branch_name.replace("_flat_ids", "_flat_counts")]}
+            particle_types[particle_type]["attributes"][attr_name] = {
+                "branch": [branch_name, branch_name.replace("_flat_ids", "_flat_counts")]
+            }
             continue
 
         particle_types[particle_type]["attributes"][attr_name] = {"branch": branch_name}

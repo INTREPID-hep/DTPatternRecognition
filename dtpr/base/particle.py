@@ -71,7 +71,9 @@ class Particle:
                     f"Event must be provided to set attribute '{attr}' from branch '{branch}'."
                 )
 
-            if isinstance(branch, list): # Special handling for attributes defined by a pair of branches (flat_ids + flat_counts)
+            if isinstance(
+                branch, list
+            ):  # Special handling for attributes defined by a pair of branches (flat_ids + flat_counts)
                 if len(branch) != 2:
                     raise ValueError(
                         f"Branch list for attribute '{attr}' must contain exactly two entries: [flat_ids, flat_counts]."

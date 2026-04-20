@@ -28,5 +28,4 @@ def __getattr__(name: str) -> object:
 
         return Event if name == "Event" else NTuple
 
-
     raise AttributeError(f"module 'DTPatternRecognition' has no attribute {name!r}")

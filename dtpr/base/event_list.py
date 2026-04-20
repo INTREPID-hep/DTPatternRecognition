@@ -37,7 +37,7 @@ class EventList:
 
         # Create the event
         event = Event(self._tree, index, use_config=True, CONFIG=self.CONFIG)
-        
+
         # Return processed or raw
         return self._processor(event) if self._processor else event
 
@@ -56,14 +56,14 @@ class EventList:
         """
         if isinstance(index, slice):
             return (self[i] for i in range(*index.indices(self._length)))
-        
+
         if not isinstance(index, int):
             raise TypeError(f"Invalid argument type: {type(index)}")
 
         # Handle negative indexing
         if index < 0:
             index += self._length
-            
+
         if index < 0 or index >= self._length:
             raise IndexError("Event index out of range")
 
@@ -92,7 +92,7 @@ class EventList:
 
     def __iter__(self):
         """
-        Iterate over the events safely. 
+        Iterate over the events safely.
         """
         for i in range(self._length):
             yield self._make_event(i)

@@ -1,13 +1,17 @@
 import os
 import pytest
 from dtpr.base.particle import Particle
-from numpy import array
 
 class DummyEvent:
-    gen_pt = array([10.0, 20.0])
-    gen_eta = array([1.1, -1.2])
-    gen_phi = array([0.5, -0.5])
-    gen_charge = array([1, -1])
+    gen_pt = [10.0, 20.0]
+    gen_eta = [1.1, -1.2]
+    gen_phi = [0.5, -0.5]
+    gen_charge = [1, -1]
+
+
+class DummyFlatEvent:
+    tps_matched_segments_flat_ids = [10, 11, 12, 20, 21]
+    tps_matched_segments_flat_counts = [2, 3]
 
 def test_particle_direct_attributes():
     p = Particle(index=0, wh=-2, sc=1, st=1)
@@ -36,6 +40,22 @@ def test_particle_init_from_dict_branch():
     assert p.eta == ev.gen_eta[1]
     assert p.phi == ev.gen_phi[1]
     assert p.charge == ev.gen_charge[1]
+
+
+def test_particle_init_from_flat_branch_pair():
+    ev = DummyFlatEvent()
+    particle = Particle(
+        index=1,
+        ev=ev,
+        matched_segments={
+            "branch": [
+                "tps_matched_segments_flat_ids",
+                "tps_matched_segments_flat_counts",
+            ]
+        },
+    )
+
+    assert particle.matched_segments == [12, 20, 21]
 
 def test_particle_equality_and_hash():
     p1 = Particle(index=0, wh=1, sc=2)

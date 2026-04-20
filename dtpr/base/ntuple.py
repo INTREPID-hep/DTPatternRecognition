@@ -163,7 +163,7 @@ class NTuple(object):
 
             warnings.warn(f"No ROOT files found for '{p}'")
 
-        # remove duplicates + sort  
+        # remove duplicates + sort
         all_files = natsorted(dict.fromkeys(all_files))
 
         # filter out non-files and non-root files (in case of directories with mixed content)
@@ -171,7 +171,7 @@ class NTuple(object):
 
         # apply maxfiles
         if self._maxfiles != -1:
-            all_files = all_files[:self._maxfiles]
+            all_files = all_files[: self._maxfiles]
 
         self._maxfiles = len(all_files)
 

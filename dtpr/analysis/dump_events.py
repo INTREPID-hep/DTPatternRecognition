@@ -2,16 +2,19 @@ from ..base.config import RUN_CONFIG
 from ..base import NTuple
 from ..utils.dumper import dump_events, color_msg
 
+
 def dump(
-    inpath: str, 
-    outfolder: str, 
-    tag: str, 
+    inpath: str,
+    outfolder: str,
+    tag: str,
     maxfiles: int,
     maxevents: int,
     format: str = "ttree",
     dump_yaml: bool = True,
 ) -> None:
-    fRNTuple = False if format == "ttree" else True  # Set to True if you want to force the use of RNTuple format for dumping events
+    fRNTuple = (
+        False if format == "ttree" else True
+    )  # Set to True if you want to force the use of RNTuple format for dumping events
 
     color_msg("Running program to dump events...", "green")
 

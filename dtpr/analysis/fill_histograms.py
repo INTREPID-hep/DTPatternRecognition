@@ -236,7 +236,7 @@ def fill_histos(
 
     # DEPRECATED: Parallel processing is currently disabled due to bad performance.
     # Determine number of cores for processing
-    _ncores = None # min(ncores, cpu_count()) if ncores > 1 else None
+    _ncores = None  # min(ncores, cpu_count()) if ncores > 1 else None
 
     # Process events with progress bar
     with tqdm(

@@ -166,7 +166,12 @@ def get_shower_segment(
 # --------------------------------------------------------------------------------------------------
 
 
-def map_seg_attrs(particle: Particle, particle_type: Optional[str] = "tps", pos_argname: Optional[str] = "posLoc_x", angle_argname: Optional[str] = "dirLoc_phi") -> Dict[str, Any]:
+def map_seg_attrs(
+    particle: Particle,
+    particle_type: Optional[str] = "tps",
+    pos_argname: Optional[str] = "posLoc_x",
+    angle_argname: Optional[str] = "dirLoc_phi",
+) -> Dict[str, Any]:
     """
     Map the attributes of segment like particle to the format required by mpldts.geometry.AMDTSegments.
 
@@ -394,7 +399,15 @@ def embed_segs2axes_glob(
     ) -> Optional[Dict[int, List[Patch]]]:
         if not particles:
             return None
-        segs_info = [map_seg_attrs(part, particle_type=particle_type, pos_argname=pos_argname, angle_argname=angle_argname) for part in particles]
+        segs_info = [
+            map_seg_attrs(
+                part,
+                particle_type=particle_type,
+                pos_argname=pos_argname,
+                angle_argname=angle_argname,
+            )
+            for part in particles
+        ]
         if not segs_info:
             return None
         am_segs = AMDTSegments(segs_info, reference_frame=reference_frame)
@@ -473,7 +486,12 @@ def embed_segs2axes_loc(
     if not particles:
         return None, None
 
-    segs_info = [map_seg_attrs(part, particle_type=particle_type, pos_argname=pos_argname, angle_argname=angle_argname) for part in particles]
+    segs_info = [
+        map_seg_attrs(
+            part, particle_type=particle_type, pos_argname=pos_argname, angle_argname=angle_argname
+        )
+        for part in particles
+    ]
     if not segs_info:
         return None, None
 

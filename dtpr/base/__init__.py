@@ -1,12 +1,5 @@
+__all__ = ["Config", "RUN_CONFIG", "Event", "EventList", "NTuple", "Particle"]
 
-__all__ = [
-    "Config",
-    "RUN_CONFIG",
-    "Event",
-    "EventList",
-    "NTuple",
-    "Particle"
-]
 
 def __getattr__(name: str) -> object:
     if name in ["Config", "RUN_CONFIG"]:

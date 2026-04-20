@@ -90,14 +90,14 @@ The workflow is as follows:
 The following analyses and utilities are available via the CLI:
 
 .. toctree::
-    :maxdepth: 1
-    :caption: Analyses:
+   :maxdepth: 1
+   :caption: Analyses:
 
-      histogram_filling
-      events_dumping
-      events_inspection
-      matplotlib_plotting
-      events_visualizer_gui
+   histogram_filling
+   events_dumping
+   events_inspection
+   matplotlib_plotting
+   events_visualizer_gui
 
 For a full list of commands and options, run:
 

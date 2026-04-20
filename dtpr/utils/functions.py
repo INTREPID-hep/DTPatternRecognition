@@ -168,6 +168,7 @@ def error_handler(exc_type: type, exc_value: Exception, exc_traceback: Any) -> N
 # Cache for callable functions to avoid repeated imports
 _CALLABLE_CACHE = {}
 
+
 def get_callable_from_src(src_str: str) -> Callable:
     """
     Returns the callable object from the given source string.
@@ -181,7 +182,7 @@ def get_callable_from_src(src_str: str) -> Callable:
     # Check cache first
     if src_str in _CALLABLE_CACHE:
         return _CALLABLE_CACHE[src_str]
-    
+
     callable = None
     try:
         _module_name, _callable_name = src_str.rsplit(".", 1)

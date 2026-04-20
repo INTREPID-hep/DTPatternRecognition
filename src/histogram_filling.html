@@ -456,12 +456,11 @@ mermaid.initialize(
     }
 );
 
-window.addEventListener("load", load);</script>
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Event Inspection" href="events_inspection.html" />
-    <link rel="prev" title="Command Line Interface (CLI)" href="command_line_interface.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -484,17 +483,10 @@ window.addEventListener("load", load);</script>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base/main.html">Base</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Histogram Filling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="events_inspection.html">Event Inspection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="matplotlib_plotting.html">Matplotlib Plotting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dump_events_guide.html">Dumping Events to ROOT Ntuples</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
 
         </div>
@@ -511,7 +503,6 @@ window.addEventListener("load", load);</script>
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="command_line_interface.html">Command Line Interface (CLI)</a></li>
       <li class="breadcrumb-item active">Histogram Filling</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
@@ -646,7 +637,7 @@ modifying the core analysis code.</p>
 <li><p>When running in parallel, temporary files are merged automatically at the end.</p></li>
 </ul>
 <p class="rubric">Advanced Usage</p>
-<pre align="center" data-zoom-id="id-f80e9130-c1ca-40ce-9ab7-6b0fbbe9643b" id="histogram-filling-diagram" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-b772a888-5c3f-419a-bc09-8521ff02cf4c" id="histogram-filling-diagram" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI
@@ -693,10 +684,7 @@ modifying the core analysis code.</p>
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="command_line_interface.html" class="btn btn-neutral float-left" title="Command Line Interface (CLI)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="events_inspection.html" class="btn btn-neutral float-right" title="Event Inspection" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

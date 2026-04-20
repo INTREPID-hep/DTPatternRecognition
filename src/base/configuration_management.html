@@ -54,7 +54,13 @@
 <li class="toctree-l2"><a class="reference internal" href="particle_abstraction.html">Particle Abstraction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="event_abstraction.html">Event Abstraction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ntuple_data_access.html">NTuple Data Access</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Configuration Management</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Configuration Management</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.base.config.Config"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dtpr.base.config.Config.change_config_file"><code class="docutils literal notranslate"><span class="pre">Config.change_config_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
@@ -194,6 +200,23 @@ Switched back to default. Matplotlib HEP style: CMS
 <p>There is also a separate configuration instance, <code class="docutils literal notranslate"><span class="pre">CLI_CONFIG</span></code>, intended for internal use by the
 command-line interface tools. Regular users should interact only with <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code> for analysis
 configuration. <code class="docutils literal notranslate"><span class="pre">CLI_CONFIG</span></code> is primarily for developers and advanced CLI customization.</p>
+<dl class="py class" id="module-dtpr.base.config">
+<dt class="sig sig-object py" id="dtpr.base.config.Config">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dtpr.base.config.</span></span><span class="sig-name descname"><span class="pre">Config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/config.html#Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.config.Config" title="Link to this definition"></a></dt>
+<dd><p>Configuration class to handle loading and setting up configurations from a YAML file.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dtpr.base.config.Config.change_config_file">
+<span class="sig-name descname"><span class="pre">change_config_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./run_config.yaml'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/config.html#Config.change_config_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.config.Config.change_config_file" title="Link to this definition"></a></dt>
+<dd><p>Changes the configuration file to a new path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> (<em>str</em>) – The relative path to the new config file. Default is “./run_config.yaml”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 

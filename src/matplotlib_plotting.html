@@ -455,12 +455,11 @@ mermaid.initialize(
     }
 );
 
-window.addEventListener("load", load);</script>
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Events Visualizer (GUI)" href="events_visualizer_gui.html" />
-    <link rel="prev" title="Event Inspection" href="events_inspection.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -483,21 +482,10 @@ window.addEventListener("load", load);</script>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="base/main.html">Base</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="histogram_filling.html">Histogram Filling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="events_inspection.html">Event Inspection</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Matplotlib Plotting</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#plot-dt">plot-dt</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#plot-dts">plot-dts</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dump_events_guide.html">Dumping Events to ROOT Ntuples</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
 
         </div>
@@ -514,7 +502,6 @@ window.addEventListener("load", load);</script>
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="command_line_interface.html">Command Line Interface (CLI)</a></li>
       <li class="breadcrumb-item active">Matplotlib Plotting</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
@@ -597,7 +584,7 @@ You can add your own artists by defining new functions and referencing them in t
 <p>DTPatternRecognition combines your configuration, the event data, and Matplotlib to create these visualizations.</p>
 <p>The plotting process involves the <code class="docutils literal notranslate"><span class="pre">dtpr</span></code> CLI dispatching to the <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> function, which then
 consults <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code> for plotting instructions and uses artist-builder functions to draw on Matplotlib axes.</p>
-<pre align="center" data-zoom-id="id-f08d5293-5c2f-4538-87a3-d2c99cfebc9b" id="dtpr-plotting" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-415d6423-c615-4d08-a1af-b2b6541ba3c3" id="dtpr-plotting" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI
@@ -702,7 +689,25 @@ your configuration (use <code class="docutils literal notranslate"><span class="
 </ul>
 <p class="rubric">Example: Adding a Custom Artist</p>
 <p>Suppose you want to overlay a scatter plot of simHits on top of your digis. First, define a function, for instance, in <code class="docutils literal notranslate"><span class="pre">dtpr/utils/dt_plot_functions.py</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">wheel</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">am_segs</span> <span class="o">=</span> <span class="n">AMDTSegments</span><span class="p">(</span><span class="n">segs_info</span><span class="p">,</span> <span class="n">reference_frame</span><span class="o">=</span><span class="n">reference_frame</span><span class="p">)</span>
+    <span class="n">phi_patch</span><span class="p">,</span> <span class="n">eta_patch</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">ax_phi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">phi_patch</span> <span class="o">=</span> <span class="n">MultiDTSegmentsPatch</span><span class="p">(</span>
+            <span class="n">segments</span><span class="o">=</span><span class="n">am_segs</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">ax_phi</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">faceview</span><span class="o">=</span><span class="s2">&quot;phi&quot;</span><span class="p">,</span> <span class="n">vmap</span><span class="o">=</span><span class="n">cmap_var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">patches</span>
+
+    <span class="k">if</span> <span class="n">ax_eta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">eta_patch</span> <span class="o">=</span> <span class="n">MultiDTSegmentsPatch</span><span class="p">(</span>
+            <span class="n">segments</span><span class="o">=</span><span class="n">am_segs</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">ax_eta</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">faceview</span><span class="o">=</span><span class="s2">&quot;eta&quot;</span><span class="p">,</span> <span class="n">vmap</span><span class="o">=</span><span class="n">cmap_var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">patches</span>
+
+    <span class="k">return</span> <span class="n">phi_patch</span><span class="p">,</span> <span class="n">eta_patch</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">embed_simhits2axes_loc</span><span class="p">(</span>
+    <span class="n">ev</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span>
+    <span class="n">wheel</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">sector</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">station</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">ax_phi</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -750,31 +755,13 @@ your configuration (use <code class="docutils literal notranslate"><span class="
     <span class="n">_parent_station</span> <span class="o">=</span> <span class="n">stations_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">wheel</span><span class="p">,</span> <span class="n">sector</span><span class="p">,</span> <span class="n">station</span><span class="p">)</span>
 
     <span class="n">patch_phi</span><span class="p">,</span> <span class="n">patch_eta</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-
-    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">particles</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;sl&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;l&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Particle </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2"> does not have required attributes &#39;sl&#39;, &#39;l&#39;, and &#39;w&#39; for </span><span class="si">{</span><span class="n">particle_type</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-        <span class="n">sl</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">particle_type</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">sl</span><span class="p">,</span> <span class="n">part</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="n">part</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">particle_type</span><span class="p">)</span>
-        <span class="n">center</span> <span class="o">=</span> <span class="n">_parent_station</span><span class="o">.</span><span class="n">super_layer</span><span class="p">(</span><span class="n">sl</span><span class="p">)</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">local_center</span>
-        <span class="k">if</span> <span class="n">sl</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">patch_eta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">patch_eta</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">patch_eta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">ax_eta</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">**</span><span class="n">style_map</span><span class="p">[</span><span class="n">particle_type</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">patch_phi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">patch_phi</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">patch_phi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
 </pre></div>
 </div>
 <p>Then, add it to your configuration:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">dt-segment-local</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="nv">*dt-segment-global</span>
-
-<span class="w">  </span><span class="nt">dt-am-tps-global</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;dt-am-tps-global</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">dt-simhits-local</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.dt_plot_functions.embed_simhits2axes_loc&quot;</span><span class="w">  </span><span class="c1"># Source of the artist</span>
+<span class="w">    </span><span class="nt">rep-info</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;simhits&#39;</span><span class="w">  </span><span class="c1"># Particle type to use</span>
 </pre></div>
 </div>
 <p>Now, include <code class="docutils literal notranslate"><span class="pre">dt-simhits-local</span></code> in your list of artists to use for plotting.</p>
@@ -798,10 +785,7 @@ your configuration (use <code class="docutils literal notranslate"><span class="
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="events_inspection.html" class="btn btn-neutral float-left" title="Event Inspection" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="events_visualizer_gui.html" class="btn btn-neutral float-right" title="Events Visualizer (GUI)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

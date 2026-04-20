@@ -455,7 +455,8 @@ mermaid.initialize(
     }
 );
 
-window.addEventListener("load", load);</script>
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -487,7 +488,16 @@ window.addEventListener("load", load);</script>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="main.html">Base</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="particle_abstraction.html">Particle Abstraction</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Event Abstraction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Event Abstraction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.base.Event"><code class="docutils literal notranslate"><span class="pre">Event</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dtpr.base.Event.__str__"><code class="docutils literal notranslate"><span class="pre">Event.__str__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dtpr.base.Event._build_particles"><code class="docutils literal notranslate"><span class="pre">Event._build_particles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dtpr.base.Event.to_dict"><code class="docutils literal notranslate"><span class="pre">Event.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dtpr.base.Event.filter_particles"><code class="docutils literal notranslate"><span class="pre">Event.filter_particles()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="ntuple_data_access.html">NTuple Data Access</a></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_management.html">Configuration Management</a></li>
 </ul>
@@ -606,7 +616,7 @@ the <code class="docutils literal notranslate"><span class="pre">__getattr__</sp
 </div>
 <p class="rubric">How this Event is Built</p>
 <p>The process of building the <code class="docutils literal notranslate"><span class="pre">Event</span></code> and populating it with <code class="docutils literal notranslate"><span class="pre">Particle</span></code> objects can be visualized as follows:</p>
-<pre align="center" data-zoom-id="id-17080e4d-43c4-41fe-8830-75b855a3d08e" id="event-building-process" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-47df1378-36b1-4978-aa77-6db2afa666f2" id="event-building-process" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant Event
@@ -667,6 +677,100 @@ define any type of attribute mapping in the configuration file or even create an
     + Wh: 1, Sc: 1, St: 1
 </pre></div>
 </div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dtpr.base.Event">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dtpr.base.</span></span><span class="sig-name descname"><span class="pre">Event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CONFIG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event.html#Event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.Event" title="Link to this definition"></a></dt>
+<dd><p>Represents an event entry from a ROOT TTree, providing dynamic particle building and access to
+particle data. Supports filtering, sorting, and manual addition of particles for flexible event
+analysis.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>index<span class="classifier">int</span></dt><dd><p>The index of the event in the TTree iteration.</p>
+</dd>
+<dt>number<span class="classifier">int</span></dt><dd><p>The event number, if TBranch does not exist, it will be the same as the index.</p>
+</dd>
+<dt>_particles<span class="classifier">dict</span></dt><dd><p>Internal dictionary storing particles by their type. This attribute is not intended for
+direct user access. Instead, users should access particles by their type name
+(e.g., <cite>event.genmuons</cite>).</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dtpr.base.Event.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indentLevel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event.html#Event.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.Event.__str__" title="Link to this definition"></a></dt>
+<dd><p>Generate a summary string representation of the event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>indentLevel</strong> – The indentation level for the summary.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The event summary.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtpr.base.Event._build_particles">
+<span class="sig-name descname"><span class="pre">_build_particles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ev</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pinfo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event.html#Event._build_particles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.Event._build_particles" title="Link to this definition"></a></dt>
+<dd><p>Build particles of a specific type based on the information indicated in the config file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ev</strong> – The ROOT TTree entry containing event data.</p></li>
+<li><p><strong>ptype</strong> – The type (name) of particles to build. It will be the attribute name in the
+Event instance.</p></li>
+<li><p><strong>pinfo</strong> – The information dictionary for the particle type builder. It should contain
+the class builder path, the name of the branch to infer the number of particles, and
+optional conditions and sorting parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtpr.base.Event.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event.html#Event.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.Event.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Generate a dictionary representation of the event. Useful to serialize it to, for example,
+awkward arrays.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtpr.base.Event.filter_particles">
+<span class="sig-name descname"><span class="pre">filter_particles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event.html#Event.filter_particles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.Event.filter_particles" title="Link to this definition"></a></dt>
+<dd><p>Filter all particles of a specific type that satisfy given attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>particle_type</strong> – The type of particles to filter (e.g., ‘digis’, ‘segments’, ‘tps’).</p></li>
+<li><p><strong>kwargs</strong> – Key-value pairs of attributes to filter by (e.g., wh=1, sc=2, st=3).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of filtered particles. If no particles are found, an empty list is returned.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If invalid keys are provided for filtering.</p>
+</dd>
+</dl>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Amount of digis in the event:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">digis</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Amount of digis in wheel 1:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">filter_particles</span><span class="p">(</span><span class="s2">&quot;digis&quot;</span><span class="p">,</span> <span class="n">wh</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
+</pre></div>
+</div>
+<section id="output">
+<h4>Output<a class="headerlink" href="#output" title="Link to this heading"></a></h4>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Amount of digis in the event: 134
+Amount of digis in wheel 1: 1
+</pre></div>
+</div>
+</section>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
 </section>
 
 

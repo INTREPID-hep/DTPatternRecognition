@@ -1,0 +1,194 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Dumping &mdash; DTPatternRecognition 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base/main.html">Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Event Dumping</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/INTREPID-hep/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="event-dumping">
+<h1>Event Dumping<a class="headerlink" href="#event-dumping" title="Link to this heading"></a></h1>
+<p>The event dumping tool exports processed events into a new ROOT file using the
+same event-by-event abstraction used across the framework. This is useful when
+you want to persist filtered or transformed event content for downstream tools.</p>
+<p class="rubric">Usage</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">dump-events</span></code> command from the CLI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>dump-events<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span><span class="w"> </span>-cf<span class="w"> </span><span class="o">[</span>CONFIG_FILE<span class="o">]</span><span class="w"> </span><span class="o">[</span>other<span class="w"> </span>options<span class="o">]</span>
+</pre></div>
+</div>
+<p>Common examples:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Default output format (TTree) with YAML schema generation</span>
+dtpr<span class="w"> </span>dump-events<span class="w"> </span>-i<span class="w"> </span>./input_ntuple.root<span class="w"> </span>-o<span class="w"> </span>./results
+
+<span class="c1"># Use RNTuple format and add a tag to output files</span>
+dtpr<span class="w"> </span>dump-events<span class="w"> </span>-i<span class="w"> </span>./input_ntuple.root<span class="w"> </span>-o<span class="w"> </span>./results<span class="w"> </span>-f<span class="w"> </span>rntuple<span class="w"> </span>-t<span class="w"> </span>_v2
+
+<span class="c1"># Limit processing and disable YAML schema dump</span>
+dtpr<span class="w"> </span>dump-events<span class="w"> </span>-i<span class="w"> </span>./input_ntuple.root<span class="w"> </span>-o<span class="w"> </span>./results<span class="w"> </span>--maxevents<span class="w"> </span><span class="m">1000</span><span class="w"> </span>--no-yaml
+</pre></div>
+</div>
+<p class="rubric">Main Options</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-i</span></code>, <code class="docutils literal notranslate"><span class="pre">--inputpath</span></code>: input ROOT file or folder containing ROOT files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-o</span></code>, <code class="docutils literal notranslate"><span class="pre">--outputpath</span></code>: output folder (or output ROOT path).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-t</span></code>, <code class="docutils literal notranslate"><span class="pre">--tag</span></code>: optional tag appended to output file names.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--maxfiles</span></code>: maximum number of input files to read.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--maxevents</span></code>: maximum number of events to dump.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-f</span></code>, <code class="docutils literal notranslate"><span class="pre">--format</span></code>: output format, either <code class="docutils literal notranslate"><span class="pre">ttree</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">rntuple</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--no-yaml</span></code>: skip YAML schema generation.</p></li>
+</ul>
+<p class="rubric">Output Files</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">-o/--outputpath</span></code> points to a directory, the command creates:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dtpr_events_dumped{tag}.root</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dumps_events_config{tag}.yaml</span></code> (unless <code class="docutils literal notranslate"><span class="pre">--no-yaml</span></code> is used)</p></li>
+</ul>
+<p>If <code class="docutils literal notranslate"><span class="pre">-o/--outputpath</span></code> is a ROOT file path, that path is used as the base output name.</p>
+<p>Inside the ROOT output, dumped data is written under:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dtprDumper/Events</span></code></p></li>
+</ul>
+<p class="rubric">Flattened Branch Structure</p>
+<p>Dumped events are serialized into columnar branches. For nested collections, the dumper
+uses a deterministic flattening convention so relationships can be reconstructed later.</p>
+<p>Flattening rules:</p>
+<ul class="simple">
+<li><p>Event-level scalar attributes are written with an <code class="docutils literal notranslate"><span class="pre">event_event</span></code> prefix.</p></li>
+<li><p>Particle scalar attributes are written as <code class="docutils literal notranslate"><span class="pre">particleType_attribute</span></code>.</p></li>
+<li><p>Nested list-of-list attributes are split into two companion branches:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_flat_ids</span></code>: concatenated values.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_flat_counts</span></code>: per-particle counts used to reconstruct each sub-list.</p></li>
+</ul>
+</li>
+</ul>
+<p>Example (from dumped schema):</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">particle_types</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tps</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">attributes</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">matched_segments</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">branch</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_segments_flat_ids</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_segments_flat_counts</span>
+<span class="w">      </span><span class="nt">matched_genmuons</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">branch</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_genmuons_flat_ids</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_genmuons_flat_counts</span>
+</pre></div>
+</div>
+<p>This representation allows storing arbitrarily nested matching relations in ROOT,
+while keeping enough information to recover the per-particle lists.</p>
+<p>For particle index <code class="docutils literal notranslate"><span class="pre">i</span></code>, reconstruction follows:</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{start} = \sum_{k=0}^{i-1} \mathrm{flat\_counts}[k], \qquad
+\mathrm{end} = \mathrm{start} + \mathrm{flat\_counts}[i]\]</div>
+<p>and the recovered list is <code class="docutils literal notranslate"><span class="pre">flat_ids[start:end]</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>By default, the YAML schema is generated only if it does not already exist at the target location.
+The exact value used in <code class="docutils literal notranslate"><span class="pre">amount</span></code> depends on the generated branch map.
+Branches with unknown/empty-only Awkward type are skipped during dumping.</p>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

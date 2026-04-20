@@ -455,7 +455,8 @@ mermaid.initialize(
     }
 );
 
-window.addEventListener("load", load);</script>
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -491,7 +492,10 @@ window.addEventListener("load", load);</script>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">NTuple Data Access</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#example-preprocessor-and-selector-functions">Example: Preprocessor and Selector Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#how-data-is-accessed">How Data is Accessed</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#eventlist">EventList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#eventlist">EventList</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dtpr.base.EventList"><code class="docutils literal notranslate"><span class="pre">EventList</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="configuration_management.html">Configuration Management</a></li>
@@ -727,6 +731,32 @@ are required. The preprocessing function is applied to each generated <code clas
 <p>This class is not intended to be instantiated directly by the user. It is used internally by the
 <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class to manage events.</p>
 </div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dtpr.base.EventList">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dtpr.base.</span></span><span class="sig-name descname"><span class="pre">EventList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CONFIG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event_list.html#EventList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.EventList" title="Link to this definition"></a></dt>
+<dd><p>A class to manage events such as a list, but without loading all events in memory.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dtpr.base.EventList.get_by_number">
+<span class="sig-name descname"><span class="pre">get_by_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event_list.html#EventList.get_by_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.EventList.get_by_number" title="Link to this definition"></a></dt>
+<dd><p>Retrieve an event by its number attribute (event_eventNumber).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>number</strong> (<em>int</em>) – The number attribute of the event to retrieve.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Event: The event with the specified number.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="event_abstraction.html#dtpr.base.Event" title="dtpr.base.Event">Event</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>ValueError: If no event with the specified number is found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 

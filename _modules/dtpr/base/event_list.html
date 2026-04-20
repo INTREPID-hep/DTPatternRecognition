@@ -1,26 +1,25 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../../">
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Base &mdash; DTPatternRecognition 3.0.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  <title>dtpr.base.event_list &mdash; DTPatternRecognition 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
 
   
-      <script src="../../_static/jquery.js?v=5d32c60e"></script>
-      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=acc74ff5"></script>
-      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
-      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
-      <script src="../../_static/copybutton.js?v=f281be69"></script>
-      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
       <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
       <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
@@ -457,11 +456,9 @@ mermaid.initialize(
 
 window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
-    <script src="../../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Particle Abstraction" href="particle_abstraction.html" />
-    <link rel="prev" title="Installation" href="../installation.html" /> 
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -472,11 +469,11 @@ window.runMermaid = runMermaid;</script>
 
           
           
-          <a href="../../index.html" class="icon icon-home">
+          <a href="../../../index.html" class="icon icon-home">
             DTPatternRecognition
           </a>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -484,16 +481,10 @@ window.runMermaid = runMermaid;</script>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Base</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="particle_abstraction.html">Particle Abstraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="event_abstraction.html">Event Abstraction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ntuple_data_access.html">NTuple Data Access</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration_management.html">Configuration Management</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/base/main.html">Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
 
         </div>
@@ -502,18 +493,17 @@ window.runMermaid = runMermaid;</script>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">DTPatternRecognition</a>
+          <a href="../../../index.html">DTPatternRecognition</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Base</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dtpr.base.event_list</li>
       <li class="wy-breadcrumbs-aside">
-              <!-- User defined GitHub URL -->
-              <a href="https://github.com/INTREPID-hep/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -521,70 +511,119 @@ window.runMermaid = runMermaid;</script>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="base">
-<h1>Base<a class="headerlink" href="#base" title="Link to this heading"></a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">dtpr.base</span></code> module provides a collection of core classes designed to simplify and enhance the manipulation
-of <strong>Event</strong> data extracted from ROOT TTrees of <strong>NTuples</strong>. These classes enable efficient extraction,
-transformation, and analysis of event information in a structured, object-oriented way.</p>
-<p>The main abstractions are:</p>
-<ul class="simple">
-<li><p><strong>Particle</strong>: Represents a single physics object (e.g., muon, electron) with its properties.</p></li>
-<li><p><strong>Event</strong>: Aggregates particles and event-level information, providing an intuitive interface for event-by-event analysis.</p></li>
-<li><p><strong>NTuple</strong>: Handles access to ROOT files and trees, mapping data into Event and Particle objects.</p></li>
-<li><p><strong>EventList</strong>: Provides iterable access to collections of events.</p></li>
-</ul>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>The base classes handle reading and processing data from input files using a central configuration
-file, such as <a class="reference download internal" download="" href="../../_downloads/f5460224d6fd97fc70da64df3fa38483/run_config.yaml"><code class="xref download docutils literal notranslate"><span class="pre">run_config.yaml</span></code></a>. Throughout the documentation,
-you will find details on the configurable parameters that allow support for various data formats.</p>
-</div>
-<p class="rubric">Visual Overview</p>
-<pre align="center" data-zoom-id="id-2a84602f-9d4d-4952-ad2c-9c93feb4857a" id="dtpr-visual-overview" class="mermaid align-center">
-        flowchart TD
-    A0[&quot;Particle Abstraction&quot;]
-    A1[&quot;Event Abstraction&quot;]
-    A2[&quot;NTuple Data Access&quot;]
-    A3[&quot;Configuration Management&quot;]
-    A4[&quot;Command Line Interface (CLI)&quot;]
-    A5[&quot;Event Preprocessing and Filtering&quot;]
-    A6[&quot;Histogram Filling&quot;]
-    A7[&quot;Matplotlib Plotting&quot;]
-    A8[&quot;Events Visualizer (GUI)&quot;]
-    A1 -- &quot;Aggregates&quot; --&gt; A0
-    A2 -- &quot;Provides&quot; --&gt; A1
-    A3 -- &quot;Configures&quot; --&gt; A2
-    A3 -- &quot;Configures&quot; --&gt; A1
-    A4 -- &quot;Loads&quot; --&gt; A3
-    A2 -- &quot;Applies&quot; --&gt; A5
-    A5 -- &quot;Operates on&quot; --&gt; A1
-    A6 -- &quot;Processes&quot; --&gt; A1
-    A3 -- &quot;Defines&quot; --&gt; A6
-    A4 -- &quot;Invokes&quot; --&gt; A6
-    A7 -- &quot;Visualizes&quot; --&gt; A1
-    A3 -- &quot;Configures&quot; --&gt; A7
-    A4 -- &quot;Invokes&quot; --&gt; A7
-    A8 -- &quot;Inspects&quot; --&gt; A1
-    A8 -- &quot;Uses&quot; --&gt; A7
-    A4 -- &quot;Launches&quot; --&gt; A8
-    </pre><div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="particle_abstraction.html">Particle Abstraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="event_abstraction.html">Event Abstraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ntuple_data_access.html">NTuple Data Access</a></li>
-<li class="toctree-l1"><a class="reference internal" href="configuration_management.html">Configuration Management</a></li>
-</ul>
-</div>
-</section>
+  <h1>Source code for dtpr.base.event_list</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RUN_CONFIG</span>
 
+
+<div class="viewcode-block" id="EventList">
+<a class="viewcode-back" href="../../../src/base/ntuple_data_access.html#dtpr.base.EventList">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventList</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to manage events such as a list, but without loading all events in memory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">processor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">CONFIG</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize an EventList instance.</span>
+
+<span class="sd">        :param tree: The ROOT TTree containing the events information.</span>
+<span class="sd">        :type tree: ROOT.TChain</span>
+<span class="sd">        :param processor: The methods to preprocess the events.</span>
+<span class="sd">        :type processor: function, optional</span>
+<span class="sd">        :param use_config: Flag to indicate if configuration file should be used to build events (default is False).</span>
+<span class="sd">        :type use_config: bool, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tree</span> <span class="o">=</span> <span class="n">tree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processor</span> <span class="o">=</span> <span class="n">processor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_length</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CONFIG</span> <span class="o">=</span> <span class="n">CONFIG</span> <span class="k">if</span> <span class="n">CONFIG</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">RUN_CONFIG</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of events in the EventList.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_length</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal helper to build and process the event object.&quot;&quot;&quot;</span>
+        <span class="c1"># Load the data into the tree&#39;s internal buffers</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tree</span><span class="o">.</span><span class="n">GetEntry</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to retrieve event at index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Create the event</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tree</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">use_config</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">CONFIG</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CONFIG</span><span class="p">)</span>
+        
+        <span class="c1"># Return processed or raw</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processor</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processor</span> <span class="k">else</span> <span class="n">event</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve an event or a generator of events by index.</span>
+
+<span class="sd">        :param index: The index or slice to retrieve the event(s). If an integer is provided, a single</span>
+<span class="sd">            event is returned. If a slice is provided, a generator of events is returned.</span>
+<span class="sd">        :type index: int or slice</span>
+<span class="sd">        :returns: Event or generator of Event: The event(s) corresponding to the given index.</span>
+<span class="sd">        :rtype: Event or generator of Event</span>
+
+<span class="sd">        :raises: IndexError: If the index is out of range.</span>
+<span class="sd">        :raises: TypeError: If the index type is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="n">index</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_length</span><span class="p">)))</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid argument type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Handle negative indexing</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_length</span>
+            
+        <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_length</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;Event index out of range&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_event</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EventList.get_by_number">
+<a class="viewcode-back" href="../../../src/base/ntuple_data_access.html#dtpr.base.EventList.get_by_number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_by_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve an event by its number attribute (event_eventNumber).</span>
+
+<span class="sd">        :param number: The number attribute of the event to retrieve.</span>
+<span class="sd">        :type number: int</span>
+<span class="sd">        :returns: Event: The event with the specified number.</span>
+<span class="sd">        :rtype: Event</span>
+
+<span class="sd">        :raises: ValueError: If no event with the specified number is found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tree</span><span class="o">.</span><span class="n">GetTreeIndex</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tree</span><span class="o">.</span><span class="n">BuildIndex</span><span class="p">(</span><span class="s2">&quot;event_eventNumber&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tree</span><span class="o">.</span><span class="n">GetEntryNumberWithIndex</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No event found with number: </span><span class="si">{</span><span class="n">number</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_event</span><span class="p">(</span><span class="n">index</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iterate over the events safely. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_length</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_event</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;EventList with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_length</span><span class="si">}</span><span class="s2"> events&gt;&quot;</span></div>
+
+</pre></div>
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="particle_abstraction.html" class="btn btn-neutral float-right" title="Particle Abstraction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

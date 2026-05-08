@@ -49,6 +49,8 @@ class Event:
         if use_config and hasattr(CONFIG_, "particle_types"):
             for ptype, pinfo in getattr(CONFIG_, "particle_types", {}).items():
                 self._build_particles(ev, ptype, pinfo)
+            # Resolve cross-references after all particles are built
+            self._resolve_cross_references()
         else:
             warnings.warn(
                 "No particle types defined in the configuration file. Initializing an empty Event instance."
@@ -94,7 +96,7 @@ class Event:
         """
         summary = [
             color_msg(
-                f"------ Event {self.number} info ------",
+                f"------ Event {self.index} ({self.number}) info ------",
                 color="yellow",
                 indentLevel=indentLevel,
                 return_str=True,
@@ -124,7 +126,7 @@ class Event:
         _amount_attr = pinfo.get("amount", None)
         if _amount_attr is None:
             raise ValueError(
-                f"Particle type {pinfo} does not specify an amount of instances to build."
+                f"Event {self.index} ({self.number}) - Particle type {pinfo} does not specify an amount of instances to build."
             )
         else:
             if isinstance(_amount_attr, int):
@@ -132,7 +134,7 @@ class Event:
             elif isinstance(_amount_attr, str):
                 _n = getattr(ev, _amount_attr, None)
                 if _n is None:
-                    raise ValueError(f"Branch {_amount_attr} not found in the event entry.")
+                    raise ValueError(f"Branch {_amount_attr} not found in the event entry {self.number}.")
                 if isinstance(_n, int):
                     num_particles = _n
                 else:
@@ -140,6 +142,7 @@ class Event:
                         num_particles = len(_n)
                     except Exception as e:
                         raise RuntimeError(
+                            f"Event {self.index} ({self.number}) - "
                             f"Amount of particles can be determined from {_amount_attr} branch: {e}"
                         )
 
@@ -147,7 +150,7 @@ class Event:
         if "class" in pinfo:
             ParticleClass = get_callable_from_src(pinfo["class"])
             if ParticleClass is None:
-                raise ValueError(f"Particle class {pinfo['class']} wrongly defined.")
+                raise ValueError(f"Event {self.index} ({self.number}) - Particle class {pinfo['class']} wrongly defined.")
         else:
             ParticleClass = Particle  # Default to the base Particle class
 
@@ -167,13 +170,14 @@ class Event:
                 filter_expr = pinfo["filter"]
                 if not isinstance(filter_expr, str):
                     raise ValueError(
+                        f"Event {self.index} ({self.number}) - "
                         f"The 'filter' must be a string, got {type(filter_expr)} instead."
                     )
                 try:
                     # Validate the filter expression by compiling it
                     compile(filter_expr, "<string>", "eval")
                 except SyntaxError as e:
-                    raise ValueError(f"Invalid filter expression: {filter_expr}. Error: {e}")
+                    raise ValueError(f"Event {self.index} ({self.number}) - Invalid filter expression: {filter_expr}. Error: {e}")
 
                 if eval(filter_expr, {}, {"p": _particle, "ev": ev}):
                     _particles.append(_particle)
@@ -184,16 +188,17 @@ class Event:
             sorter_info = pinfo["sorter"]
             if "by" not in sorter_info:
                 raise ValueError(
+                    f"Event {self.index} ({self.number}) - "
                     f"Sorter information must contain 'by' key, got {sorter_info.keys()} instead."
                 )
             key_expr = sorter_info["by"]
             if not isinstance(key_expr, str):
-                raise ValueError(f"The sorter 'by' must be a string, got {type(key_expr)} instead.")
+                raise ValueError(f"Event {self.index} ({self.number}) - The sorter 'by' must be a string, got {type(key_expr)} instead.")
             try:
                 # Validate the sorter expression by compiling it
                 compile(key_expr, "<string>", "eval")
             except SyntaxError as e:
-                raise ValueError(f"Invalid sorter expression: {key_expr}. Error: {e}")
+                raise ValueError(f"Event {self.index} ({self.number}) - Invalid sorter expression: {key_expr}. Error: {e}")
 
             _particles = sorted(
                 _particles,
@@ -202,6 +207,97 @@ class Event:
             )
 
         setattr(self, ptype, _particles)  # Add the particles to the Event instance
+
+    def _resolve_cross_references(self):
+        """
+        Resolve cross-references between particle collections after particles are built.
+
+        The Event's particles may include attributes that reference other particle
+        collections using flattened branches (e.g., stored as companion
+        ``<name>_flat`` and ``<name>_counts`` branches). During particle
+        initialization, such attributes are registered in each ``Particle``'s
+        ``_needs_resolution`` mapping as::
+
+            attribute_name -> (target_collection_name, identifier)
+
+        Where ``identifier`` is the attribute name on target particles used to
+        match entries in the flattened ``<name>_flat`` array (for example,
+        ``idx`` or a custom key). If ``identifier`` is ``None`` or missing,
+        this method falls back to using the target particle's ``idx`` attribute.
+
+        The method replaces the raw index/identifier lists on the source
+        particle with lists of actual target particle objects. Warnings are
+        emitted when targets are missing or indices cannot be resolved.
+        """
+
+        for ptype, particles in self._particles.items():
+            for particle in particles:
+                if not getattr(particle, "_needs_resolution", None):
+                    continue
+
+                for attr_name, (target_collection_name, target_identifier) in particle._needs_resolution.items():
+                    raw_indices = getattr(particle, attr_name, [])
+                    if not raw_indices:
+                        continue
+
+                    if target_collection_name not in self._particles:
+                        warnings.warn(
+                            f"Event {self.index} ({self.number}) - "
+                            f"Target collection '{target_collection_name}' not found in event for "
+                            f"resolving '{ptype}[{particle.index}]{attr_name}'. Skipping resolution."
+                        )
+                        continue
+
+                    target_particles = self._particles[target_collection_name]
+                    if not target_particles:
+                        warnings.warn(
+                            f"Event {self.index} ({self.number}) - "
+                            f"Target collection '{target_collection_name}' is empty. "
+                            f"Cannot resolve '{ptype}[{particle.index}].{attr_name}'."
+                        )
+                        continue
+
+                    # Build a lookup mapping from identifier -> particle. If the
+                    # provided `target_identifier` is falsy, fall back to using
+                    # the target particle's `idx` attribute.
+                    target_by_identifier = {}
+                    for target_particle in target_particles:
+                        if target_identifier:
+                            key = getattr(target_particle, target_identifier, None)
+                        else:
+                            key = getattr(target_particle, "idx", None)
+
+                        if key is None:
+                            # Skip target particles that do not expose the
+                            # expected identifier; resolution will warn below
+                            continue
+
+                        target_by_identifier.setdefault(key, target_particle)
+
+                    if not target_by_identifier:
+                        warnings.warn(
+                            f"Event {self.index} ({self.number}) - "
+                            f"Target particles in '{target_collection_name}' do not expose the identifier '{target_identifier or 'idx'}'. "
+                            f"Cannot resolve '{ptype}[{particle.index}].{attr_name}'."
+                        )
+                        continue
+
+                    if not isinstance(raw_indices, list):
+                        raw_indices = [raw_indices]
+
+                    resolved_particles = []
+                    for raw_identifiers in raw_indices:
+                        part = target_by_identifier.get(raw_identifiers)
+                        if part is None:
+                            warnings.warn(
+                                f"Event {self.index} ({self.number}) - "
+                                f"Index {raw_identifiers} not found in target collection '{target_collection_name}' "
+                                f"for resolving '{ptype}[{particle.index}].{attr_name}'."
+                            )
+                            continue
+                        resolved_particles.append(part)
+
+                    setattr(particle, attr_name, resolved_particles)
 
     def to_dict(self):
         """

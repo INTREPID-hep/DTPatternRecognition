@@ -105,6 +105,11 @@ opt_args:
         dest: "dump_yaml"
         action: "store_false"
         help: "Not dump the YAML schema for the dumped events. By default, the YAML schema will be dumped alongside the ROOT file."
+    force-overwrite-yaml: &force_overwrite_yaml
+        flags: ["--force-overwrite-yaml"]
+        dest: "force_overwrite_yaml"
+        action: "store_false"
+        help: "Force overwrite the YAML schema if it already exists. By default, existing YAML schemas are preserved."
 
 # ---------------------------------- posible analysis ---------------------------------------- #
 pos_args:
@@ -133,6 +138,7 @@ pos_args:
             max-events: *max_events
             format: *format
             dump-yaml: *dump_yaml
+            force-overwrite-yaml: *force_overwrite_yaml
     plot-dt:
         name: "plot-dt"
         help: "Produce CMS DT chamber plot (local view) for a specific event digis information from a DT NTuple files."
@@ -210,3 +216,5 @@ pos_args:
         opt_args:
             output-path: *output_path
             template-name: *template_name
+
+            force-overwrite-yaml: *force_overwrite_yaml

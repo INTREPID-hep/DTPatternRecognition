@@ -28,6 +28,7 @@ class Particle:
         """
         self.index = index
         self.name = self.__class__.__name__  # By default, it is the class name
+        self._needs_resolution = {}  # Track attributes that need cross-reference resolution
 
         for key, value in kwargs.items():
             if isinstance(value, dict):
@@ -47,6 +48,8 @@ class Particle:
         src = attr_info.get("src", None)
         kwargs = attr_info.get("kwargs", None)
         _type = attr_info.get("type", None)
+        target = attr_info.get("target", None)  # Target collection for cross-reference resolution
+        identifier = attr_info.get("identifier", None)  # identifier for cross-reference resolution
 
         # Ensure exactly one of 'branch', 'expr', or 'src' is provided
         provided = [x for x in [branch, expr, src] if x is not None]
@@ -64,6 +67,8 @@ class Particle:
                 return [_materialize(x) for x in obj]
             return obj
 
+        is_two_branch_attr = False  # Flag to track if this is a two-branch attribute
+
         if branch:
             # If a branch is provided, set the attribute to the value from the event
             if event is None:
@@ -73,19 +78,19 @@ class Particle:
 
             if isinstance(
                 branch, list
-            ):  # Special handling for attributes defined by a pair of branches (flat_ids + flat_counts)
+            ):  # Special handling for attributes defined by a pair of branches (flat + flat_counts)
                 if len(branch) != 2:
                     raise ValueError(
-                        f"Branch list for attribute '{attr}' must contain exactly two entries: [flat_ids, flat_counts]."
+                        f"Branch list for attribute '{attr}' must contain exactly two entries: [flat, flat_counts]."
                     )
-                ids_branch, counts_branch = branch
-                flat_ids = _materialize(getattr(event, ids_branch, None))
+                val_branch, counts_branch = branch
+                flat_vals = _materialize(getattr(event, val_branch, None))
                 counts = _materialize(getattr(event, counts_branch, None))
-                if flat_ids is None:
-                    raise ValueError(f"Branch '{ids_branch}' not found in the event entry.")
+                if flat_vals is None:
+                    raise ValueError(f"Branch '{val_branch}' not found in the event entry.")
                 if counts is None:
                     raise ValueError(
-                        f"Companion branch '{counts_branch}' not found for '{ids_branch}'."
+                        f"Companion branch '{counts_branch}' not found for '{val_branch}'."
                     )
 
                 if self.index >= len(counts):
@@ -95,7 +100,8 @@ class Particle:
                     )
                 start = sum(counts[: self.index])
                 end = start + counts[self.index]
-                value = flat_ids[start:end]
+                value = flat_vals[start:end]
+                is_two_branch_attr = True  # Mark as two-branch attribute
             else:
                 value = _materialize(getattr(event, branch, None))
                 if value is None:
@@ -133,8 +139,13 @@ class Particle:
                     f"Cannot convert value '{value}' to type '{_type}' for attribute '{attr}'. Error: {e}"
                 )
 
+        # Tag for cross-reference resolution if this is a two-branch attribute with a target
+        if is_two_branch_attr and target is not None:
+            self._needs_resolution[attr] = (target, identifier)
+
         # Set the attribute to the value
         setattr(self, attr, value)
+
 
     def __str__(self, indentLevel=0, include=None, exclude=None, **kwargs):
         """
@@ -163,7 +174,7 @@ class Particle:
         properties = {
             key: value
             for key, value in self.__dict__.items()
-            if not key in {"index", "name"}
+            if not key in {"index", "name"} and not key.startswith("_")
             and (include is None or key in include)
             and (exclude is None or key not in exclude)
         }

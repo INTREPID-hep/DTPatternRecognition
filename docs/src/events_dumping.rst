@@ -35,6 +35,7 @@ Common examples:
 - ``--maxevents``: maximum number of events to dump.
 - ``-f``, ``--format``: output format, either ``ttree`` (default) or ``rntuple``.
 - ``--no-yaml``: skip YAML schema generation.
+- ``--force-overwrite-yaml``: overwrite existing YAML schema files instead of skipping them.
 
 .. rubric:: Output Files
 
@@ -60,8 +61,8 @@ Flattening rules:
 - Particle scalar attributes are written as ``particleType_attribute``.
 - Nested list-of-list attributes are split into two companion branches:
 
-  - ``<name>_flat_ids``: concatenated values.
-  - ``<name>_flat_counts``: per-particle counts used to reconstruct each sub-list.
+  - ``<name>_flat``: concatenated values.
+  - ``<name>_counts``: per-particle counts used to reconstruct each sub-list.
 
 Example (from dumped schema):
 
@@ -71,13 +72,17 @@ Example (from dumped schema):
       tps:
         attributes:
           matched_segments:
+            target: "segments"
+            identifier: "idx"
             branch:
-              - tps_matched_segments_flat_ids
-              - tps_matched_segments_flat_counts
+              - tps_matched_segments_flat
+              - tps_matched_segments_counts
           matched_genmuons:
+            target: "genmuons"
+            identifier: "idx"
             branch:
-              - tps_matched_genmuons_flat_ids
-              - tps_matched_genmuons_flat_counts
+              - tps_matched_genmuons_flat
+              - tps_matched_genmuons_counts
 
 This representation allows storing arbitrarily nested matching relations in ROOT,
 while keeping enough information to recover the per-particle lists.
@@ -89,9 +94,12 @@ For particle index ``i``, reconstruction follows:
     \mathrm{start} = \sum_{k=0}^{i-1} \mathrm{flat\_counts}[k], \qquad
     \mathrm{end} = \mathrm{start} + \mathrm{flat\_counts}[i]
 
-and the recovered list is ``flat_ids[start:end]``.
+and the recovered list is ``flat[start:end]``.
 
 .. note::
+    For flattened list-of-list attributes, the generated YAML schema includes a ``target`` field 
+    that should be set to the name of the target collection (e.g., "segments", "genmuons"). 
+    This field is used by the framework to resolve cross-references when loading data back into Event objects.
     By default, the YAML schema is generated only if it does not already exist at the target location.
-    The exact value used in ``amount`` depends on the generated branch map.
-    Branches with unknown/empty-only Awkward type are skipped during dumping.
+    Use ``--force-overwrite-yaml`` to overwrite existing schemas. The exact value used in ``amount`` 
+    depends on the generated branch map. Branches with unknown/empty-only Awkward type are skipped during dumping.

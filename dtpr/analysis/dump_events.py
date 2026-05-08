@@ -11,6 +11,7 @@ def dump(
     maxevents: int,
     format: str = "ttree",
     dump_yaml: bool = True,
+    force_overwrite_yaml: bool = False,
 ) -> None:
     fRNTuple = (
         False if format == "ttree" else True
@@ -23,6 +24,13 @@ def dump(
     _maxevents = min(maxevents if maxevents > 0 else len(ntuple.events), len(ntuple.events))
 
     events = ntuple.events[:_maxevents] if _maxevents > 0 else ntuple.events
-    dump_events(events, outpath=outfolder, tag=tag, fRNTuple=fRNTuple, dump_yaml_schema=dump_yaml)
+    dump_events(
+        events,
+        outpath=outfolder,
+        tag=tag,
+        fRNTuple=fRNTuple,
+        dump_yaml_schema=dump_yaml,
+        force_overwrite_yaml=force_overwrite_yaml,
+    )
 
     color_msg("Done!", "green")

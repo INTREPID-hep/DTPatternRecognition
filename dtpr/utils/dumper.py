@@ -1,4 +1,5 @@
 import os
+import warnings
 import uproot
 import awkward as ak
 import yaml
@@ -15,11 +16,11 @@ def _sanitize_for_awkward(data):
     if isinstance(data, list):
         return [_sanitize_for_awkward(item) for item in data]
     elif isinstance(data, dict):
-        # We also filter out "name" and private attributes starting with "_"
+        # We also filter out private attributes starting with "_"
         return {
             key: _sanitize_for_awkward(value)
             for key, value in data.items()
-            if key != "name" and not key.startswith("_")
+            if not key.startswith("_")
         }
     elif isinstance(data, Particle):
         return data.index
@@ -78,6 +79,8 @@ def _flatten_awkward_to_dict(
     branches = {}
 
     for field in ak.fields(array):
+        if field == "name":
+            continue  # Skip the 'name' field
         col = array[field]
         subfields = ak.fields(col)
 
@@ -98,9 +101,9 @@ def _flatten_awkward_to_dict(
             if type_str.count("var *") > 1:
                 flat_col = ak.flatten(col, axis=2)
                 counts_col = ak.num(col, axis=2)
-
-                branches[f"{new_name}_flat_ids"] = flat_col
-                branches[f"{new_name}_flat_counts"] = counts_col
+                # encode target collection in branch name for schema generation if col refers to a Particle collection
+                branches[f"{new_name}_flat"] = flat_col
+                branches[f"{new_name}_counts"] = counts_col
                 continue
 
             branches[_new_name] = col
@@ -117,10 +120,10 @@ def _flatten_awkward_to_dict(
 
     return branches
 
-
 def _build_yaml_schema_from_branches(branches: dict[str, ak.Array]) -> dict:
     """Build a YAML-serializable schema from flattened output branch names."""
     particle_types: dict[str, dict[str, dict[str, str]]] = {}
+    _flatten_warning_emitted = False
 
     for branch_name in branches:
         # Event-level branches are not particle attributes.
@@ -137,13 +140,21 @@ def _build_yaml_schema_from_branches(branches: dict[str, ak.Array]) -> dict:
         if attr_name == "index":
             attr_name = "idx"
 
+        if "_counts" in attr_name:
+            continue
+
         if "_flat" in attr_name:
-            if "_counts" in attr_name:
-                continue
-            attr_name = attr_name.replace("_flat_ids", "")
+            attr_name = attr_name.replace("_flat", "")
             particle_types[particle_type]["attributes"][attr_name] = {
-                "branch": [branch_name, branch_name.replace("_flat_ids", "_flat_counts")]
+                "target": "INCLUDE TARGET IF NEEDED",
+                "identifier": "DEFINE IDENTIFIER IF NEEDED",
+                "branch": [branch_name, branch_name.replace("_flat", "_counts")]
             }
+            if not _flatten_warning_emitted:
+                warnings.warn(
+                    "Data appears to be flattened, ensure to fix the 'target' and 'identifier' fields in the YAML schema"
+                )
+                _flatten_warning_emitted = True
             continue
 
         particle_types[particle_type]["attributes"][attr_name] = {"branch": branch_name}
@@ -161,16 +172,19 @@ def dump_events(
     fRNTuple=False,
     include_emptybranches: bool = False,
     dump_yaml_schema: bool = False,
+    force_overwrite_yaml: bool = False,
 ):
     """
     Dump a list of Event objects to an RNTuple (or TTree) in a ROOT file.
     """
     color_msg(f"Dumping events to {outpath}", "green")
 
-    if os.path.isdir(outpath):
+    if ".root" not in outpath:
+        create_outfolder(os.path.dirname(outpath))
         outpath = os.path.join(outpath, f"dtpr_events_dumped.root")
-
-    create_outfolder(os.path.abspath(os.path.dirname(outpath)))
+    else:
+        dir = os.path.dirname(outpath)
+        create_outfolder(dir)
 
     # 1. Convert Event objects to raw dictionaries using your class's built-in method
     raw_event_dicts = [ev.to_dict() for ev in events if ev is not None]
@@ -200,9 +214,10 @@ def dump_events(
 
         color_msg(f"Successfully saved {len(clean_event_dicts)} events", "green")
 
+    # 6 Optional: Build and dump YAML schema for this output structure (only if requested)
     if dump_yaml_schema:
-        yaml_path = os.path.dirname(outpath) + f"/dumps_events_config{tag}.yaml"
-        if os.path.exists(yaml_path):
+        yaml_path = os.path.join(os.path.dirname(outpath), f"dumps_events_config{tag}.yaml")
+        if os.path.exists(yaml_path) and not force_overwrite_yaml:
             color_msg(f"YAML schema already exists at {yaml_path}, skipping dump.", "yellow")
             return
 

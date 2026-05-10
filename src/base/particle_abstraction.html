@@ -164,7 +164,18 @@ callable.</p></td>
 </table>
 <p>Understanding this mechanism enables the definition of particle initialization through the configuration file or passing directly.
 the dictionary-like structure to read from a ROOT TTree entry.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+    <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">color_msg</span><span class="p">(</span>
+            <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">()]),</span>
+            <span class="n">indentLevel</span><span class="o">=</span><span class="n">indentLevel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compare two Particle instances for equality, excluding the index and name attribute.</span>
 
 <span class="sd">    :param other: The other Particle instance to compare.</span>
@@ -178,17 +189,6 @@ the dictionary-like structure to read from a ROOT TTree entry.</p>
     <span class="c1"># Compare all attributes except &#39;index&#39; and &#39;name&#39;</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">}</span>
-    <span class="p">}</span> <span class="o">==</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">}}</span>
-
-<span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generate a hash for the Particle instance based on its attributes, excluding index and name.</span>
-
-<span class="sd">    :return: The hash value of the Particle instance.</span>
-<span class="sd">    :rtype: int</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span>
-        <span class="nb">frozenset</span><span class="p">(</span>
 </pre></div>
 </div>
 <p class="rubric">Output</p>

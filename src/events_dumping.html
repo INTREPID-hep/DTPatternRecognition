@@ -118,6 +118,7 @@ dtpr<span class="w"> </span>dump-events<span class="w"> </span>-i<span class="w"
 <li><p><code class="docutils literal notranslate"><span class="pre">--maxevents</span></code>: maximum number of events to dump.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">-f</span></code>, <code class="docutils literal notranslate"><span class="pre">--format</span></code>: output format, either <code class="docutils literal notranslate"><span class="pre">ttree</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">rntuple</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--no-yaml</span></code>: skip YAML schema generation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--force-overwrite-yaml</span></code>: overwrite existing YAML schema files instead of skipping them.</p></li>
 </ul>
 <p class="rubric">Output Files</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">-o/--outputpath</span></code> points to a directory, the command creates:</p>
@@ -139,8 +140,8 @@ uses a deterministic flattening convention so relationships can be reconstructed
 <li><p>Particle scalar attributes are written as <code class="docutils literal notranslate"><span class="pre">particleType_attribute</span></code>.</p></li>
 <li><p>Nested list-of-list attributes are split into two companion branches:</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_flat_ids</span></code>: concatenated values.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_flat_counts</span></code>: per-particle counts used to reconstruct each sub-list.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_flat</span></code>: concatenated values.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;name&gt;_counts</span></code>: per-particle counts used to reconstruct each sub-list.</p></li>
 </ul>
 </li>
 </ul>
@@ -149,13 +150,17 @@ uses a deterministic flattening convention so relationships can be reconstructed
 <span class="w">  </span><span class="nt">tps</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">attributes</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">matched_segments</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;segments&quot;</span>
+<span class="w">        </span><span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;idx&quot;</span>
 <span class="w">        </span><span class="nt">branch</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_segments_flat_ids</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_segments_flat_counts</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_segments_flat</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_segments_counts</span>
 <span class="w">      </span><span class="nt">matched_genmuons</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;genmuons&quot;</span>
+<span class="w">        </span><span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;idx&quot;</span>
 <span class="w">        </span><span class="nt">branch</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_genmuons_flat_ids</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_genmuons_flat_counts</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_genmuons_flat</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_genmuons_counts</span>
 </pre></div>
 </div>
 <p>This representation allows storing arbitrarily nested matching relations in ROOT,
@@ -164,12 +169,15 @@ while keeping enough information to recover the per-particle lists.</p>
 <div class="math notranslate nohighlight">
 \[\mathrm{start} = \sum_{k=0}^{i-1} \mathrm{flat\_counts}[k], \qquad
 \mathrm{end} = \mathrm{start} + \mathrm{flat\_counts}[i]\]</div>
-<p>and the recovered list is <code class="docutils literal notranslate"><span class="pre">flat_ids[start:end]</span></code>.</p>
+<p>and the recovered list is <code class="docutils literal notranslate"><span class="pre">flat[start:end]</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>By default, the YAML schema is generated only if it does not already exist at the target location.
-The exact value used in <code class="docutils literal notranslate"><span class="pre">amount</span></code> depends on the generated branch map.
-Branches with unknown/empty-only Awkward type are skipped during dumping.</p>
+<p>For flattened list-of-list attributes, the generated YAML schema includes a <code class="docutils literal notranslate"><span class="pre">target</span></code> field
+that should be set to the name of the target collection (e.g., “segments”, “genmuons”).
+This field is used by the framework to resolve cross-references when loading data back into Event objects.
+By default, the YAML schema is generated only if it does not already exist at the target location.
+Use <code class="docutils literal notranslate"><span class="pre">--force-overwrite-yaml</span></code> to overwrite existing schemas. The exact value used in <code class="docutils literal notranslate"><span class="pre">amount</span></code>
+depends on the generated branch map. Branches with unknown/empty-only Awkward type are skipped during dumping.</p>
 </div>
 </section>
 

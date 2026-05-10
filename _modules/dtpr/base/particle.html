@@ -546,6 +546,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>  <span class="c1"># By default, it is the class name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_needs_resolution</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Track attributes that need cross-reference resolution</span>
 
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -568,6 +569,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">src</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;src&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kwargs&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">_type</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Target collection for cross-reference resolution</span>
+        <span class="n">identifier</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># identifier for cross-reference resolution</span>
 
         <span class="c1"># Ensure exactly one of &#39;branch&#39;, &#39;expr&#39;, or &#39;src&#39; is provided</span>
         <span class="n">provided</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">branch</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">src</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
@@ -585,6 +588,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">return</span> <span class="p">[</span><span class="n">_materialize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">obj</span>
 
+        <span class="n">is_two_branch_attr</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Flag to track if this is a two-branch attribute</span>
+
         <span class="k">if</span> <span class="n">branch</span><span class="p">:</span>
             <span class="c1"># If a branch is provided, set the attribute to the value from the event</span>
             <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -594,19 +599,19 @@ window.runMermaid = runMermaid;</script>
 
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
                 <span class="n">branch</span><span class="p">,</span> <span class="nb">list</span>
-            <span class="p">):</span>  <span class="c1"># Special handling for attributes defined by a pair of branches (flat_ids + flat_counts)</span>
+            <span class="p">):</span>  <span class="c1"># Special handling for attributes defined by a pair of branches (flat + flat_counts)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Branch list for attribute &#39;</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&#39; must contain exactly two entries: [flat_ids, flat_counts].&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Branch list for attribute &#39;</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&#39; must contain exactly two entries: [flat, flat_counts].&quot;</span>
                     <span class="p">)</span>
-                <span class="n">ids_branch</span><span class="p">,</span> <span class="n">counts_branch</span> <span class="o">=</span> <span class="n">branch</span>
-                <span class="n">flat_ids</span> <span class="o">=</span> <span class="n">_materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ids_branch</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                <span class="n">val_branch</span><span class="p">,</span> <span class="n">counts_branch</span> <span class="o">=</span> <span class="n">branch</span>
+                <span class="n">flat_vals</span> <span class="o">=</span> <span class="n">_materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">val_branch</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
                 <span class="n">counts</span> <span class="o">=</span> <span class="n">_materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">counts_branch</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-                <span class="k">if</span> <span class="n">flat_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Branch &#39;</span><span class="si">{</span><span class="n">ids_branch</span><span class="si">}</span><span class="s2">&#39; not found in the event entry.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">flat_vals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Branch &#39;</span><span class="si">{</span><span class="n">val_branch</span><span class="si">}</span><span class="s2">&#39; not found in the event entry.&quot;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Companion branch &#39;</span><span class="si">{</span><span class="n">counts_branch</span><span class="si">}</span><span class="s2">&#39; not found for &#39;</span><span class="si">{</span><span class="n">ids_branch</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Companion branch &#39;</span><span class="si">{</span><span class="n">counts_branch</span><span class="si">}</span><span class="s2">&#39; not found for &#39;</span><span class="si">{</span><span class="n">val_branch</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
                     <span class="p">)</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">):</span>
@@ -616,7 +621,8 @@ window.runMermaid = runMermaid;</script>
                     <span class="p">)</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">])</span>
                 <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">counts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">flat_ids</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">flat_vals</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+                <span class="n">is_two_branch_attr</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Mark as two-branch attribute</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">_materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">branch</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
                 <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -654,8 +660,13 @@ window.runMermaid = runMermaid;</script>
                     <span class="sa">f</span><span class="s2">&quot;Cannot convert value &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; to type &#39;</span><span class="si">{</span><span class="n">_type</span><span class="si">}</span><span class="s2">&#39; for attribute &#39;</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">&#39;. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
 
+        <span class="c1"># Tag for cross-reference resolution if this is a two-branch attribute with a target</span>
+        <span class="k">if</span> <span class="n">is_two_branch_attr</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_needs_resolution</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span>
+
         <span class="c1"># Set the attribute to the value</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -685,7 +696,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">}</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">}</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">include</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">include</span><span class="p">)</span>
             <span class="ow">and</span> <span class="p">(</span><span class="n">exclude</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">)</span>
         <span class="p">}</span>

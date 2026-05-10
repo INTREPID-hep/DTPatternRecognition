@@ -11,7 +11,6 @@ from ..utils.functions import (
     create_outfolder,
 )
 from more_itertools import collapse
-from multiprocess import Pool, cpu_count
 from typing import Any, Dict, Optional
 
 
@@ -128,43 +127,6 @@ def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
                 h.Fill(*val)
 
 
-def process_event_chunk(
-    index: int, start_idx: int, end_idx: int, events: Any, histos_to_fill: Dict[str, Any]
-) -> Dict[str, Any]:
-    """
-    Process a chunk of events for parallel execution.
-
-    :param index: Worker index for naming cloned histograms
-    :type index: int
-    :param start_idx: Starting event index
-    :type start_idx: int
-    :param end_idx: Ending event index
-    :type end_idx: int
-    :param events: List of all events
-    :type events: Any
-    :param histos_to_fill: Dictionary of histograms to fill
-    :type histos_to_fill: Dict[str, Any]
-    :return: Dictionary of filled histograms for this chunk
-    :rtype: Dict[str, Any]
-    """
-    # Clone histograms for this worker to avoid thread safety issues
-    c_histos_to_fill = {}
-    for key, val in histos_to_fill.items():
-        if isinstance(val, (r.TH1, r.TH2, r.TH3)):
-            _val = val.Clone(val.GetName() + f"_{index}")
-        else:
-            _val = val
-        c_histos_to_fill[key] = _val
-
-    # Process all events in this chunk
-    for ev in events[start_idx:end_idx]:
-        if ev is None:
-            continue
-        fill_histograms(ev, c_histos_to_fill)
-
-    return c_histos_to_fill
-
-
 def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) -> None:
     """
     Store histograms in a ROOT file.
@@ -192,7 +154,7 @@ def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) ->
 
 
 def fill_histos(
-    inpath: str, outfolder: str, tag: str, maxfiles: int, maxevents: int, ncores: int
+    inpath: str, outfolder: str, tag: str, maxfiles: int, maxevents: int,
 ) -> None:
     """
     Fill histograms based on NTuples information.
@@ -207,8 +169,6 @@ def fill_histos(
     :type maxfiles: int
     :param maxevents: Maximum number of events to process (0 = all)
     :type maxevents: int
-    :param ncores: Number of CPU cores to use (1 = sequential, >1 = parallel)
-    :type ncores: int
     :return: None
     :rtype: None
     """
@@ -234,10 +194,6 @@ def fill_histos(
         displayed_msg = f"{', '.join(histo_keys)}"
     color_msg(displayed_msg, color="yellow", indentLevel=2)
 
-    # DEPRECATED: Parallel processing is currently disabled due to bad performance.
-    # Determine number of cores for processing
-    _ncores = None  # min(ncores, cpu_count()) if ncores > 1 else None
-
     # Process events with progress bar
     with tqdm(
         total=_maxevents + 1,
@@ -246,64 +202,23 @@ def fill_histos(
         ascii=True,
         unit=" event",
     ) as pbar:
-        if _ncores is None:
-            # Sequential processing
-            each_print = (_maxevents + 1) // 10 if (_maxevents + 1) > 10 else 1
-            for i, ev in enumerate(ntuple.events):
-                if i > _maxevents:
-                    pbar.update(_maxevents + 1 - pbar.n)
-                    break
-                if i > 0 and i % each_print == 0:
-                    pbar.update(each_print)
-                fill_histograms(ev, histograms_to_fill)
 
-            histograms_result = histograms_to_fill
-        else:
-            # Parallel processing with worker pool
-            chunk_size = (_maxevents + 1) // _ncores
-            with Pool(_ncores) as pool:
-                results = []
-                for i in range(_ncores):
-                    start_idx = i * chunk_size
-                    end_idx = min((i + 1) * chunk_size, _maxevents + 1)
+        # Sequential processing
+        each_print = (_maxevents + 1) // 10 if (_maxevents + 1) > 10 else 1
+        for i, ev in enumerate(ntuple.events):
+            if i > _maxevents:
+                pbar.update(_maxevents + 1 - pbar.n)
+                break
+            if i > 0 and i % each_print == 0:
+                pbar.update(each_print)
+            fill_histograms(ev, histograms_to_fill)
 
-                    results.append(
-                        pool.apply_async(
-                            process_event_chunk,
-                            args=(i, start_idx, end_idx, ntuple.events, histograms_to_fill),
-                            callback=lambda _, i=i: pbar.write(f"Processed events chunk {i}")
-                            or pbar.update(chunk_size),
-                        )
-                    )
-
-                # Gather results from all workers
-                histograms_results = [r.get() for r in results]
 
     # Save histograms to output directory
     color_msg("Saving histograms...", color="purple", indentLevel=1)
     outpath = os.path.join(outfolder, "histograms")
     create_outfolder(outpath)
 
-    if _ncores is None:
-        # Direct save for sequential processing
-        save_histograms(outpath, tag, histograms_result)
-    else:
-        # For parallel processing, save temporary files and merge them
-        import subprocess as bash
+    save_histograms(outpath, tag, histograms_to_fill)
 
-        tmp_path = os.path.join(outpath, "_tmp")
-        create_outfolder(tmp_path)
-
-        histo_files = []
-        for i, histograms_i in enumerate(histograms_results):
-            file_path = os.path.join(tmp_path, f"histograms_{i}.root")
-            save_histograms(tmp_path, f"_{i}", histograms_i)
-            histo_files.append(file_path)
-
-        # Merge all temporary files with hadd
-        color_msg("Merging histograms...", color="purple", indentLevel=1)
-        output_file = os.path.join(outpath, f"histograms{tag}.root")
-        bash.call(f"hadd -f -j {_ncores} {output_file} {' '.join(histo_files)}", shell=True)
-        color_msg("Cleaning up temporary files...", color="purple", indentLevel=1)
-        bash.call(f"rm -rf {tmp_path}", shell=True)
     color_msg("Done!", color="green")

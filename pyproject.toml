@@ -21,7 +21,6 @@ dependencies = [
     "pyqt5>=5.15",
     "tqdm>=4.6",
     "natsort>=8.4",
-    "multiprocess>=0.7",
     "more-itertools>=10.0",
     "uproot>=4.0",
     "awkward>=2.0",

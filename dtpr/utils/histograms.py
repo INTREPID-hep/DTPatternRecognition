@@ -6,6 +6,7 @@ import ROOT as r
 # - SubLeadingMuon_pt
 # - SubLeadingMuon_eta
 # - muon_DR
+# - gen_pt_draw (example ROOT Draw-based histogram)
 
 histos = {}
 
@@ -38,6 +39,13 @@ histos.update(
             "type": "distribution",
             "histo": r.TH1D("muon_DR", r";#DeltaR both muons; Events", 20, 1, 6),
             "func": lambda reader: reader.dR,
+        },
+        # --- Example ROOT Draw-based histogram (uses ROOT Draw syntax)
+        "gen_pt_draw": {
+            "type": "root-draw",
+            "draw": "gen_pt >> gen_pt_draw(100, 0, 500)",
+            "selection": "abs(gen_eta) < 2.4",
+            "option": "goff",
         },
     }
 )

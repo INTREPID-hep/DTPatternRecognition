@@ -215,6 +215,8 @@ histo_names:
   - SubLeadingMuon_eta
   # ============= other_vars =========== #
   - muon_DR
+  # ROOT draw histograms
+  - gen_pt_draw
 
 # ----------------------------- configuration for event inspector ---------------------------------#
 # Functions to be used in the event inspector.

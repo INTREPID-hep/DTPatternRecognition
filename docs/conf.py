@@ -1,7 +1,7 @@
 project = 'DTPatternRecognition'
 copyright = '2025, Daniel Estrada, Universidad de Oviedo'
 author = 'Daniel Estrada'
-release = '3.0.0'
+release = '3.5.0'
 
 extensions = [
     "sphinx.ext.autodoc",

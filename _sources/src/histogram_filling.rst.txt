@@ -116,13 +116,134 @@ For efficiency histograms, you can use the following structure (and also use aux
 
 **Key fields:**
 
-- ``type``: The histogram type (`distribution`, `distribution2d`, `distribution3d`, or `eff` for efficiency).
+- ``type``: The histogram type (`distribution`, `distribution2d`, `distribution3d`, `eff` for efficiency, or `root-draw` for ROOT Draw expressions).
 
 - ``histo``/``histoDen``/``histoNum``: The ROOT histogram objects.
 
 - ``func``: A function that extracts the value(s) to fill from the event (the ``reader``).
 
 - ``numdef``: For efficiency histograms, a function that returns a boolean or list of booleans indicating which entries go into the numerator.
+
+**For ROOT Draw-based Histograms (Direct ROOT TTree::Draw Syntax):**
+
+The framework also supports filling histograms using ROOT's native ``TTree::Draw`` syntax, which is powerful for:
+
+- Quick exploratory analysis without writing Python extraction functions
+- Complex ROOT expressions (array masking, ROOT functions like ``Max$``, ``Min$``, etc.)
+- 2D and profile histograms using ROOT syntax
+
+For detailed information on ROOT Draw syntax and options, see the `official ROOT TTree::Draw documentation <https://root.cern/doc/v628/classTTree.html#a73450649dc6e54b5b94516c468523e45>`_.
+
+.. code-block:: python
+
+    "HISTONAME": {
+        "type": "root-draw",
+        "draw": "variable >> histogram_name(nbins, min, max)",
+        "selection": "cut_condition",  # optional, default ""
+        "option": "goff",              # optional, default "goff"
+    }
+
+- ``draw``: The ROOT Draw expression. Must include ``>> histogram_name(...)`` to define the output histogram name and binning. (Required)
+- ``selection``: Optional ROOT cut condition (e.g., ``"abs(eta) < 2.4"``). Default is empty string (no cut).
+- ``option``: Optional ROOT Draw option (e.g., ``"goff"`` for no graphics, ``"prof"`` for profile histogram, ``"colz"`` for 2D). Default is ``"goff"``.
+
+**Implicit Behavior:**
+
+- ROOT histograms are created automatically by ROOT's ``Draw`` operation (no need to pre-create ``r.TH1D(...)``, etc.)
+- Drawing always respects the CLI ``--maxevents`` parameter (same entry range as the event loop).
+- No screen canvas is displayed (``goff`` is recommended and default).
+
+**Examples:**
+
+Simple variable:
+
+.. code-block:: python
+
+    "gen_pt_draw": {
+        "type": "root-draw",
+        "draw": "gen_pt >> h_gen_pt(100, 0, 500)",
+        "selection": "abs(gen_eta) < 2.4",
+    }
+
+Array element access:
+
+.. code-block:: python
+
+    "vector_first_element": {
+        "type": "root-draw",
+        "draw": "vector[0] >> h_vec_first(50, -10, 10)",
+        "selection": "Length$(vector) > 0",
+    }
+
+ROOT functions (Max$, Min$, etc.):
+
+.. code-block:: python
+
+    "vector_max": {
+        "type": "root-draw",
+        "draw": "Max$(vector) >> h_vec_max(100, 0, 100)",
+        "selection": "Length$(vector) > 0",
+    }
+
+Complex ROOT expression with masking:
+
+.. code-block:: python
+
+    "vector_masked_max": {
+        "type": "root-draw",
+        "draw": "Max$(vector * (vector < Max$(vector))) >> h_masked(100, 0, 100)",
+    }
+
+2D histogram using ROOT syntax:
+
+.. code-block:: python
+
+    "pt_vs_eta": {
+        "type": "root-draw",
+        "draw": "gen_eta : gen_pt >> h_pt_vs_eta(100, 0, 500, 50, -3, 3)",
+        "option": "colz",
+    }
+
+Profile histogram:
+
+.. code-block:: python
+
+    "mean_pt_vs_eta": {
+        "type": "root-draw",
+        "draw": "gen_pt : gen_eta >> h_profile(50, -3, 3)",
+        "option": "prof",
+    }
+
+**Mixing Event-Based and Draw-Based Histograms:**
+
+You can freely mix both histogram types in the same module:
+
+.. code-block:: python
+
+    import ROOT as r
+
+    histos = {}
+
+    histos.update({
+        # Event-based histogram (Python function)
+        "leading_muon_pt": {
+            "type": "distribution",
+            "histo": r.TH1D("leading_muon_pt", r';p_T; Events', 20, 0, 1000),
+            "func": lambda reader: reader.genmuons[0].pt,
+        },
+
+        # Draw-based histogram (ROOT syntax)
+        "gen_pt_draw": {
+            "type": "root-draw",
+            "draw": "gen_pt >> h_gen_pt(100, 0, 500)",
+            "selection": "abs(gen_eta) < 2.4",
+        },
+    })
+
+When you run ``fill-histos``, both histogram types are automatically detected and filled in the correct order:
+(1) Draw-based histograms are executed once before the event loop.
+(2) Event-based histograms are filled for each event.
+(3) All histograms are saved to the output ROOT file.
 
 .. rubric:: Step 3: Run the Histogram Filling Tool
 
@@ -149,6 +270,9 @@ This will process your events using 4 CPU cores, speeding up the filling for lar
 - The filled histograms are saved to a ROOT file for further analysis or plotting.
 - When running in parallel, temporary files are merged automatically at the end.
 
+.. warning:: 
+    Multiprocessing was removed in >v3.4 since no representative speedup was observed.
+
 .. rubric:: Advanced Usage
 
 .. mermaid::
@@ -174,6 +298,14 @@ This will process your events using 4 CPU cores, speeding up the filling for lar
         Histogram Filler->>NTuple: Create NTuple(inpath)
         NTuple-->>Histogram Filler: NTuple object ready (contains EventList)
 
+        Note over Histogram Filler: Classify histograms: event-based vs. root-draw
+
+        alt If root-draw histograms exist
+            Histogram Filler->>Histogram Filler: Execute Draw-based histograms
+            Histogram Filler->>NTuple: Call tree.Draw(...) for each draw histogram
+            Note over Histogram Filler: Retrieve histograms from ROOT gDirectory
+        end
+
         loop For each event in NTuple.events
             Histogram Filler->>EventList: Request next Event
             EventList->>NTuple: Get raw data entry
@@ -184,8 +316,8 @@ This will process your events using 4 CPU cores, speeding up the filling for lar
             EventList-->>Histogram Filler: Return Event
 
             alt If Event is not None
-                Histogram Filler->>Histogram Filler: Call fill_histograms(Event, all_histograms)
-                loop For each configured histogram
+                Histogram Filler->>Histogram Filler: Call fill_histograms(Event, event_histos_only)
+                loop For each event-based histogram
                     Histogram Filler->>Event: Call histogram's 'func' (e.g., event.genmuons[0].pt)
                     Event-->>Histogram Filler: Return value
                     Histogram Filler->>ROOT Histogram: Fill(value)
@@ -193,7 +325,7 @@ This will process your events using 4 CPU cores, speeding up the filling for lar
             end
         end
         Histogram Filler->>Histogram Filler: Call save_histograms()
-        Histogram Filler->>ROOT File: Write all filled histograms
+        Histogram Filler->>ROOT File: Write all histograms (event + draw)
         Histogram Filler-->>dtpr CLI: Done
         dtpr CLI-->>User: Output messages
 

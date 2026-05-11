@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dtpr.base.event &mdash; DTPatternRecognition 3.0.0 documentation</title>
+  <title>dtpr.base.event &mdash; DTPatternRecognition 3.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="../../../_static/documentation_options.js?v=c1362a89"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -655,7 +655,9 @@ window.runMermaid = runMermaid;</script>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_amount_attr</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">_n</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">_amount_attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">_n</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Branch </span><span class="si">{</span><span class="n">_amount_attr</span><span class="si">}</span><span class="s2"> not found in the event entry </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Branch </span><span class="si">{</span><span class="n">_amount_attr</span><span class="si">}</span><span class="s2"> not found in the event entry </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_n</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
                     <span class="n">num_particles</span> <span class="o">=</span> <span class="n">_n</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -671,7 +673,9 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="s2">&quot;class&quot;</span> <span class="ow">in</span> <span class="n">pinfo</span><span class="p">:</span>
             <span class="n">ParticleClass</span> <span class="o">=</span> <span class="n">get_callable_from_src</span><span class="p">(</span><span class="n">pinfo</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">ParticleClass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">) - Particle class </span><span class="si">{</span><span class="n">pinfo</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> wrongly defined.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">) - Particle class </span><span class="si">{</span><span class="n">pinfo</span><span class="p">[</span><span class="s1">&#39;class&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> wrongly defined.&quot;</span>
+                <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ParticleClass</span> <span class="o">=</span> <span class="n">Particle</span>  <span class="c1"># Default to the base Particle class</span>
 
@@ -698,7 +702,9 @@ window.runMermaid = runMermaid;</script>
                     <span class="c1"># Validate the filter expression by compiling it</span>
                     <span class="nb">compile</span><span class="p">(</span><span class="n">filter_expr</span><span class="p">,</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">) - Invalid filter expression: </span><span class="si">{</span><span class="n">filter_expr</span><span class="si">}</span><span class="s2">. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">) - Invalid filter expression: </span><span class="si">{</span><span class="n">filter_expr</span><span class="si">}</span><span class="s2">. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
 
                 <span class="k">if</span> <span class="nb">eval</span><span class="p">(</span><span class="n">filter_expr</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{</span><span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">_particle</span><span class="p">,</span> <span class="s2">&quot;ev&quot;</span><span class="p">:</span> <span class="n">ev</span><span class="p">}):</span>
                     <span class="n">_particles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_particle</span><span class="p">)</span>
@@ -714,12 +720,16 @@ window.runMermaid = runMermaid;</script>
                 <span class="p">)</span>
             <span class="n">key_expr</span> <span class="o">=</span> <span class="n">sorter_info</span><span class="p">[</span><span class="s2">&quot;by&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key_expr</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">) - The sorter &#39;by&#39; must be a string, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">key_expr</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">) - The sorter &#39;by&#39; must be a string, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">key_expr</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead.&quot;</span>
+                <span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Validate the sorter expression by compiling it</span>
                 <span class="nb">compile</span><span class="p">(</span><span class="n">key_expr</span><span class="p">,</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">) - Invalid sorter expression: </span><span class="si">{</span><span class="n">key_expr</span><span class="si">}</span><span class="s2">. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">) - Invalid sorter expression: </span><span class="si">{</span><span class="n">key_expr</span><span class="si">}</span><span class="s2">. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
 
             <span class="n">_particles</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
                 <span class="n">_particles</span><span class="p">,</span>
@@ -757,7 +767,10 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">particle</span><span class="p">,</span> <span class="s2">&quot;_needs_resolution&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
                     <span class="k">continue</span>
 
-                <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="p">(</span><span class="n">target_collection_name</span><span class="p">,</span> <span class="n">target_identifier</span><span class="p">)</span> <span class="ow">in</span> <span class="n">particle</span><span class="o">.</span><span class="n">_needs_resolution</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="n">target_collection_name</span><span class="p">,</span>
+                    <span class="n">target_identifier</span><span class="p">,</span>
+                <span class="p">)</span> <span class="ow">in</span> <span class="n">particle</span><span class="o">.</span><span class="n">_needs_resolution</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">raw_indices</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">particle</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="p">[])</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_indices</span><span class="p">:</span>
                         <span class="k">continue</span>

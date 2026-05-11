@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Matplotlib Plotting &mdash; DTPatternRecognition 3.0.0 documentation</title>
+  <title>Matplotlib Plotting &mdash; DTPatternRecognition 3.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="../_static/documentation_options.js?v=c1362a89"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -598,7 +598,7 @@ You can add your own artists by defining new functions and referencing them in t
 <p>DTPatternRecognition combines your configuration, the event data, and Matplotlib to create these visualizations.</p>
 <p>The plotting process involves the <code class="docutils literal notranslate"><span class="pre">dtpr</span></code> CLI dispatching to the <code class="docutils literal notranslate"><span class="pre">plot_dt_chamber</span></code> function, which then
 consults <code class="docutils literal notranslate"><span class="pre">RUN_CONFIG</span></code> for plotting instructions and uses artist-builder functions to draw on Matplotlib axes.</p>
-<pre align="center" data-zoom-id="id-6cb5190e-d141-452b-8114-7d3863010815" id="dtpr-plotting" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-ae8d298f-4070-46ae-989f-e6d8f2993853" id="dtpr-plotting" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI
@@ -772,10 +772,10 @@ your configuration (use <code class="docutils literal notranslate"><span class="
 </pre></div>
 </div>
 <p>Then, add it to your configuration:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">dt-simhits-local</span><span class="p">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.dt_plot_functions.embed_segs2axes_loc&quot;</span><span class="w">  </span><span class="c1"># Source of the artist</span>
+
+<span class="w"> </span><span class="w w-Error"> </span><span class="nt">dt-simhits-local</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.dt_plot_functions.embed_simhits2axes_loc&quot;</span><span class="w">  </span><span class="c1"># Source of the artist</span>
-<span class="w">    </span><span class="nt">rep-info</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">particle_type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;simhits&#39;</span><span class="w">  </span><span class="c1"># Particle type to use</span>
 </pre></div>
 </div>
 <p>Now, include <code class="docutils literal notranslate"><span class="pre">dt-simhits-local</span></code> in your list of artists to use for plotting.</p>

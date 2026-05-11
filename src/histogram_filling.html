@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Histogram Filling &mdash; DTPatternRecognition 3.0.0 documentation</title>
+  <title>Histogram Filling &mdash; DTPatternRecognition 3.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=acc74ff5"></script>
+      <script src="../_static/documentation_options.js?v=c1362a89"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -622,11 +622,113 @@ modifying the core analysis code.</p>
 </div>
 <p><strong>Key fields:</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: The histogram type (<cite>distribution</cite>, <cite>distribution2d</cite>, <cite>distribution3d</cite>, or <cite>eff</cite> for efficiency).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: The histogram type (<cite>distribution</cite>, <cite>distribution2d</cite>, <cite>distribution3d</cite>, <cite>eff</cite> for efficiency, or <cite>root-draw</cite> for ROOT Draw expressions).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">histo</span></code>/<code class="docutils literal notranslate"><span class="pre">histoDen</span></code>/<code class="docutils literal notranslate"><span class="pre">histoNum</span></code>: The ROOT histogram objects.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">func</span></code>: A function that extracts the value(s) to fill from the event (the <code class="docutils literal notranslate"><span class="pre">reader</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">numdef</span></code>: For efficiency histograms, a function that returns a boolean or list of booleans indicating which entries go into the numerator.</p></li>
 </ul>
+<p><strong>For ROOT Draw-based Histograms (Direct ROOT TTree::Draw Syntax):</strong></p>
+<p>The framework also supports filling histograms using ROOT’s native <code class="docutils literal notranslate"><span class="pre">TTree::Draw</span></code> syntax, which is powerful for:</p>
+<ul class="simple">
+<li><p>Quick exploratory analysis without writing Python extraction functions</p></li>
+<li><p>Complex ROOT expressions (array masking, ROOT functions like <code class="docutils literal notranslate"><span class="pre">Max$</span></code>, <code class="docutils literal notranslate"><span class="pre">Min$</span></code>, etc.)</p></li>
+<li><p>2D and profile histograms using ROOT syntax</p></li>
+</ul>
+<p>For detailed information on ROOT Draw syntax and options, see the <a class="reference external" href="https://root.cern/doc/v628/classTTree.html#a73450649dc6e54b5b94516c468523e45">official ROOT TTree::Draw documentation</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;HISTONAME&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;root-draw&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="s2">&quot;variable &gt;&gt; histogram_name(nbins, min, max)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;selection&quot;</span><span class="p">:</span> <span class="s2">&quot;cut_condition&quot;</span><span class="p">,</span>  <span class="c1"># optional, default &quot;&quot;</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="s2">&quot;goff&quot;</span><span class="p">,</span>              <span class="c1"># optional, default &quot;goff&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">draw</span></code>: The ROOT Draw expression. Must include <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span> <span class="pre">histogram_name(...)</span></code> to define the output histogram name and binning. (Required)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">selection</span></code>: Optional ROOT cut condition (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;abs(eta)</span> <span class="pre">&lt;</span> <span class="pre">2.4&quot;</span></code>). Default is empty string (no cut).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">option</span></code>: Optional ROOT Draw option (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;goff&quot;</span></code> for no graphics, <code class="docutils literal notranslate"><span class="pre">&quot;prof&quot;</span></code> for profile histogram, <code class="docutils literal notranslate"><span class="pre">&quot;colz&quot;</span></code> for 2D). Default is <code class="docutils literal notranslate"><span class="pre">&quot;goff&quot;</span></code>.</p></li>
+</ul>
+<p><strong>Implicit Behavior:</strong></p>
+<ul class="simple">
+<li><p>ROOT histograms are created automatically by ROOT’s <code class="docutils literal notranslate"><span class="pre">Draw</span></code> operation (no need to pre-create <code class="docutils literal notranslate"><span class="pre">r.TH1D(...)</span></code>, etc.)</p></li>
+<li><p>Drawing always respects the CLI <code class="docutils literal notranslate"><span class="pre">--maxevents</span></code> parameter (same entry range as the event loop).</p></li>
+<li><p>No screen canvas is displayed (<code class="docutils literal notranslate"><span class="pre">goff</span></code> is recommended and default).</p></li>
+</ul>
+<p><strong>Examples:</strong></p>
+<p>Simple variable:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;gen_pt_draw&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;root-draw&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_pt &gt;&gt; h_gen_pt(100, 0, 500)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;selection&quot;</span><span class="p">:</span> <span class="s2">&quot;abs(gen_eta) &lt; 2.4&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Array element access:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;vector_first_element&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;root-draw&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="s2">&quot;vector[0] &gt;&gt; h_vec_first(50, -10, 10)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;selection&quot;</span><span class="p">:</span> <span class="s2">&quot;Length$(vector) &gt; 0&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>ROOT functions (Max$, Min$, etc.):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;vector_max&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;root-draw&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="s2">&quot;Max$(vector) &gt;&gt; h_vec_max(100, 0, 100)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;selection&quot;</span><span class="p">:</span> <span class="s2">&quot;Length$(vector) &gt; 0&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Complex ROOT expression with masking:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;vector_masked_max&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;root-draw&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="s2">&quot;Max$(vector * (vector &lt; Max$(vector))) &gt;&gt; h_masked(100, 0, 100)&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>2D histogram using ROOT syntax:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;pt_vs_eta&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;root-draw&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_eta : gen_pt &gt;&gt; h_pt_vs_eta(100, 0, 500, 50, -3, 3)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="s2">&quot;colz&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Profile histogram:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;mean_pt_vs_eta&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;root-draw&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_pt : gen_eta &gt;&gt; h_profile(50, -3, 3)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="s2">&quot;prof&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Mixing Event-Based and Draw-Based Histograms:</strong></p>
+<p>You can freely mix both histogram types in the same module:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ROOT</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">r</span>
+
+<span class="n">histos</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">histos</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="c1"># Event-based histogram (Python function)</span>
+    <span class="s2">&quot;leading_muon_pt&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;distribution&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;histo&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">TH1D</span><span class="p">(</span><span class="s2">&quot;leading_muon_pt&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;;p_T; Events&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+        <span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">reader</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">genmuons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pt</span><span class="p">,</span>
+    <span class="p">},</span>
+
+    <span class="c1"># Draw-based histogram (ROOT syntax)</span>
+    <span class="s2">&quot;gen_pt_draw&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;root-draw&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;draw&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_pt &gt;&gt; h_gen_pt(100, 0, 500)&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;selection&quot;</span><span class="p">:</span> <span class="s2">&quot;abs(gen_eta) &lt; 2.4&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>When you run <code class="docutils literal notranslate"><span class="pre">fill-histos</span></code>, both histogram types are automatically detected and filled in the correct order:
+(1) Draw-based histograms are executed once before the event loop.
+(2) Event-based histograms are filled for each event.
+(3) All histograms are saved to the output ROOT file.</p>
 <p class="rubric">Step 3: Run the Histogram Filling Tool</p>
 <p>Once your configuration and histogram definitions are set, run:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>fill-histos<span class="w"> </span>-i<span class="w"> </span><span class="o">[</span>INPATH<span class="o">]</span><span class="w"> </span>-o<span class="w"> </span><span class="o">[</span>OUTPATH<span class="o">]</span><span class="w"> </span>-cf<span class="w"> </span><span class="o">[</span>CONFIGFILE<span class="o">]</span><span class="w"> </span><span class="o">[</span>other<span class="w"> </span>options<span class="o">]</span>
@@ -646,8 +748,12 @@ modifying the core analysis code.</p>
 <li><p>The filled histograms are saved to a ROOT file for further analysis or plotting.</p></li>
 <li><p>When running in parallel, temporary files are merged automatically at the end.</p></li>
 </ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Multiprocessing was removed in &gt;v3.4 since no representative speedup was observed.</p>
+</div>
 <p class="rubric">Advanced Usage</p>
-<pre align="center" data-zoom-id="id-6aba4601-3ff6-4d41-b35c-d31ffc0dde0a" id="histogram-filling-diagram" class="mermaid align-center">
+<pre align="center" data-zoom-id="id-c6898461-929c-4729-86f7-3accfdcd6930" id="histogram-filling-diagram" class="mermaid align-center">
         sequenceDiagram
     participant User
     participant dtpr CLI
@@ -666,6 +772,14 @@ modifying the core analysis code.</p>
     Histogram Filler-&gt;&gt;NTuple: Create NTuple(inpath)
     NTuple--&gt;&gt;Histogram Filler: NTuple object ready (contains EventList)
 
+    Note over Histogram Filler: Classify histograms: event-based vs. root-draw
+
+    alt If root-draw histograms exist
+        Histogram Filler-&gt;&gt;Histogram Filler: Execute Draw-based histograms
+        Histogram Filler-&gt;&gt;NTuple: Call tree.Draw(...) for each draw histogram
+        Note over Histogram Filler: Retrieve histograms from ROOT gDirectory
+    end
+
     loop For each event in NTuple.events
         Histogram Filler-&gt;&gt;EventList: Request next Event
         EventList-&gt;&gt;NTuple: Get raw data entry
@@ -676,8 +790,8 @@ modifying the core analysis code.</p>
         EventList--&gt;&gt;Histogram Filler: Return Event
 
         alt If Event is not None
-            Histogram Filler-&gt;&gt;Histogram Filler: Call fill_histograms(Event, all_histograms)
-            loop For each configured histogram
+            Histogram Filler-&gt;&gt;Histogram Filler: Call fill_histograms(Event, event_histos_only)
+            loop For each event-based histogram
                 Histogram Filler-&gt;&gt;Event: Call histogram's 'func' (e.g., event.genmuons[0].pt)
                 Event--&gt;&gt;Histogram Filler: Return value
                 Histogram Filler-&gt;&gt;ROOT Histogram: Fill(value)
@@ -685,7 +799,7 @@ modifying the core analysis code.</p>
         end
     end
     Histogram Filler-&gt;&gt;Histogram Filler: Call save_histograms()
-    Histogram Filler-&gt;&gt;ROOT File: Write all filled histograms
+    Histogram Filler-&gt;&gt;ROOT File: Write all histograms (event + draw)
     Histogram Filler--&gt;&gt;dtpr CLI: Done
     dtpr CLI--&gt;&gt;User: Output messages
     </pre><p>You can also use the <strong>methods</strong> <code class="docutils literal notranslate"><span class="pre">fill_histograms</span></code> and <code class="docutils literal notranslate"><span class="pre">save_histograms</span></code> from the <code class="docutils literal notranslate"><span class="pre">dtpr.analysis.fill_histograms</span></code> module directly in your own scripts for more customized workflows.</p>

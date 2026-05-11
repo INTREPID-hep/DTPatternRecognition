@@ -146,7 +146,6 @@ class Particle:
         # Set the attribute to the value
         setattr(self, attr, value)
 
-
     def __str__(self, indentLevel=0, include=None, exclude=None, **kwargs):
         """
         Generate a string representation of the Particle instance.
@@ -174,7 +173,8 @@ class Particle:
         properties = {
             key: value
             for key, value in self.__dict__.items()
-            if not key in {"index", "name"} and not key.startswith("_")
+            if not key in {"index", "name"}
+            and not key.startswith("_")
             and (include is None or key in include)
             and (exclude is None or key not in exclude)
         }

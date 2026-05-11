@@ -134,7 +134,9 @@ class Event:
             elif isinstance(_amount_attr, str):
                 _n = getattr(ev, _amount_attr, None)
                 if _n is None:
-                    raise ValueError(f"Branch {_amount_attr} not found in the event entry {self.number}.")
+                    raise ValueError(
+                        f"Branch {_amount_attr} not found in the event entry {self.number}."
+                    )
                 if isinstance(_n, int):
                     num_particles = _n
                 else:
@@ -150,7 +152,9 @@ class Event:
         if "class" in pinfo:
             ParticleClass = get_callable_from_src(pinfo["class"])
             if ParticleClass is None:
-                raise ValueError(f"Event {self.index} ({self.number}) - Particle class {pinfo['class']} wrongly defined.")
+                raise ValueError(
+                    f"Event {self.index} ({self.number}) - Particle class {pinfo['class']} wrongly defined."
+                )
         else:
             ParticleClass = Particle  # Default to the base Particle class
 
@@ -177,7 +181,9 @@ class Event:
                     # Validate the filter expression by compiling it
                     compile(filter_expr, "<string>", "eval")
                 except SyntaxError as e:
-                    raise ValueError(f"Event {self.index} ({self.number}) - Invalid filter expression: {filter_expr}. Error: {e}")
+                    raise ValueError(
+                        f"Event {self.index} ({self.number}) - Invalid filter expression: {filter_expr}. Error: {e}"
+                    )
 
                 if eval(filter_expr, {}, {"p": _particle, "ev": ev}):
                     _particles.append(_particle)
@@ -193,12 +199,16 @@ class Event:
                 )
             key_expr = sorter_info["by"]
             if not isinstance(key_expr, str):
-                raise ValueError(f"Event {self.index} ({self.number}) - The sorter 'by' must be a string, got {type(key_expr)} instead.")
+                raise ValueError(
+                    f"Event {self.index} ({self.number}) - The sorter 'by' must be a string, got {type(key_expr)} instead."
+                )
             try:
                 # Validate the sorter expression by compiling it
                 compile(key_expr, "<string>", "eval")
             except SyntaxError as e:
-                raise ValueError(f"Event {self.index} ({self.number}) - Invalid sorter expression: {key_expr}. Error: {e}")
+                raise ValueError(
+                    f"Event {self.index} ({self.number}) - Invalid sorter expression: {key_expr}. Error: {e}"
+                )
 
             _particles = sorted(
                 _particles,
@@ -235,7 +245,10 @@ class Event:
                 if not getattr(particle, "_needs_resolution", None):
                     continue
 
-                for attr_name, (target_collection_name, target_identifier) in particle._needs_resolution.items():
+                for attr_name, (
+                    target_collection_name,
+                    target_identifier,
+                ) in particle._needs_resolution.items():
                     raw_indices = getattr(particle, attr_name, [])
                     if not raw_indices:
                         continue

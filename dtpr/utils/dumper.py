@@ -120,6 +120,7 @@ def _flatten_awkward_to_dict(
 
     return branches
 
+
 def _build_yaml_schema_from_branches(branches: dict[str, ak.Array]) -> dict:
     """Build a YAML-serializable schema from flattened output branch names."""
     particle_types: dict[str, dict[str, dict[str, str]]] = {}
@@ -148,7 +149,7 @@ def _build_yaml_schema_from_branches(branches: dict[str, ak.Array]) -> dict:
             particle_types[particle_type]["attributes"][attr_name] = {
                 "target": "INCLUDE TARGET IF NEEDED",
                 "identifier": "DEFINE IDENTIFIER IF NEEDED",
-                "branch": [branch_name, branch_name.replace("_flat", "_counts")]
+                "branch": [branch_name, branch_name.replace("_flat", "_counts")],
             }
             if not _flatten_warning_emitted:
                 warnings.warn(

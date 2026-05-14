@@ -63,7 +63,7 @@ the dictionary-like structure to read from a ROOT TTree entry.
 
 .. literalinclude:: ../../../dtpr/base/particle.py
     :language: python
-    :lines: 181-205
+    :lines: 223-254
     :dedent:
 
 .. rubric:: Output

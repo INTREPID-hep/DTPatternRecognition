@@ -42,13 +42,11 @@ A preprocessor can be used to compute new event-level quantities before selectio
 
 .. literalinclude:: ../../../dtpr/utils/preprocessors.py
     :language: python
-    :lines: 1-10
 
 A selector can be used to filter events, for example, to keep only those with at least two generator muons:
 
 .. literalinclude:: ../../../dtpr/utils/selectors.py
     :language: python
-    :lines: 1-7
 
 How Data is Accessed
 --------------------

@@ -1,7 +1,6 @@
 import os
 import importlib
 import warnings
-import re
 import ROOT as r
 from tqdm import tqdm
 from ..base import NTuple
@@ -28,11 +27,15 @@ def extract_histogram_name(draw_expr: str) -> Optional[str]:
     :return: Histogram name or None if extraction fails
     :rtype: Optional[str]
     """
-    # Match >> followed by optional whitespace, then capture word characters
-    match = re.search(r">>\s*(\w+)", draw_expr)
-    if match:
-        return match.group(1)
-    return None
+    if ">>" not in draw_expr:
+        return None
+
+    right_side = draw_expr.split(">>", 1)[1].strip()
+    if not right_side:
+        return None
+
+    hist_name = right_side.split("(", 1)[0].strip()
+    return hist_name or None
 
 
 def classify_histograms(histograms: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -76,6 +79,7 @@ def execute_draw_histograms(tree: Any, draw_histograms: Dict[str, Any], maxentri
     :return: None
     :rtype: None
     """
+    r.gSystem.Load("libPhysics")
     for hname, histoinfo in draw_histograms.items():
         draw_expr = histoinfo["draw"]
         selection = histoinfo.get("selection", "")
@@ -95,7 +99,12 @@ def execute_draw_histograms(tree: Any, draw_histograms: Dict[str, Any], maxentri
         firstentry = 0
 
         try:
-            tree.Draw(draw_expr, selection, option, nentries, firstentry)
+            draw_result = tree.Draw(draw_expr, selection, option, nentries, firstentry)
+            if draw_result < 0:
+                warnings.warn(
+                    f"ROOT Draw for '{hname}' returned error code {draw_result}. Skipping."
+                )
+                continue
         except Exception as e:
             warnings.warn(f"Error executing Draw for '{hname}': {str(e)}. Skipping.")
             continue
@@ -122,23 +131,25 @@ def set_histograms_dict(CONFIG=None) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     :return: Tuple of (event_histograms, draw_histograms)
     :rtype: Tuple[Dict[str, Any], Dict[str, Any]]
     """
+    import fnmatch
+
     config = CONFIG if CONFIG is not None else RUN_CONFIG
     histos_to_fill = {}
+
     # Import histograms from each source in configuration
     for source in getattr(config, "histo_sources", []):
         module = importlib.import_module(source)
         module_histos = getattr(module, "histos", {})
-        # Only include histograms specified in the configuration
-        histos_to_fill.update(
-            {k: v for k, v in module_histos.items() if k in getattr(config, "histo_names", [])}
-        )
-
-    # Warn about any missing histograms
-    missing_histos = set(getattr(config, "histo_names", [])) - set(histos_to_fill.keys())
-    if missing_histos:
-        warnings.warn(
-            f"The following histograms could not be found in any of the sources: {', '.join(missing_histos)}"
-        )
+        
+        # Get requested names/patterns
+        requested = getattr(config, "histo_names", [])
+        
+        # Match each loaded histogram against the patterns
+        for hname, histoinfo in module_histos.items():
+            for pattern in requested:
+                if fnmatch.fnmatch(hname, pattern):
+                    histos_to_fill[hname] = histoinfo
+                    break  # No need to match against other patterns
 
     return classify_histograms(histos_to_fill)
 
@@ -344,26 +355,27 @@ def fill_histos(
     # Execute draw-based histograms before event loop
     if draw_histograms:
         color_msg("Executing Draw-based histograms...", color="cyan", indentLevel=1)
-        execute_draw_histograms(ntuple.tree, draw_histograms, _maxevents + 1)
+        execute_draw_histograms(ntuple.tree, draw_histograms, _maxevents+1)
 
-    # Process events with progress bar
-    with tqdm(
-        total=_maxevents + 1,
-        desc=color_msg("Executing Event Loop", color="purple", indentLevel=1, return_str=True),
-        ncols=100,
-        ascii=True,
-        unit=" event",
-    ) as pbar:
+    # Process events with progress bar\
+    if event_histograms:
+        with tqdm(
+            total=_maxevents + 1,
+            desc=color_msg("Executing Event Loop", color="purple", indentLevel=1, return_str=True),
+            ncols=100,
+            ascii=True,
+            unit=" event",
+        ) as pbar:
 
-        # Sequential processing
-        each_print = (_maxevents + 1) // 10 if (_maxevents + 1) > 10 else 1
-        for i, ev in enumerate(ntuple.events):
-            if i > _maxevents:
-                pbar.update(_maxevents + 1 - pbar.n)
-                break
-            if i > 0 and i % each_print == 0:
-                pbar.update(each_print)
-            fill_histograms(ev, event_histograms)
+            # Sequential processing
+            each_print = (_maxevents + 1) // 10 if (_maxevents + 1) > 10 else 1
+            for i, ev in enumerate(ntuple.events):
+                if i > _maxevents:
+                    pbar.update(_maxevents + 1 - pbar.n)
+                    break
+                if i > 0 and i % each_print == 0:
+                    pbar.update(each_print)
+                fill_histograms(ev, event_histograms)
 
     # Save histograms to output directory
     color_msg("Saving histograms...", color="purple", indentLevel=1)

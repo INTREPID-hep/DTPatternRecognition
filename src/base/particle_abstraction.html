@@ -164,31 +164,38 @@ callable.</p></td>
 </table>
 <p>Understanding this mechanism enables the definition of particle initialization through the configuration file or passing directly.
 the dictionary-like structure to read from a ROOT TTree entry.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
-    <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">color_msg</span><span class="p">(</span>
-            <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">()]),</span>
-            <span class="n">indentLevel</span><span class="o">=</span><span class="n">indentLevel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># case 1 : Directly set attributes</span>
+<span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span>
+    <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wh</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detector_side</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expr&quot;</span><span class="p">:</span> <span class="s2">&quot;&#39;+z&#39; if wh &gt; 0 else &#39;-z&#39;&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
+<span class="c1"># case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="c1"># Example usage</span>
+<span class="n">input_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
+        <span class="s2">&quot;../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ROOT</span><span class="w"> </span><span class="kn">import</span> <span class="n">TFile</span>
 
-<span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compare two Particle instances for equality, excluding the index and name attribute.</span>
-
-<span class="sd">    :param other: The other Particle instance to compare.</span>
-<span class="sd">    :type other: Particle</span>
-<span class="sd">    :return: True if the instances are equal (excluding index and name), False otherwise.</span>
-<span class="sd">    :rtype: bool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Particle</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">NotImplemented</span>
-
-    <span class="c1"># Compare all attributes except &#39;index&#39; and &#39;name&#39;</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">}</span>
+<span class="c1"># first, create a TFile object to read the dt ntuple (this is not necessary by using NTuple Class)</span>
+<span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;pt&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_pt&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;eta&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_eta&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;phi&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_phi&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;charge&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;branch&quot;</span><span class="p">:</span> <span class="s2">&quot;gen_charge&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+<span class="k">with</span> <span class="n">TFile</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s2">&quot;read&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ntuple</span><span class="p">:</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ntuple</span><span class="p">[</span><span class="s2">&quot;dtNtupleProducer/DTTREE;1&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">iev</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+        <span class="c1"># in events of this ntuple, each event contains more o less 2 genmuons,</span>
+        <span class="c1"># so, set index 0 or 1 allows to take properties of the first or second genmuon</span>
+        <span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ev</span><span class="o">=</span><span class="n">ev</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;GenMuon&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">attributes</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
+        <span class="k">break</span>  <span class="c1"># just to test the first event</span>
 </pre></div>
 </div>
 <p class="rubric">Output</p>

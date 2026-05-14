@@ -570,6 +570,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">genmuons</span>
         <span class="n">event</span><span class="o">.</span><span class="n">dR</span> <span class="o">=</span> <span class="n">deltaR</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">dR</span> <span class="o">=</span> <span class="n">dummy_val</span>
 </pre></div>
 </div>
 <p>A selector can be used to filter events, for example, to keep only those with at least two generator muons:</p>
@@ -580,6 +581,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">genMuons</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s2">&quot;genmuons&quot;</span><span class="p">,</span> <span class="p">[])</span>
     <span class="n">AtLeastTwoMuons</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">genMuons</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
 
+    <span class="k">return</span> <span class="n">AtLeastTwoMuons</span>
 </pre></div>
 </div>
 </section>

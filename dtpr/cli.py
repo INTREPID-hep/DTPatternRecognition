@@ -80,6 +80,7 @@ def main():
             # ---- analysis commands ----
             "fill-histos",
             "dump-events",
+            "draw-root",
             "plot-dts",
             "plot-dt",
             "inspect-events",

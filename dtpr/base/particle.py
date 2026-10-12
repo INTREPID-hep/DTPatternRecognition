@@ -1,6 +1,7 @@
 from ..utils.functions import color_msg, get_callable_from_src
 from copy import deepcopy
 from functools import partial
+from collections.abc import Iterable
 
 
 class Particle:
@@ -202,19 +203,19 @@ class Particle:
 
         # Compare all attributes except 'index' and 'name'
         return {
-            key: value for key, value in self.__dict__.items() if key not in {"index", "name"}
+            key: value for key, value in self.__dict__.items() if key not in {"index", "name"} and not isinstance(value, Iterable)
         } == {key: value for key, value in other.__dict__.items() if key not in {"index", "name"}}
 
     def __hash__(self):
         """
-        Generate a hash for the Particle instance based on its attributes, excluding index and name.
+        Generate a hash for the Particle instance based on its attributes, excluding index, name and any list attributes.
 
         :return: The hash value of the Particle instance.
         :rtype: int
         """
         return hash(
             frozenset(
-                (key, value) for key, value in self.__dict__.items() if key not in {"index", "name"}
+                (key, value) for key, value in self.__dict__.items() if key not in {"index", "name"} and not isinstance(value, Iterable)
             )
         )
 

@@ -105,7 +105,7 @@ class Event:
         summary.extend(
             format_event_attribute_str(key, val, indentLevel + 1)
             for key, val in self.__dict__.items()
-            if key not in ["_particles", "number"]
+            if key not in ["_particles", "number"] and not key.startswith("_")
         )
         for ptype, particles in self._particles.items():
             summary.extend(format_event_particles_str(ptype, particles, indentLevel + 1))
@@ -249,8 +249,11 @@ class Event:
                     target_collection_name,
                     target_identifier,
                 ) in particle._needs_resolution.items():
+                    resolved_particles = []
+
                     raw_indices = getattr(particle, attr_name, [])
                     if not raw_indices:
+                        setattr(particle, attr_name, resolved_particles)
                         continue
 
                     if target_collection_name not in self._particles:
@@ -259,6 +262,7 @@ class Event:
                             f"Target collection '{target_collection_name}' not found in event for "
                             f"resolving '{ptype}[{particle.index}]{attr_name}'. Skipping resolution."
                         )
+                        setattr(particle, attr_name, resolved_particles)
                         continue
 
                     target_particles = self._particles[target_collection_name]
@@ -268,6 +272,7 @@ class Event:
                             f"Target collection '{target_collection_name}' is empty. "
                             f"Cannot resolve '{ptype}[{particle.index}].{attr_name}'."
                         )
+                        setattr(particle, attr_name, resolved_particles)
                         continue
 
                     # Build a lookup mapping from identifier -> particle. If the
@@ -283,6 +288,7 @@ class Event:
                         if key is None:
                             # Skip target particles that do not expose the
                             # expected identifier; resolution will warn below
+                            setattr(particle, attr_name, resolved_particles)
                             continue
 
                         target_by_identifier.setdefault(key, target_particle)
@@ -293,12 +299,12 @@ class Event:
                             f"Target particles in '{target_collection_name}' do not expose the identifier '{target_identifier or 'idx'}'. "
                             f"Cannot resolve '{ptype}[{particle.index}].{attr_name}'."
                         )
+                        setattr(particle, attr_name, resolved_particles)
                         continue
 
                     if not isinstance(raw_indices, list):
                         raw_indices = [raw_indices]
 
-                    resolved_particles = []
                     for raw_identifiers in raw_indices:
                         part = target_by_identifier.get(raw_identifiers)
                         if part is None:

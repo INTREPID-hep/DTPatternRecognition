@@ -163,6 +163,17 @@ def get_shower_segment(
         )  # a, b global
 
 
+def _project_local_shower_segment(segment: np.ndarray, faceview: str) -> np.ndarray:
+    """Project local shower coordinates onto the requested DT face view."""
+    if faceview not in ("phi", "eta"):
+        raise ValueError(f"Unknown faceview: {faceview}")
+
+    projected = np.asarray(segment, dtype=float).copy()
+    if faceview == "eta":
+        projected[:, 0], projected[:, 1] = -projected[:, 1], projected[:, 0]
+    return projected[:, [0, 2]]
+
+
 # --------------------------------------------------------------------------------------------------
 
 
@@ -170,7 +181,7 @@ def map_seg_attrs(
     particle: Particle,
     particle_type: Optional[str] = "tps",
     pos_argname: Optional[str] = "posLoc_x",
-    angle_argname: Optional[str] = "dirLoc_phi",
+    angle_argname: Optional[str] = "dirLoc_psi",
 ) -> Dict[str, Any]:
     """
     Map the attributes of segment like particle to the format required by mpldts.geometry.AMDTSegments.
@@ -184,7 +195,7 @@ def map_seg_attrs(
     :raises ValueError: If required attributes are missing or particle type is unknown
     """
     info = {}
-    if particle_type == "tps" or particle_type == "segments":
+    if particle_type in ("tps", "tps_theta", "segments"):
         info.update(
             {
                 "parent": stations_cache.get(particle.wh, particle.sc, particle.st),
@@ -194,8 +205,6 @@ def map_seg_attrs(
                 "position": getattr(particle, pos_argname, None),
             }
         )
-    # elif particle_type == "segments":
-    #     warnings.warn("'segments' particle type is not yet implemented")
     else:
         raise ValueError(f"Unknown particle type for this plotting: {particle_type}")
 
@@ -360,7 +369,7 @@ def embed_segs2axes_glob(
     particle_type: str = "tps",
     cmap_var: str = "quality",
     pos_argname: Optional[str] = "posLoc_x",
-    angle_argname: Optional[str] = "dirLoc_phi",
+    angle_argname: Optional[str] = "dirLoc_psi",
     reference_frame: Optional[str] = "Station",
     **kwargs,
 ) -> Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]:
@@ -443,7 +452,7 @@ def embed_segs2axes_loc(
     particle_type: str = "tps",
     cmap_var: str = "quality",
     pos_argname: Optional[str] = "posLoc_x",
-    angle_argname: Optional[str] = "dirLoc_phi",
+    angle_argname: Optional[str] = "dirLoc_psi",
     reference_frame: str = "Station",
     **kwargs,
 ) -> Tuple[Optional[Dict[int, List[Patch]]], Optional[Dict[int, List[Patch]]]]:
@@ -637,11 +646,15 @@ def embed_shower2axes_loc(
         if ax_phi is not None and part.sl != 2:
             if patch_phi is None:
                 patch_phi = []
-            patch_phi.extend(ax_phi.plot(segment[:, 0], segment[:, 2], **kwargs))
+            patch_phi.extend(
+                ax_phi.plot(*_project_local_shower_segment(segment, "phi").T, **kwargs)
+            )
         if ax_eta is not None and part.sl == 2:
             if patch_eta is None:
                 patch_eta = []
-            patch_eta.extend(ax_eta.plot(segment[:, 0], segment[:, 2], **kwargs))
+            patch_eta.extend(
+                ax_eta.plot(*_project_local_shower_segment(segment, "eta").T, **kwargs)
+            )
 
     return patch_phi, patch_eta
 
@@ -686,10 +699,15 @@ def embed_shower2axes_glob(
                 raise ValueError(
                     f"Particle {particle_type} does not have any (or all) required attributes 'sl', 'min_wire', and 'max_wire'"
                 )
-            segment = get_shower_segment(part, version=2, local=False)
             if faceview == "phi":
+                if part.sl == 2:
+                    continue  # Skip SL2 for phi view
+                segment = get_shower_segment(part, version=2, local=False)
                 patches.extend(ax.plot(segment[:, 0], segment[:, 1], **kwargs))
             else:
+                if part.sl != 2:
+                    continue  # Skip non-SL2 for eta view
+                segment = get_shower_segment(part, version=2, local=False)
                 patches.extend(
                     ax.plot(segment[:, 2], sqrt(segment[:, 0] ** 2 + segment[:, 1] ** 2), **kwargs)
                 )

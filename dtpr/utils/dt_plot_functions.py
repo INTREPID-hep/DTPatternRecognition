@@ -18,6 +18,8 @@
 
 
 import warnings
+from functools import lru_cache
+
 import numpy as np
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -29,11 +31,31 @@ from pandas import DataFrame
 
 from ..base import Event, Particle
 from .functions import color_msg
-from mpldts.geometry import AMDTSegments, StationsCache
+from mpldts.geometry import AMDTSegments, Station
+from mpldts.geometry.sources import CMSXMLSource
 from mpldts.patches import DTStationPatch, DTObjectsPatch, MultiDTSegmentsPatch
 
 # --------------------------------------- Utility Functions -------------------------------------- #
-stations_cache = StationsCache()
+
+
+@lru_cache(maxsize=1)
+def cms_source():
+    """The CMS geometry XML, parsed once for the whole session."""
+    return CMSXMLSource()
+
+
+@lru_cache(maxsize=None)
+def chamber(wheel: int, sector: int, station: int) -> Optional[Station]:
+    """The station view to draw, built once and shared; None if it does not exist.
+
+    The view holds geometry only: the event is the (sl, l, w) table handed to
+    the patch, so no caller mutates what the others draw (ADR-024).
+    """
+    try:
+        spec = cms_source().station(wheel, sector, station)
+    except KeyError:
+        return None
+    return Station.from_spec(spec, wheel, sector, station)
 
 
 def test_builder(ev: Event, **kwargs) -> Tuple[None, None]:
@@ -129,7 +151,7 @@ def get_shower_segment(
     :return: Array containing first and last cell centers that represent the shower segment
     :rtype: np.ndarray
     """
-    parent_station = stations_cache.get(shower.wh, shower.sc, shower.st)
+    parent_station = chamber(shower.wh, shower.sc, shower.st)
     layer = parent_station.super_layer(shower.sl).layer(2)
     if version == 1:  # compute using the wires profile
         # dump profile to wires numbers
@@ -197,7 +219,7 @@ def map_seg_attrs(
     if particle_type in ("tps", "tps_theta", "segments"):
         info.update(
             {
-                "parent": stations_cache.get(particle.wh, particle.sc, particle.st),
+                "parent": chamber(particle.wh, particle.sc, particle.st),
                 "index": getattr(particle, "index", -1),
                 "sl": getattr(particle, "sl", None),
                 "angle": getattr(particle, angle_argname, None),
@@ -264,16 +286,16 @@ def embed_dt2axes(
             raise ValueError(f"{cmap_var} must be present in {particle_type} data")
         _dti = dt_info[["sl", "l", "w", cmap_var]]
 
-    _dt_chamber = stations_cache.get(wheel, sector, station, dt_info=_dti)
+    _dt_chamber = chamber(wheel, sector, station)
     phi_patch, eta_patch = None, None
 
     if ax_phi is not None:
         phi_patch = DTStationPatch(
-            _dt_chamber, ax_phi, local=True, faceview="phi", vmap=cmap_var, **kwargs
+            _dt_chamber, ax_phi, local=True, faceview="phi", vmap=cmap_var, data=_dti, **kwargs
         )
     if ax_eta is not None:
         eta_patch = DTStationPatch(
-            _dt_chamber, ax_eta, local=True, faceview="eta", vmap=cmap_var, **kwargs
+            _dt_chamber, ax_eta, local=True, faceview="eta", vmap=cmap_var, data=_dti, **kwargs
         )
 
     return phi_patch, eta_patch
@@ -326,13 +348,14 @@ def embed_dts2axes(
         patches = []
         for (wh, sc, st), dt_info in dt_info.groupby(["wh", "sc", "st"]):
             _dti = dt_info[["sl", "l", "w", cmap_var]]
-            _dt_chamber = stations_cache.get(wh, sc, st, dt_info=_dti)
+            _dt_chamber = chamber(wh, sc, st)
             if _dt_chamber is None:
                 continue
             patches.append(
                 DTStationPatch(
                     station=_dt_chamber,
                     axes=ax,
+                    data=_dti,
                     local=False,
                     faceview=faceview,
                     vmap=cmap_var,
@@ -566,7 +589,7 @@ def embed_simhits2axes_loc(
         22: {"color": "blue", "markersize": 4.5, "marker": "s"},
     }
 
-    _parent_station = stations_cache.get(wheel, sector, station)
+    _parent_station = chamber(wheel, sector, station)
     objects_phi, objects_eta = [], []
 
     for part in particles:
@@ -635,7 +658,7 @@ def embed_shower2axes_loc(
     if not particles:
         return None, None
 
-    _parent_station = stations_cache.get(wheel, sector, station)
+    _parent_station = chamber(wheel, sector, station)
     objects_phi, objects_eta = [], []
 
     for part in particles:

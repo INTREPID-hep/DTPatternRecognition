@@ -23,7 +23,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from matplotlib.axes._axes import Axes
 from matplotlib.patches import Patch, Circle, Rectangle
-from matplotlib.collections import PathCollection
 import matplotlib.lines as mlines
 from numpy import array, percentile, sqrt
 from pandas import DataFrame
@@ -31,7 +30,7 @@ from pandas import DataFrame
 from ..base import Event, Particle
 from .functions import color_msg
 from mpldts.geometry import AMDTSegments, StationsCache
-from mpldts.patches import DTStationPatch, MultiDTSegmentsPatch
+from mpldts.patches import DTStationPatch, DTObjectsPatch, MultiDTSegmentsPatch
 
 # --------------------------------------- Utility Functions -------------------------------------- #
 stations_cache = StationsCache()
@@ -529,7 +528,7 @@ def embed_simhits2axes_loc(
     ax_eta: Optional[Axes] = None,
     particle_type: str = "simhits",
     **kwargs,
-) -> Tuple[Optional[List[PathCollection]], Optional[List[PathCollection]]]:
+) -> Tuple[Optional[List[mlines.Line2D]], Optional[List[mlines.Line2D]]]:
     """
     Embed simHits data into local phi and/or eta axes as scatter points.
 
@@ -549,7 +548,7 @@ def embed_simhits2axes_loc(
     :type particle_type: str
     :param kwargs: Additional arguments for scatter plots
     :return: Tuple of (phi_patches, eta_patches)
-    :rtype: Tuple[Optional[List[PathCollection]], Optional[List[PathCollection]]]
+    :rtype: Tuple[Optional[List[mlines.Line2D]], Optional[List[mlines.Line2D]]]
     """
     _validate_axes(ax_phi)
     _validate_axes(ax_eta)
@@ -562,34 +561,36 @@ def embed_simhits2axes_loc(
         return None, None
 
     style_map = {
-        13: {"color": "red", "s": 35, "marker": "*"},
-        11: {"color": "yellow", "s": 10, "marker": "o"},
-        22: {"color": "blue", "s": 20, "marker": "s"},
+        13: {"color": "red", "markersize": 6.0, "marker": "*"},
+        11: {"color": "yellow", "markersize": 3.5, "marker": "o"},
+        22: {"color": "blue", "markersize": 4.5, "marker": "s"},
     }
 
     _parent_station = stations_cache.get(wheel, sector, station)
-
-    patch_phi, patch_eta = None, None
+    objects_phi, objects_eta = [], []
 
     for part in particles:
         if not hasattr(part, "sl") or not hasattr(part, "l") or not hasattr(part, "w"):
             raise ValueError(
                 f"Particle {part} does not have required attributes 'sl', 'l', and 'w' for {particle_type}"
             )
-        sl, l, w, particle_type = part.sl, part.l, part.w, abs(part.particle_type)
+        sl, l, w = part.sl, part.l, part.w
+        style = {"linestyle": "None", **style_map[abs(part.particle_type)], **kwargs}
         center = _parent_station.super_layer(sl).layer(l).cell(w).local_center
-        if sl == 2:
-            if patch_eta is None:
-                patch_eta = []
-            patch_eta.append(
-                ax_eta.scatter(center[0], center[2], **style_map[particle_type], **kwargs)
-            )
-        else:
-            if patch_phi is None:
-                patch_phi = []
-            patch_phi.append(
-                ax_phi.scatter(center[0], center[2], **style_map[particle_type], **kwargs)
-            )
+        (objects_eta if sl == 2 else objects_phi).append(([center], style))
+
+    # the patch projects the hits on the cells and carries the local/inverted
+    # view, which ax.scatter used to skip (T-043)
+    patch_phi = (
+        DTObjectsPatch(_parent_station, ax_phi, objects_phi, faceview="phi", local=True).lines
+        if ax_phi is not None and objects_phi
+        else None
+    )
+    patch_eta = (
+        DTObjectsPatch(_parent_station, ax_eta, objects_eta, faceview="eta", local=True).lines
+        if ax_eta is not None and objects_eta
+        else None
+    )
 
     return patch_phi, patch_eta
 
@@ -634,7 +635,8 @@ def embed_shower2axes_loc(
     if not particles:
         return None, None
 
-    patch_phi, patch_eta = None, None
+    _parent_station = stations_cache.get(wheel, sector, station)
+    objects_phi, objects_eta = [], []
 
     for part in particles:
         if any([not hasattr(part, attr) for attr in ["sl", "min_wire", "max_wire"]]):
@@ -643,18 +645,18 @@ def embed_shower2axes_loc(
             )
 
         segment = get_shower_segment(part, version=2, local=True)
-        if ax_phi is not None and part.sl != 2:
-            if patch_phi is None:
-                patch_phi = []
-            patch_phi.extend(
-                ax_phi.plot(*_project_local_shower_segment(segment, "phi").T, **kwargs)
-            )
-        if ax_eta is not None and part.sl == 2:
-            if patch_eta is None:
-                patch_eta = []
-            patch_eta.extend(
-                ax_eta.plot(*_project_local_shower_segment(segment, "eta").T, **kwargs)
-            )
+        (objects_eta if part.sl == 2 else objects_phi).append((segment, dict(kwargs)))
+
+    patch_phi = (
+        DTObjectsPatch(_parent_station, ax_phi, objects_phi, faceview="phi", local=True).lines
+        if ax_phi is not None and objects_phi
+        else None
+    )
+    patch_eta = (
+        DTObjectsPatch(_parent_station, ax_eta, objects_eta, faceview="eta", local=True).lines
+        if ax_eta is not None and objects_eta
+        else None
+    )
 
     return patch_phi, patch_eta
 

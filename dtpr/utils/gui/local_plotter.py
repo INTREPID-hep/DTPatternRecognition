@@ -107,7 +107,7 @@ class LocalPlotter(QDialog):
 
 if __name__ == "__main__":
     from dtpr.base import NTuple
-    from mpldts.geometry import Station
+    from dtpr.utils.dt_plot_functions import chamber
 
     ntuple = NTuple(
         os.path.abspath(
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         )
     )
     event = ntuple.events[9]
-    station = Station(-2, 5, 2)
+    station = chamber(-2, 5, 2)
     app = QApplication(sys.argv)
     ex = LocalPlotter(event=event, station=station)
     ex.show()

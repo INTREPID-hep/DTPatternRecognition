@@ -18,6 +18,12 @@ opt_args:
         type: str
         default: "./results"
         help: "Directory to save the output files. If the directory does not exist, it will be created automatically."
+    root-object: &root_object
+        flags: ["--root-object"]
+        dest: "root_object"
+        type: str
+        default: ""
+        help: "ROOT object path inside the input file to be drawn (for example: dir/histo_name)."
     tag: &tag
         flags: ["-t", "--tag"]
         dest: "tag"
@@ -139,6 +145,16 @@ pos_args:
             format: *format
             dump-yaml: *dump_yaml
             force-overwrite-yaml: *force_overwrite_yaml
+    draw-root:
+        name: "draw-root"
+        help: "Draw a ROOT object from a ROOT file and optionally save the canvas."
+        func: "dtpr.analysis.draw_root.draw_root_object"
+        opt_args:
+            input-path: *input_path
+            output-path: *output_path
+            tag: *tag
+            root-object: *root_object
+            save: *save
     plot-dt:
         name: "plot-dt"
         help: "Produce CMS DT chamber plot (local view) for a specific event digis information from a DT NTuple files."

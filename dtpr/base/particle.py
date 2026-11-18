@@ -242,35 +242,51 @@ class Particle:
         )
         return "\n".join(summary)
 
+    def _comparable(self):
+        """
+        Attributes that take part in equality and hashing.
+
+        Private attributes, the index and the name are excluded, and so is every
+        container: a particle holds lists of other particles (``matched_tps``),
+        which would recurse. Two particles compare equal when their scalar
+        attributes are equal, and their containers do not make them differ.
+
+        :return: The comparable attributes of the particle.
+        :rtype: dict
+        """
+        return {
+            key: value
+            for key, value in self.__dict__.items()
+            if not key.startswith("_")
+            and key not in {"index", "name"}
+            and not isinstance(value, Iterable)
+        }
+
     def __eq__(self, other):
         """
-        Compare two Particle instances for equality, excluding the index and name attribute.
+        Compare two Particle instances by their scalar attributes.
+
+        Private attributes (such as the internal resolution bookkeeping) and the
+        index and name are ignored, and so is every container attribute.
 
         :param other: The other Particle instance to compare.
         :type other: Particle
-        :return: True if the instances are equal (excluding index and name), False otherwise.
+        :return: True if the instances are equal, False otherwise.
         :rtype: bool
         """
         if not isinstance(other, Particle):
             return NotImplemented
 
-        # Compare all attributes except 'index' and 'name'
-        return {
-            key: value for key, value in self.__dict__.items() if key not in {"index", "name"} and not isinstance(value, Iterable)
-        } == {key: value for key, value in other.__dict__.items() if key not in {"index", "name"}}
+        return self._comparable() == other._comparable()
 
     def __hash__(self):
         """
-        Generate a hash for the Particle instance based on its attributes, excluding index, name and any list attributes.
+        Generate a hash for the Particle instance from its scalar attributes.
 
         :return: The hash value of the Particle instance.
         :rtype: int
         """
-        return hash(
-            frozenset(
-                (key, value) for key, value in self.__dict__.items() if key not in {"index", "name"} and not isinstance(value, Iterable)
-            )
-        )
+        return hash(frozenset(self._comparable().items()))
 
 
 if __name__ == "__main__":

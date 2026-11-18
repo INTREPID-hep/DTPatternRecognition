@@ -145,6 +145,20 @@ def test_particle_equality_and_hash():
     assert hash(p1) == hash(p2)
     assert hash(p1) != hash(p3)
 
+def test_particle_equality_ignores_private_attributes():
+    p1 = Particle(index=0, wh=1, sc=2)
+    p2 = Particle(index=1, wh=1, sc=2)
+    p2._needs_resolution["matched"] = ("segments", "idx")
+    assert p1 == p2
+    assert hash(p1) == hash(p2)
+
+
+def test_particle_equality_ignores_containers():
+    p1 = Particle(index=0, wh=1, matched_tps=[object()])
+    p2 = Particle(index=0, wh=1, matched_tps=[])
+    assert p1 == p2
+
+
 def test_particle_str():
     p = Particle(index=0, wh=1, sc=2)
     s = p.__str__()

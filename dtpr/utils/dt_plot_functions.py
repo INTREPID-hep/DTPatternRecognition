@@ -195,7 +195,7 @@ def map_seg_attrs(
     :raises ValueError: If required attributes are missing or particle type is unknown
     """
     info = {}
-    if particle_type in ("tps", "tps_theta", "segments"):
+    if particle_type in ("tps", "tpst", "segments"):
         info.update(
             {
                 "parent": stations_cache.get(particle.wh, particle.sc, particle.st),

@@ -57,6 +57,16 @@ def test_particle_init_from_flat_branch_pair():
 
     assert particle.matched_segments == [12, 20, 21]
 
+def test_materialize_keeps_plain_values():
+    from dtpr.base.entry_view import materialize
+
+    values = [10, 11, 12]
+    assert materialize(values) is values, "a plain list must not be copied again"
+    assert materialize("abc") == "abc", "a string branch must not be shredded"
+    assert materialize(None) is None
+    assert materialize(7) == 7
+
+
 def test_particle_equality_and_hash():
     p1 = Particle(index=0, wh=1, sc=2)
     p2 = Particle(index=1, wh=1, sc=2)

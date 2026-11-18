@@ -14,7 +14,13 @@ def materialize(obj):
     would shred it into characters), a ``TClonesArray`` and a
     ``vector<vector<T>>`` need the recursive form, and a scalar must be
     returned as it is.
+
+    A plain list is returned as it is. It is the hot path: EntryView hands the
+    same materialized list to every particle that reads the branch, and walking
+    it again for every particle would put the O(N^2) back.
     """
+    if isinstance(obj, list):
+        return obj
     if isinstance(obj, (str, bytes, dict)):
         return obj
     if hasattr(obj, "__iter__") or hasattr(obj, "__getitem__") or hasattr(obj, "__len__"):

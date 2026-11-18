@@ -99,9 +99,10 @@ class Particle:
                 value = materialize(getattr(event, branch, None))
                 if value is None:
                     raise ValueError(f"Branch '{branch}' not found in the event entry.")
-                elif hasattr(value, "__getitem__"):
-                    if not isinstance(value, (str, bytes, dict)):
-                        value = value[self.index]
+                if isinstance(value, list):
+                    # The event caches one materialized list per branch: index it
+                    # instead of converting it again for every particle.
+                    value = value[self.index]
 
         elif expr:
             try:

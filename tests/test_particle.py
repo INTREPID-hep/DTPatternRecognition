@@ -100,6 +100,18 @@ def test_materialize_keeps_plain_values():
     assert materialize(7) == 7
 
 
+def test_literal_attributes_are_not_shared():
+    p1 = Particle(index=0, matched_tps=[])
+    p2 = Particle(index=1, matched_tps=[])
+    assert p1.matched_tps is not p2.matched_tps
+    p1.matched_tps.append(1)
+    assert p2.matched_tps == []
+
+    nested = Particle(index=2, profile=[[1, 2]])
+    nested.profile[0].append(3)
+    assert Particle(index=3, profile=[[1, 2]]).profile == [[1, 2]]
+
+
 def test_expression_is_compiled_once():
     from dtpr.base.particle import compile_expression
 

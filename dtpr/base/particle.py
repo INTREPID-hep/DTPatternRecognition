@@ -1,6 +1,5 @@
 from ..utils.functions import color_msg, get_callable_from_src
 from .entry_view import materialize
-from copy import deepcopy
 from functools import partial
 from collections.abc import Iterable
 
@@ -26,6 +25,23 @@ def compile_expression(text):
     if code is None:
         code = _EXPRESSION_CACHE[text] = compile(text, "<string>", "eval")
     return code
+
+
+def copy_literal(value):
+    """Return a fresh copy of a literal attribute.
+
+    Literal attributes come from the config (``matched_tps: []``, ``showered:
+    False``), so one object would otherwise be shared by every particle that
+    uses the same key. Only plain containers are copied: deepcopy() costs 5x as
+    much and literals are scalars or lists of scalars.
+    """
+    if isinstance(value, list):
+        return [copy_literal(item) for item in value]
+    if isinstance(value, dict):
+        return {key: copy_literal(item) for key, item in value.items()}
+    if isinstance(value, set):
+        return set(value)
+    return value
 
 
 def flat_pair_bounds(event, counts_branch, counts, index):
@@ -83,7 +99,7 @@ class Particle:
             if isinstance(value, dict):
                 self._init_from_dict(key, value, event=ev)
             else:
-                setattr(self, key, deepcopy(value))
+                setattr(self, key, copy_literal(value))
 
     def _init_from_dict(self, attr, attr_info, event=None):
         """

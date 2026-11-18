@@ -29,6 +29,22 @@ def test_split_entries_covers_every_entry_once():
     assert split_entries(0, 4) == [(0, 0)]
 
 
+def test_job_ranges_cover_every_entry_once():
+    from dtpr.core.engine import job_range
+
+    for nentries in (0, 1, 7, 20):
+        for job_count in (1, 2, 3, 8):
+            ranges = [job_range(nentries, job, job_count) for job in range(job_count)]
+            assert sum(end - begin for begin, end in ranges) == nentries
+            assert ranges[0][0] == 0
+            assert ranges[-1][1] == nentries
+            for (_, end), (begin, _) in zip(ranges, ranges[1:]):
+                assert end == begin
+
+    with pytest.raises(ValueError):
+        job_range(10, 2, 2)
+
+
 def test_part_paths_live_next_to_the_output(tmp_path):
     from dtpr.core.engine import part_paths
 
@@ -83,6 +99,19 @@ def test_serial_and_parallel_histograms_are_identical(tmp_path):
     run_chunks(_write_histogram, split_entries(40, 4), 4, parallel)
 
     assert _histogram_contents(serial) == _histogram_contents(parallel)
+
+
+def test_one_core_still_writes_every_chunk(tmp_path):
+    from dtpr.core.engine import run_chunks, split_entries
+
+    single = str(tmp_path / "single.root")
+    run_chunks(_write_histogram, split_entries(40, 1), 1, single)
+
+    several = str(tmp_path / "several.root")
+    written = run_chunks(_write_histogram, split_entries(40, 4), 1, several)
+
+    assert written == [os.path.abspath(several)]
+    assert _histogram_contents(single) == _histogram_contents(several)
 
 
 def test_no_merge_keeps_the_parts_and_they_merge_by_hand(tmp_path):

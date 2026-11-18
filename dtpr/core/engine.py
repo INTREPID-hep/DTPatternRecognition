@@ -146,32 +146,44 @@ def run_chunks(write_chunk, chunks, ncores, outpath, merge=True, desc="chunks"):
     outpath = os.path.abspath(outpath)
     create_outfolder(os.path.dirname(outpath))
 
-    if ncores <= 1 or len(chunks) <= 1:
+    # One chunk, one file: no part file and no merge to pay for
+    if len(chunks) == 1:
         write_chunk(chunks[0], outpath)
         return [outpath]
 
     parts = part_paths(outpath, len(chunks))
     tasks = list(zip([write_chunk] * len(chunks), chunks, parts))
-    with get_context("fork").Pool(processes=ncores) as pool:
-        for _ in tqdm(
-            pool.imap_unordered(_run_writer, tasks),
-            total=len(tasks),
-            desc=desc,
-            ncols=100,
-            ascii=True,
-            unit=" chunk",
-        ):
-            pass
+    if ncores > 1:
+        with get_context("fork").Pool(processes=ncores) as pool:
+            for _ in tqdm(
+                pool.imap_unordered(_run_writer, tasks),
+                total=len(tasks),
+                desc=desc,
+                ncols=100,
+                ascii=True,
+                unit=" chunk",
+            ):
+                pass
+    else:
+        for task in tasks:
+            _run_writer(task)
+
+    # A chunk may legitimately write nothing (no event passed the selectors)
+    written = [part for part in parts if os.path.exists(part)]
+    if not written:
+        color_msg("No chunk wrote a file, nothing to merge.", "yellow")
+        return []
 
     if not merge:
         color_msg(
-            f"Kept {len(parts)} chunk files; merge them with: hadd -f {outpath} {' '.join(parts)}",
+            f"Kept {len(written)} chunk files; merge them with: "
+            f"hadd -f {outpath} {' '.join(written)}",
             "yellow",
         )
-        return parts
+        return written
 
-    merge_parts(parts, outpath)
-    for part in parts:
+    merge_parts(written, outpath)
+    for part in written:
         try:
             os.remove(part)
         except OSError:

@@ -1,0 +1,1066 @@
+{
+ "events": [
+  {
+   "attributes": {
+    "dR": "8f1f01c759a9074a4c0a67fe437d7ac486244e72"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "11ab1e1bf31023ce0cefe621d60f51c5758f9573",
+      "index": "c231e2f1c4e755f2af5cade1bdc7413a5413ef43",
+      "l": "2f641b45a4b5957b6cbf782ac516884e3a4e3f6e",
+      "name": "dad36ca1a350ef10aa84f9b3c7471605c982a2e4",
+      "sc": "e48945a980d39cdb5d8a2eb188abf93391df27f1",
+      "sl": "ba47118e8a09e48e96b610b87717d99add121e4d",
+      "st": "fcd907804a02ad49d1209dbce02731dd4fa5b817",
+      "time": "743741c2e3031920f599ff5dc696d487ceea8db1",
+      "w": "db678dc1a36ed176def3217ef175dd6d03db5e97",
+      "wh": "e1a27bdf0446debf65034e98ec62787e920b22bd"
+     },
+     "count": 81
+    },
+    "fwshowers": {
+     "attributes": {},
+     "count": 0
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "d5610f38fe75d8d90ac09fd335bad6823492589d",
+      "eta": "684937845f6340822bb0e89ced7a2c8026e48842",
+      "index": "29d666c962e399b9292edd4e4790b00c2a7a7007",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "12c9ce134ca81d735bcf3357a1f13a1753ffab5e",
+      "pt": "a97c1d71e9224201070f6e1210cd5cb95257d962",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "957892785a141482c6aecfa9a24fda2a4549d54d",
+      "index": "48e0dd7d44f8ac6e70a6bf76cfecf1ba1d37e8ba",
+      "matched_genmuons": "6a4d6d1a8989db322759a3d615e600e8ed1e113b",
+      "matched_tps": "6a4d6d1a8989db322759a3d615e600e8ed1e113b",
+      "nHits_phi": "896069f5299e74b6c49d5438682325a9e7d18034",
+      "nHits_z": "4ff5d69864c13619932b6cf8d05743089d937813",
+      "name": "286065e0ef87b1dd617dbb1c8addfac99a795150",
+      "phi": "41e1e92481263240ab59639b37a9d3c82aa1afe0",
+      "pos_locx_sl1": "17b3f82156574a6c4246c92bcb828e8aa9d12d21",
+      "pos_locx_sl3": "149a810268676ca3463db62deaec570fc58b8614",
+      "sc": "877d709daf501af3db028e9e5f45a883c0a56934",
+      "st": "295a5ab4b9ceb5cdc7a45983551f63712e171811",
+      "t0_phi": "5aed8d9d74825202c973503ad9efbe26c0f8f49f",
+      "wh": "1ef2380353033f1ad65e1d989a6c7ec0d3e29543"
+     },
+     "count": 8
+    },
+    "simhits": {
+     "attributes": {
+      "index": "4946014b7e284b0731fb6935ee24eed8d604bee9",
+      "l": "acc13dbae584de1f5a8c5713b58b597cfa3bfef4",
+      "name": "5bff209a159390e7056f034998842edf62dd2a72",
+      "particle_type": "8c573dda662799f098d81d9a6316b677b414a7b4",
+      "process_type": "1ba52052cb0c3d85ab9d440d0652372d90c79c64",
+      "sc": "69f48708e01917f9ee20589c723b298b4630137c",
+      "sl": "7fe9705ca0f66bf62aea9e4dc19f1bb0fa519d6d",
+      "st": "ae08a8909f53f218a98e0fdffcfb28ce89ea4b45",
+      "w": "24b4752734b7ba6419131fd887cd8b8875942bc5",
+      "wh": "ef3b935fbc9052e2219b8caf5b526a40a59bead7"
+     },
+     "count": 50
+    },
+    "tps": {
+     "attributes": {
+      "BX": "ac0f7e04066a633f227976e0c34d1d257dca0007",
+      "dirLoc_phi": "3e0974526cb45830eea3dcb33a027597cc72288c",
+      "index": "0a4ea746cff75625345e9068e1f1cbba0e312a69",
+      "matched_genmuons": "9814f81c74210b54b1f2899475691500059198aa",
+      "matched_segments": "9814f81c74210b54b1f2899475691500059198aa",
+      "matched_showers": "9814f81c74210b54b1f2899475691500059198aa",
+      "name": "bb54dc4393ef3c2b5e7ffe924b583f0a569f966e",
+      "phi": "cd94687cf889292cb6d5d0793a8d26cebc60a416",
+      "phiB": "8c1ff9a6554323355d2cb764c1813361f4c9008b",
+      "phires_conv": "8e0c01bf761d62256160524be56dbb0ec9834749",
+      "posLoc_x": "25bd12c7ff1c9c5504495f2f097da23094f8ad11",
+      "quality": "1f206dfe10634310404a46684148a387096d40f1",
+      "rpcFlag": "d14f903fd58a14a34c07852a6491e808d45bdf52",
+      "sc": "4cf006b51f05c66968377eb0d9320a8c90479c8c",
+      "sl": "cb6b1862de93688893fa6f297ce6fab9688ab256",
+      "st": "bd5a0c83e088003cfef129f3af180f74d4712d16",
+      "wh": "d911cfdd1ded5931026f322e96b3087bbf67170c"
+     },
+     "count": 12
+    }
+   },
+   "index": 0,
+   "number": 39956
+  },
+  {
+   "attributes": {
+    "dR": "7366c01424641c9b2784b789d7fe8866df5508cf"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "3634f95fe9ffee2044f45ba902848cf6710777bb",
+      "index": "1b8805e23764a0e7a8ebbeda6f0f6d1e2116ee1c",
+      "l": "5f6d0a54dcff4da9a33ae0d5fc2cad6f0b1d3de1",
+      "name": "cf65ea80fc5d25e88e9b42dedaa3a7391ccfbbfd",
+      "sc": "3065fc2dc2b21d9af21c5252d07050908dcf70da",
+      "sl": "529d77e920f6f23b93db61510ef4bd9133bfbc5a",
+      "st": "fd1f0fc15d5bd5f8a021f5cfcab8522b707a0257",
+      "time": "604893543d5cd3f631a8da3d47f63234a228e472",
+      "w": "c89199951cc5a9081f961caaa4f59c95fa2583da",
+      "wh": "9488d69a5c8347d67e4b620ad0409734c40cbefd"
+     },
+     "count": 116
+    },
+    "fwshowers": {
+     "attributes": {
+      "BX": "02fb8022684ac49c20ca5acec846a1e24df537e3",
+      "avg_pos": "e0cc57d8edf91779e8274e5ae1711b0b49de4ca2",
+      "avg_time": "13ae3e042cf7febc2269dd0e6570b336e57be5b3",
+      "index": "1184f5b8d4b6dd08709cf1513f26744167065e0d",
+      "matched_tps": "1376774b81b43f6e0e269cb3187301b22cff8b7e",
+      "max_wire": "c6af6d540a927e91da4b259850ff7a864999ac4c",
+      "min_wire": "758a1332c2766376e9de99c2b3c2f5b8e0f84b17",
+      "nDigis": "10ae24979c5028fa873651bca338152dc0484245",
+      "name": "a4e8b41a53d7ce9a888ae094868536c4156a5de7",
+      "sc": "4a0a63ce33cc030f270c607ea7bf90a6717572bb",
+      "sl": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "st": "2499831338ca5dc8c44f3d063e076799bea9bdff",
+      "wh": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "wires_profile": "4c0607d6e5a9dda1a836ba3ee843ff92b601edf4"
+     },
+     "count": 1
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "d5610f38fe75d8d90ac09fd335bad6823492589d",
+      "eta": "0eb837dddc0e0b847f43ae7bf5d65ceaa5d8d76e",
+      "index": "29d666c962e399b9292edd4e4790b00c2a7a7007",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "40d2385b7dea90c39fbba49d267ffeda3f3300f2",
+      "pt": "307f1eb34a2aba194b249bc103bb9ed2efc7bdac",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "d700c77031955c28e35c914e59d0a54d590fb5e6",
+      "index": "b803c75c91ac9a0169bc9a1d0382a13c8f10ffbb",
+      "matched_genmuons": "f407afdedf47710bf44e70573df0ba5d84781dcd",
+      "matched_tps": "f407afdedf47710bf44e70573df0ba5d84781dcd",
+      "nHits_phi": "84949a37e7820afb2bef39e1a30f9a8ec5dcf0e8",
+      "nHits_z": "2065c321415ec2316035b7b7fa668227b4f2fb95",
+      "name": "93611af31c16b30b478abb6dab1ec9cf2d5db871",
+      "phi": "bcbc778d25ecd448a52ad6680bd68310f79b41fb",
+      "pos_locx_sl1": "75a1b3f3b4201ec3035c02c8ab1e512985b60d6c",
+      "pos_locx_sl3": "ba150aaf2dfe2956f0ebc52d8c189f57a6dcec15",
+      "sc": "8bbc746430cb5ebe3d95ec42589385ffbf8943cf",
+      "st": "3438cab8fc7bf60f021ba0007a764a0555ce6bb6",
+      "t0_phi": "e37e93be503f6cd0e5c58e672cd083f877dab9b4",
+      "wh": "74ed06b09c098955fc5c9b10714f958ce2683fe1"
+     },
+     "count": 13
+    },
+    "simhits": {
+     "attributes": {
+      "index": "188e80542c7bf60667d2058154b4e6374f4e532b",
+      "l": "7dd4e331c219a8f7512150ac89aa51cc3eb39b34",
+      "name": "5bd28ad28adbd01485df18ff061abda29b806b6d",
+      "particle_type": "ab9b053151520bcac8d680e5eabf4e4fb64e679b",
+      "process_type": "de6cebc3aa232d008ac9ea9dd1bd7bb0f01e3957",
+      "sc": "3138fed54431b241a411879b7dad2ab7e71e9d02",
+      "sl": "4ec98da0f351ae819329261974bd401f105afe18",
+      "st": "06e864224fabd53779f675b361dd51d1f18371e0",
+      "w": "ec371b2bdd7ec19ce4f47b45117ff4cbfd3ae653",
+      "wh": "187dc85e549cd2dd5717990bb9f859416a099b77"
+     },
+     "count": 11
+    },
+    "tps": {
+     "attributes": {
+      "BX": "929dfc4d6635267c437c186f1b936efc3127d6c6",
+      "dirLoc_phi": "f97be2af605beb78f2dcd173168b03dbc9967ea6",
+      "index": "b803c75c91ac9a0169bc9a1d0382a13c8f10ffbb",
+      "matched_genmuons": "f407afdedf47710bf44e70573df0ba5d84781dcd",
+      "matched_segments": "f407afdedf47710bf44e70573df0ba5d84781dcd",
+      "matched_showers": "f407afdedf47710bf44e70573df0ba5d84781dcd",
+      "name": "96bdcb9c21c9d3a2858a6b495f88ed2105a53523",
+      "phi": "7a01779235403b63301f290d894edb532d1f2307",
+      "phiB": "64faa6bb2d9e2c30bfb7b7125477948c96bff896",
+      "phires_conv": "3b9e5821afada7a96c09a5ef11349452dd5edb1b",
+      "posLoc_x": "3ff49c9f523970173ff695174227b3024292363c",
+      "quality": "b23ebc001fc5952c61ead1ab6d36b5896233cc8c",
+      "rpcFlag": "14a436366338ddd25cb8919db5d2cfb1b9689569",
+      "sc": "3f503d64e152bed69f7779037fb30fa863a9b605",
+      "sl": "cbf238ac3d3ccb09be097ec19835e42f51a82d4c",
+      "st": "e5586c6c56766587c7faed0a56b599c8e86cc41b",
+      "wh": "d503747dc0434fbc74ca4dd03936483cbfce532e"
+     },
+     "count": 13
+    }
+   },
+   "index": 1,
+   "number": 39953
+  },
+  {
+   "attributes": {
+    "dR": "c5c72a31f6d4a2ae1b156e8b7282eb0d9f4392db"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "b21818e89563cf066f67099a9f04f8f62cb4826c",
+      "index": "822483ea5db8edcbe833b20c74e35171da11ac5f",
+      "l": "a84be24c5fc5e11a4fa17dc95e085bba5a614817",
+      "name": "070f9924a59f59310b19a2d94da565d64d885398",
+      "sc": "8861564a26a54eafe0f04a531a8002b8fbc47a0e",
+      "sl": "fa02f8aaf70308684b9fe75747cbb15274fc6c03",
+      "st": "e328c0a61b98d794aa8f8d7d766cdae7338a4dfa",
+      "time": "281201578f64302a46d996cc1fe83ae8c7598f48",
+      "w": "c079cc487b2828c32b0ee64f951f08a36cb3229e",
+      "wh": "aca125950ef47ae9a9953a9a7c9001a1bdb46d34"
+     },
+     "count": 202
+    },
+    "fwshowers": {
+     "attributes": {
+      "BX": "44b8786c25cd8fa8b66afeb99e326d1cef895ea9",
+      "avg_pos": "d3fee34b69a8baa672c1d4b28a743782eafe2b6d",
+      "avg_time": "4b7e64a9889ed2d1d4684735ec48c3946743ed88",
+      "index": "1184f5b8d4b6dd08709cf1513f26744167065e0d",
+      "matched_tps": "1376774b81b43f6e0e269cb3187301b22cff8b7e",
+      "max_wire": "7b279c5a79f7f0839830f44b669152e7ede4426e",
+      "min_wire": "624df8abac883a904e4186c2f1acde39aab95042",
+      "nDigis": "10ae24979c5028fa873651bca338152dc0484245",
+      "name": "a4e8b41a53d7ce9a888ae094868536c4156a5de7",
+      "sc": "8f4e345e7cd51e4e633816f5a52a47df465da189",
+      "sl": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "st": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "wh": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "wires_profile": "fef503af1dbaa907d1f06535aebb6fe797fc5acd"
+     },
+     "count": 1
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "d5610f38fe75d8d90ac09fd335bad6823492589d",
+      "eta": "f16b98e808d0776dfefb28ad9d29e79ca29e3a20",
+      "index": "29d666c962e399b9292edd4e4790b00c2a7a7007",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "7a70eddeac021b9390e2109061a125fd03a3f565",
+      "pt": "95a8792996f6a0b18f2b0dfd45a4477fe42abbf2",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "142d9836c16c3b97696ff8627b7666a4b57e1019",
+      "index": "8d4b255994c982c80d4982456ca991174b025dff",
+      "matched_genmuons": "7bf98035b834465655321cbadac1f9973439c01f",
+      "matched_tps": "7bf98035b834465655321cbadac1f9973439c01f",
+      "nHits_phi": "928478de12bd8b89f272455c4b3224b3d4b6a482",
+      "nHits_z": "09c10c486ee397638e2bf23a4170d5e42026be4c",
+      "name": "4d3e7237892ddf736bc24d2ab60254045c2d862e",
+      "phi": "2b18fc418a393211a98d0e9d4eb4560e4af61154",
+      "pos_locx_sl1": "08ea19ab519a2910ba574743529c98fcafc15189",
+      "pos_locx_sl3": "213204adfd3de96d2b439242adbb691303049a0b",
+      "sc": "ed0cfaf808e1621bee76822d6e9d91a79b9b5369",
+      "st": "e8b7bf580e93096d858ece8526fd0600124b37bd",
+      "t0_phi": "63264ba28746cc75766fc0ca20d7a866abebd04c",
+      "wh": "8261da1c1d7073c0ebf0d8f073a97b9a61137734"
+     },
+     "count": 25
+    },
+    "simhits": {
+     "attributes": {
+      "index": "b138c8aca4e336c9fc9b8b047ea6f28df0170679",
+      "l": "1a02897c7d0cb5eb325dacee4b360f3dac279721",
+      "name": "fa7044f48024d148b1cfaea54247e98d83292fa7",
+      "particle_type": "d4d20f78fb8e272c8c30abd3e8badad229f8d026",
+      "process_type": "64d33002c54ce75177d3fbd3f73d790259692252",
+      "sc": "712f53257ca40595ebebc5ff414ff1a0744fa45a",
+      "sl": "6fd74c9188baeba70da01212caf8456a4947cd32",
+      "st": "a334b6bab2545f9a65ace644c713006e6051d123",
+      "w": "17bbd2a9f5d593ba43e73a7c95886899ca21c649",
+      "wh": "58cc8fe3f592c9f5cddc45be64d27ebc4938fbfd"
+     },
+     "count": 125
+    },
+    "tps": {
+     "attributes": {
+      "BX": "f2beda91df1e82ca5422248d2be60ac218c09b50",
+      "dirLoc_phi": "5fa59f4119c8183cd27bf3eafa6b2a23ebe7d3bc",
+      "index": "103df8c783d1329fcb9aa56036e2a73bade608ba",
+      "matched_genmuons": "f0830c9cb4456f0fc95a897dca7ad98034aa922c",
+      "matched_segments": "f0830c9cb4456f0fc95a897dca7ad98034aa922c",
+      "matched_showers": "f0830c9cb4456f0fc95a897dca7ad98034aa922c",
+      "name": "04ac3c2b5f0b4624e45ebea87370731179a97dd1",
+      "phi": "f58c0305f2f89c753cc8c391d3fe5e7aa44d3562",
+      "phiB": "72de7f555525a2fc37a476fdffa9dbfd8735e935",
+      "phires_conv": "0604653c11cb4c7363f9d3be2d46ebe9f67bd673",
+      "posLoc_x": "bffe2dcab8769a89887a9e3dcce553ad636b6a24",
+      "quality": "59c4e7f05f06a7b97a87365359b11e9e605d0e8b",
+      "rpcFlag": "65405c4899ba5ceb5c7ea7f71df3f2ecb1661b7c",
+      "sc": "72efd09a77238650e5cc0824d169be8e8a4d7bbd",
+      "sl": "fad3a672c3767bd9e751917da0de5d5c16aadf21",
+      "st": "8322ed45257fe080b70526585a1d396e4a5df394",
+      "wh": "ebdd41899e70ca8644cea1cc4c147ae39db58182"
+     },
+     "count": 44
+    }
+   },
+   "index": 2,
+   "number": 39955
+  },
+  {
+   "attributes": {
+    "dR": "2fee6f3eddefe449f49c7f8cab9109eb5f1f09f6"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "0c95bb2f5c037b3a7619cffc8fe4fba543fd0ac8",
+      "index": "775d79ccb54af429651706931eb71cc82fa5246d",
+      "l": "7f068538d6dacbcf162fac62c0b5e1c027d48130",
+      "name": "790e401ea66724a2db3f983dc099a8071e88d4fb",
+      "sc": "fc7b529bbec564a30b644c147bc48c2a9613c4d3",
+      "sl": "9b03525a4b26c800b2fba9992f1509dc0384d2ff",
+      "st": "1301b4c0432f6173039199fd2bb0e53ca1a62e0e",
+      "time": "ac9ea4c60ca3a99bd31fb98e7b1ef22cb4396e53",
+      "w": "04023ae9a17bddf516884986677a400c373c8cd3",
+      "wh": "7136643b0feff85395c353a126ff3c65ad27e3ed"
+     },
+     "count": 83
+    },
+    "fwshowers": {
+     "attributes": {},
+     "count": 0
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "88eb39a2e63f7861f1de2453397f36c9d3adbe75",
+      "eta": "69792277bab58cfeb2c877814651ec744040e4ed",
+      "index": "c033c9de1149661a14697d1e59cc4c947b8f4589",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "d47494f4fda0a3a6a5f5ba58b6a64a33d074580a",
+      "pt": "49bedd016db06d15f1e8a65b0c77d09e3f683c78",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "4a65000aa2de254baddfbdf5b4b7fb46f20a0a07",
+      "index": "0339a72c899c9c6072ea4b05476faea075915156",
+      "matched_genmuons": "1fc3b444b2c627a1f76651b5c781b65712c5c5c6",
+      "matched_tps": "1fc3b444b2c627a1f76651b5c781b65712c5c5c6",
+      "nHits_phi": "ccb8e2e6416ee41a13ca359bec40924c916e4fad",
+      "nHits_z": "d4ffc43f5ad6774900bec4235a97e6a729bd9ecc",
+      "name": "9ed0ee62890e8c8e4ca8cd300a6473c4e1bdfdad",
+      "phi": "b09499af499355502b6965dc8ed07db39c60475b",
+      "pos_locx_sl1": "7a9d69ceee7e79b176388dcc64dd4183523283e0",
+      "pos_locx_sl3": "017f19767a2a3dc684a9ed47ed372e7e53fceff6",
+      "sc": "7044ebb30faf16dfc5f8d5f0bced3124f255047c",
+      "st": "c24e9b0ccec90343fab9525e0cd19d7f76cb030d",
+      "t0_phi": "ff563b2f7f959d7baa166186067347c82606df97",
+      "wh": "33850c44d16da517bc822451f33864ef405c4d60"
+     },
+     "count": 7
+    },
+    "simhits": {
+     "attributes": {},
+     "count": 0
+    },
+    "tps": {
+     "attributes": {
+      "BX": "80b2a172ac9914341d9bea2084a88cf95d0d55c2",
+      "dirLoc_phi": "acaaf2f1470dfb9c528ba656d22866456f55ed69",
+      "index": "188e80542c7bf60667d2058154b4e6374f4e532b",
+      "matched_genmuons": "b7241acc05ce73a4588863598aaf90df827afc20",
+      "matched_segments": "b7241acc05ce73a4588863598aaf90df827afc20",
+      "matched_showers": "b7241acc05ce73a4588863598aaf90df827afc20",
+      "name": "4047d3a282ce7f8d2a07f3c9a1aee88389c6b402",
+      "phi": "6c20e87d87f570632dc10461c28ed4cbb183e062",
+      "phiB": "4a3469d56a48364799bae60a19b25f84ffaebbd4",
+      "phires_conv": "fcead59e2d72a378e08f724c857a9af7687ee5fe",
+      "posLoc_x": "33aa89e81fdc274644dd283ae5710b68c8a39e3c",
+      "quality": "f5b991bafb979729657d3f8d5f20439bd01ccb5b",
+      "rpcFlag": "c6eec1190f524404291debd5856c42c8ae745a6e",
+      "sc": "d56adc3aa21037dfedcd9fc4b79707d55cb48d63",
+      "sl": "d74ca16fc7eb79a78367659c4611292e4f461967",
+      "st": "aa655f28f99be33799e851fc6cc9ea71606df651",
+      "wh": "7273b3c7645761ae112151b2b7e519ca20d98574"
+     },
+     "count": 11
+    }
+   },
+   "index": 3,
+   "number": 39952
+  },
+  {
+   "attributes": {
+    "dR": "5687f015522569056ee20e6e35602b30959c3d1f"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "8aa2bf67a5ec24203be1e80231337ce3179d0fdb",
+      "index": "abe35eab705b8bf5f25a45bdc369d768a7e02db8",
+      "l": "34d583f23ab97cd94be7fc56784b7e840c336adb",
+      "name": "66a5d4c714b013fa90e05f52d0da39557e9f6ab7",
+      "sc": "57f7e21b443f3e485d7db66a9e6aff99664a223a",
+      "sl": "bd6b53fffb342d683445e65d16125f9ebdd201ca",
+      "st": "51ca41cdf2269f1317dc2def537ba869aabcb4a5",
+      "time": "8ace7002acfacf6d3f570beec34df7208a2a56ca",
+      "w": "a2c0a497da1a54391d5fd4c5bb60366e8ce03fa2",
+      "wh": "710473148a4a870516debc7e80e14cf6941a916e"
+     },
+     "count": 98
+    },
+    "fwshowers": {
+     "attributes": {},
+     "count": 0
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "d5610f38fe75d8d90ac09fd335bad6823492589d",
+      "eta": "2bcc28a81348bff60b9bf959657b40715b8c2af3",
+      "index": "29d666c962e399b9292edd4e4790b00c2a7a7007",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "2448dff1200fe08d098f15552bc548bd1aa727bd",
+      "pt": "52889f385cecf06d6960a1b719a7dfbb76216772",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "1b78f8a11a35b0187d954e0d7e187a0601771e8f",
+      "index": "0a4ea746cff75625345e9068e1f1cbba0e312a69",
+      "matched_genmuons": "9814f81c74210b54b1f2899475691500059198aa",
+      "matched_tps": "9814f81c74210b54b1f2899475691500059198aa",
+      "nHits_phi": "9e84303be97f4f5d3ae5d6d3838d995cc021baa2",
+      "nHits_z": "178453463be00a78ff0f8de8f23a4724260147e7",
+      "name": "f020bae20fcff44006cb393719bc70fc703adb9a",
+      "phi": "c2ab67183078f369a979c7ae3c7cdd6bafb85209",
+      "pos_locx_sl1": "8c6632082b4feee6737e694366207c1bf5b5cf00",
+      "pos_locx_sl3": "f8cce8a0b69b9d28aeb5933ea5d558a98daaf3e8",
+      "sc": "ba0a4e3fa66dd0259e9d84f14270759dc187f1ac",
+      "st": "3dc5420e940a3d4159d611056c69da9d870f430a",
+      "t0_phi": "b269e4397603f3526a0d83eb6675258143d5c69c",
+      "wh": "fb9c44f5062d3c82e3859b79c5aff2186ad38a66"
+     },
+     "count": 12
+    },
+    "simhits": {
+     "attributes": {
+      "index": "84315dd901d8cf49bfba1c5289155a9108d3288e",
+      "l": "b1f58b0d7766feed7ffbf849d7a0a430510a4a95",
+      "name": "f0b944108d299e06888c852c4c83648aa993ff19",
+      "particle_type": "cc8d3c20287a978a53fe76387271cf53b588da1d",
+      "process_type": "c6f3ff777bc8aefa7d074e12f2e9101211c16505",
+      "sc": "f8b8bbf57e0b0c50a257ab873e4f5a255b4d0b1f",
+      "sl": "beeb2f036db6aaa6e8cb8de91bf5a20158dfca70",
+      "st": "cff323995940d22d4d91b6a46a1c9bcd0d52303f",
+      "w": "d9124d4ec208f6174b9817ab6fc69465263a653b",
+      "wh": "a37d474fc03f161ae2454151f1d4985dda46c2e0"
+     },
+     "count": 71
+    },
+    "tps": {
+     "attributes": {
+      "BX": "c6ac9dfbee1ff4ce31924ebc1d5050796b224861",
+      "dirLoc_phi": "23f44dc4af14483701a311234625ec85b688bbe5",
+      "index": "9e03f5e6c95e66f2a2371ce4cffa42577ebe349d",
+      "matched_genmuons": "194f49cde9587603ea627998353d581f94cab516",
+      "matched_segments": "194f49cde9587603ea627998353d581f94cab516",
+      "matched_showers": "194f49cde9587603ea627998353d581f94cab516",
+      "name": "e29a214dd46d04325fecc7e07bd55ec6d5311598",
+      "phi": "aa3b264a257bb1cc7db9345b8343b4aae7862281",
+      "phiB": "2c4ad03ed86921fcf1ced6b32ac68cf0c9b1e929",
+      "phires_conv": "ce1685effec99f116e2973ca8a9e4ca527a9814d",
+      "posLoc_x": "6c930c28fd5384da0ca28c389d9469d23ffd40b7",
+      "quality": "379f81c7ac41c3df24744ed7c865e733ef96226a",
+      "rpcFlag": "6812f5456482a7ac1da0a835d9798a4804a979cb",
+      "sc": "f8c1a926a8a984a4123e0df6ae9565fbf2cbad5c",
+      "sl": "e4c921433056a8088fbf377aaf1d17ab1a007771",
+      "st": "bba0532273b310c5b2a8c84a95dca852ec5e9f36",
+      "wh": "a7bed713141409efa59c6789e99415632876b8e5"
+     },
+     "count": 19
+    }
+   },
+   "index": 4,
+   "number": 39950
+  },
+  {
+   "attributes": {
+    "dR": "aa271e7d01146e07e3575885a009fb69ca80ae03"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "89f17f5bfcafdbdf4ab0c6baa6461f3f99b9955c",
+      "index": "a310c6d94a86c7ea6b7eb15925ed1897045aa7f5",
+      "l": "e0e842897b506daba42c6793b79041b00573f367",
+      "name": "098be175102914a9d81c424a1527323c7202a492",
+      "sc": "bded4699ff1878465158235cebd44d6efb88384e",
+      "sl": "99498d359d8d9c3e26f0c65bde1683d6881f00b8",
+      "st": "93ed8cfeffc90decb1db02057d973e7469a148e9",
+      "time": "d57d9ef7349675294174e999427d4a7b4ade6a91",
+      "w": "50fbda59ffd6c184593372af841ae1cdda84be4c",
+      "wh": "014489d7ad28f83c65900f20174556db330e1882"
+     },
+     "count": 173
+    },
+    "fwshowers": {
+     "attributes": {
+      "BX": "1aa8c1f1bd8720421a3d1f717f24e31496451f6f",
+      "avg_pos": "3d10611c18f8c02e8eff8712fd9ea99ae2d008cd",
+      "avg_time": "c61cf295513f585e7e07a8307e06b9ebc3f55ce9",
+      "index": "1184f5b8d4b6dd08709cf1513f26744167065e0d",
+      "matched_tps": "1376774b81b43f6e0e269cb3187301b22cff8b7e",
+      "max_wire": "10ae24979c5028fa873651bca338152dc0484245",
+      "min_wire": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "nDigis": "10ae24979c5028fa873651bca338152dc0484245",
+      "name": "a4e8b41a53d7ce9a888ae094868536c4156a5de7",
+      "sc": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "sl": "f1e31df9806ce94c5bdbbfff9608324930f4d3f1",
+      "st": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "wh": "2499831338ca5dc8c44f3d063e076799bea9bdff",
+      "wires_profile": "7069c488a0a255164562ed78cd19203bd0f5d9fd"
+     },
+     "count": 1
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "d5610f38fe75d8d90ac09fd335bad6823492589d",
+      "eta": "902f597b00a63ecf5557927b32243c568d5fbc38",
+      "index": "29d666c962e399b9292edd4e4790b00c2a7a7007",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "20cff7e1e1c044dd35cf206d7f3fec5e16d2a4e6",
+      "pt": "1b81d0ea7dd0652be53f394341d4f05580c02450",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "af4eed5a3f152aaf3d50a769441dfb1f182fe6e4",
+      "index": "e5fdddf2d4e13650cb606c734881a7e1d7f3ffd2",
+      "matched_genmuons": "9a7aca9d295590970192740db14a1f04bb606a53",
+      "matched_tps": "9a7aca9d295590970192740db14a1f04bb606a53",
+      "nHits_phi": "c82494dcd287dbefeed35509e1beab89a2a9468b",
+      "nHits_z": "c5cd7b7960e0392329e8f4a33cd782a7fb4ec2c6",
+      "name": "14a824c09b869c93a13d0d71aa0f01f0fb4d39b1",
+      "phi": "9ff54602f2ea6ed2cb2a93998ade7aef1c871393",
+      "pos_locx_sl1": "e6ccece5d40c85b0c2455043b6b21b773a32bb07",
+      "pos_locx_sl3": "d750d70103dd62423de75c5ba358287d31559371",
+      "sc": "e169fe6ce48aa9075446470cf7dd5e175f8e9416",
+      "st": "b46c158ac9fc65500f74c82a6ec360a3b323bb42",
+      "t0_phi": "b28b4aac7c5595b899420fc7a51417571efc80cf",
+      "wh": "ff226f7c34743c4bc02bf69eb25c893e51059c8e"
+     },
+     "count": 15
+    },
+    "simhits": {
+     "attributes": {
+      "index": "8384424fc45c7a544d5f7ccb074296f4286fe3d6",
+      "l": "c380e584616594573e316d5c0a6b6d119f931d8a",
+      "name": "7d729674b5896ba80e0500ff7d81047423fca3c5",
+      "particle_type": "fe3366527fc4525a20e84d0ab0d90641694be39f",
+      "process_type": "004aa70911dcaa4cc19c5ba0929e03805e2e1900",
+      "sc": "4b46c0e20197fe396498dc3418988d77cfbb1347",
+      "sl": "80d19e00768367cb986e0a0e4b4262158b14c5d9",
+      "st": "afa1e5a65a1d4d9f9e1db3be57a99cbdf007a3f1",
+      "w": "c293b3778b8600264c79b49412db23b9675183fb",
+      "wh": "2c386f7ca24a35eb8819f0cae050934e0baefbad"
+     },
+     "count": 172
+    },
+    "tps": {
+     "attributes": {
+      "BX": "4c34d30ab294fe9194c69e5132f7bff711519f1b",
+      "dirLoc_phi": "471e17cacd1280cde70ace1dcdadad47f6b7ca6b",
+      "index": "69e3250eceb6beb63b436f66c4f938a52909eb90",
+      "matched_genmuons": "5ce550edce1880505f004fa80be9521ae065b1b3",
+      "matched_segments": "5ce550edce1880505f004fa80be9521ae065b1b3",
+      "matched_showers": "5ce550edce1880505f004fa80be9521ae065b1b3",
+      "name": "22d9f068bdad04546bd5c83862620d574b965d87",
+      "phi": "f71d641d9a99c124437befab602f1d6e3ec712f7",
+      "phiB": "d7acd4dd0a1ca568c442bd22b82b833480c41358",
+      "phires_conv": "14d4c69d4906a4dafe84741c463a63a814baaa33",
+      "posLoc_x": "04f8959e5ccd28627b72573e221d29a29930884c",
+      "quality": "2204b87d3760d3160f306f4959ac17bdb511b9c8",
+      "rpcFlag": "58f80abe23989928eb84a65934f0fa5857ab4bb2",
+      "sc": "7451848dc43111d342365ffd188fcab1165f0a9e",
+      "sl": "474732a3cbf810a259eb87aee2b9587a84540dd6",
+      "st": "a35e84f9707d5b88e2d1f8ed9036cc90f568220f",
+      "wh": "ab5e446fabea4caa54b74f977ea70bb71ce3d1f6"
+     },
+     "count": 17
+    }
+   },
+   "index": 5,
+   "number": 39962
+  },
+  {
+   "attributes": {
+    "dR": "3b258c1c94f1b43365480b3656a35f49be2401b4"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "11f09fd2d65f68a1d535638f9d852a51d2de0d27",
+      "index": "70fa925502e26c6ea0ce7ae03bb2e89611b973c4",
+      "l": "5771022e7d62872f0049ea9c3cd647ac49cd1cd9",
+      "name": "237e9b46bf289834bb8e2fac11f72ce7c99c4b67",
+      "sc": "0939648c3405210ce7018bd4e0f161867c39d222",
+      "sl": "0e6b100d8969a2ba63325da3979b3eae970dca3a",
+      "st": "1ccf90b740d8dcafda993c7e13fe6f0bb7aabf72",
+      "time": "d888d434097e3818308db6a7d857ed2e4bd57dcc",
+      "w": "d781f2e061798f7ea8cbb29e925f6c4b58e27448",
+      "wh": "ea0610976aec727098a111fef04c132888d2535c"
+     },
+     "count": 60
+    },
+    "fwshowers": {
+     "attributes": {},
+     "count": 0
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "d5610f38fe75d8d90ac09fd335bad6823492589d",
+      "eta": "4d0e87d4fe002b099545411a91edca03c3b65a7d",
+      "index": "29d666c962e399b9292edd4e4790b00c2a7a7007",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "dd6c2ab9f1c4ee9503d233a89284524eadc3e6cf",
+      "pt": "91aaa5dfb6d71e9a2622c8651cd96b367d6040f2",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "bbcdf1425fbc5bed1eb3e09b6924a4b39c649a3d",
+      "index": "6289b962c9d9ac01f87a54c6776b9943f69a35d6",
+      "matched_genmuons": "2063c19119aa535febd5a31ca3a7004c71fb8029",
+      "matched_tps": "2063c19119aa535febd5a31ca3a7004c71fb8029",
+      "nHits_phi": "bdbc594a36d2ea39070d5774e2bdefed817dc3f0",
+      "nHits_z": "c413579037ceab568ce3fe8f6c914affe2704ada",
+      "name": "331eab11ec249e6fa0c96000c72268c35fa515c7",
+      "phi": "e47a7d15f174cec501609ccc4579fe94678fb1d3",
+      "pos_locx_sl1": "4df86f12677613dadacc0c7bf57f896819aef249",
+      "pos_locx_sl3": "1ae3029bfd404e63f09a3e76c06f20d4bd21cfe0",
+      "sc": "c678877701c242c06afc4bb98768930712665824",
+      "st": "5b09599c97d53700c1e3217b8f1e34c536529c0f",
+      "t0_phi": "1e042e1e86c77400afc871af77ee135389c692e8",
+      "wh": "947eb4d13e71bf6dc61540f61fbc484b4ebfabb6"
+     },
+     "count": 6
+    },
+    "simhits": {
+     "attributes": {
+      "index": "a80b48ff42dc836390dd9c567f1fc7c7f448e0f9",
+      "l": "23a1646f48b664edaf00a99c0d0204a03569a234",
+      "name": "955a2e48e3af9eece429e78031dc414d2685ee9c",
+      "particle_type": "8b719c3e5174115fe4759eaeeb0e76b556f03e58",
+      "process_type": "80c1adad70775d63c4cfb1fee2a8eeb002475b09",
+      "sc": "66e80b9a20a8fd8da7ec0489eae4a5999138dc5e",
+      "sl": "48aa60d6b1c3fc09e54a45a1411b0382a53d9223",
+      "st": "6afd93d6403157304d09d1567692fe9a82a186fb",
+      "w": "874843d902c05c893b5ae56c14e55e973c3a95f1",
+      "wh": "2ba70abd4a7c65ff71b1619e0f89ed8ba1ee918a"
+     },
+     "count": 48
+    },
+    "tps": {
+     "attributes": {
+      "BX": "a397e5f32b63bc456ddbe2cf7d44f63e9d29f6fb",
+      "dirLoc_phi": "309fb26a0acf216a4710b76058b58cf4329c1ce1",
+      "index": "6196c750651a3d20abc6a893f935a8c3364aab59",
+      "matched_genmuons": "88385dcaef4f6bf76d911ee3f3547c289f28050d",
+      "matched_segments": "88385dcaef4f6bf76d911ee3f3547c289f28050d",
+      "matched_showers": "88385dcaef4f6bf76d911ee3f3547c289f28050d",
+      "name": "e11acd75dc3016fcb14be83afc9f5f05cf0d8204",
+      "phi": "d2a6df6f6ada709af769a25a1e92f0baa7feef5c",
+      "phiB": "d4d64ef154042d535e96e3f521f1c15c3e29ecbf",
+      "phires_conv": "4358d76a216a57909d6faf07fb5d20d8414ab5e7",
+      "posLoc_x": "4e315aba9c25d5464c71421f4ce1c8bdc967f909",
+      "quality": "692eb467248f3b2396e3d8acf15603a1610275e9",
+      "rpcFlag": "f7760d064dcd364072d9724cd25605a8d7c6cb8c",
+      "sc": "20c29ef1f7f9eb4da45202baf5a3e6ad17c2edd2",
+      "sl": "e9b81debf4eee670c3dcdd2f4c6aa65d4fe402d8",
+      "st": "631d8ef4e9d6da6ba1106737f33bdf4f46755efd",
+      "wh": "789ebaccc27d2432b9674668db31254080bad323"
+     },
+     "count": 5
+    }
+   },
+   "index": 6,
+   "number": 39958
+  },
+  {
+   "attributes": {
+    "dR": "87f9003e37fa67612b63b5dc2ae1a603d05640a1"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "10cb0cd85ddefeb97fe861dacb54aee82aa7fe18",
+      "index": "f45eece84fac097be9e85b8e67c18f1c469326ba",
+      "l": "e252cf3716f92b842896b4880c4ca335423097c9",
+      "name": "7510053acbbe8ef908e070a279f335561ebda30d",
+      "sc": "da8e4426cb79c6b12e37bab86d3c53bda0a772c3",
+      "sl": "5baa836233339f10aeae55f3cf0335cf828274df",
+      "st": "12c26481850ea95ceff2680d757e3c270af721a6",
+      "time": "ad44bc7a42521bcde6828a6878f7e6ea82eb4dfe",
+      "w": "e14a4e6fc021f3c3b06563b1210e929357a5157e",
+      "wh": "2c35e7b7c94173061c1ab519ffb48668d2b955a4"
+     },
+     "count": 87
+    },
+    "fwshowers": {
+     "attributes": {},
+     "count": 0
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "88eb39a2e63f7861f1de2453397f36c9d3adbe75",
+      "eta": "1c4bb1243ab556633a78b3e028575a6a5224602d",
+      "index": "c033c9de1149661a14697d1e59cc4c947b8f4589",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "c6546a99629c93fce0f8c652365423c73527dcec",
+      "pt": "4f7b6c73b5ee3e5d7309474967b1728e99552e12",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "c7dd0f08754e8f467c90f862ed73e5344dc943a1",
+      "index": "0339a72c899c9c6072ea4b05476faea075915156",
+      "matched_genmuons": "1fc3b444b2c627a1f76651b5c781b65712c5c5c6",
+      "matched_tps": "1fc3b444b2c627a1f76651b5c781b65712c5c5c6",
+      "nHits_phi": "b5959377f043cfd474d49bc38556129eadddf935",
+      "nHits_z": "8ff81e3a655971e84e68de2a29bc5f265bdcb3f8",
+      "name": "9ed0ee62890e8c8e4ca8cd300a6473c4e1bdfdad",
+      "phi": "8a736db8bf3e9daecfd24eb4e6042c41da8130ee",
+      "pos_locx_sl1": "c6e110759a743c6b9a8cf4ab97bbaaf265a0efa9",
+      "pos_locx_sl3": "c0631d5d967e757961972a080f68e182039da95e",
+      "sc": "31d2fabe1b4e3e8308cc2d32334d114ce5a659f7",
+      "st": "5189c86b356c4775c1b4b7fe896b39bbc2f036c0",
+      "t0_phi": "0187527e02d9e755eba9433488970762e07f13db",
+      "wh": "f4adb311d1aa96702e999fb55c36a4c9b7b63a0f"
+     },
+     "count": 7
+    },
+    "simhits": {
+     "attributes": {
+      "index": "a80b48ff42dc836390dd9c567f1fc7c7f448e0f9",
+      "l": "52acb4a3658bf99af8c807b01061e9f0f13f7420",
+      "name": "955a2e48e3af9eece429e78031dc414d2685ee9c",
+      "particle_type": "bf7527f3e9d2a6b0e2b8fe9f7c8726542882c78d",
+      "process_type": "78e7f85e49402493f3a184fc6f2348ecbf9481c5",
+      "sc": "f7171564f95572e5dbb27464554c605b19be46bf",
+      "sl": "a14dc93c12a56ff5009b019daaa135fa46665ddc",
+      "st": "dae66085a22a2872e1c621b3be8fe1ff62209b5b",
+      "w": "5b1172bc4814c2bc3ce07bc0e3d388bfe0420ebb",
+      "wh": "6087a0147b540cd9f16f503f0e3f66c02488d8e9"
+     },
+     "count": 48
+    },
+    "tps": {
+     "attributes": {
+      "BX": "a8327470897051e511c4d8ee1dbad1208b9866ad",
+      "dirLoc_phi": "0a091de75f43c70426b135d7568f61ab3c023ef9",
+      "index": "188e80542c7bf60667d2058154b4e6374f4e532b",
+      "matched_genmuons": "b7241acc05ce73a4588863598aaf90df827afc20",
+      "matched_segments": "b7241acc05ce73a4588863598aaf90df827afc20",
+      "matched_showers": "b7241acc05ce73a4588863598aaf90df827afc20",
+      "name": "4047d3a282ce7f8d2a07f3c9a1aee88389c6b402",
+      "phi": "249d9bef9171de4027f549a6fb481a5c25b8ce0e",
+      "phiB": "a3763b0ba50464aa7ad1b8d4f1e0d8eb0221722e",
+      "phires_conv": "fcead59e2d72a378e08f724c857a9af7687ee5fe",
+      "posLoc_x": "48321cb7c12991b49c24f96a07e53050b5276fc6",
+      "quality": "51fea2c81c99a540b83d3a663dbbf18bd9584dfe",
+      "rpcFlag": "f4d76066d8e82563afdfcaea695de0f6d50ecfa3",
+      "sc": "6e6324c60fde7f303dbd212f1e807a94d3f2c19b",
+      "sl": "7fd3a92d02c1fc96eb6dcb99c97afaf121967802",
+      "st": "7c52edee7bcb02d75e87a79beecb0667692c47ba",
+      "wh": "3db22541c03608d17244cf8d09bbae1810530f5f"
+     },
+     "count": 11
+    }
+   },
+   "index": 7,
+   "number": 39961
+  },
+  {
+   "attributes": {
+    "dR": "9a8893e5e2d2a2946fa8b9e8eab00c3e9a0a7f9f"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "2634003a6d6b00a976b3567bd05fe557e6210d0a",
+      "index": "2e7b3976d8e3d1326394596771c1047c60104de1",
+      "l": "c5752cae6197c22dd6dd37b3be537ffb1e0e0933",
+      "name": "a91a0446c5598114e0c28f018ec1691022bdda45",
+      "sc": "1b7315bd7a4cdc5a6b72b73c730db089344c48ba",
+      "sl": "548e90453e4155b255ba4203aa47208dd78bee4c",
+      "st": "7d9221f15e9fdbd041b72d6772cee5eea39255cc",
+      "time": "6d468d4dfc590c8fb7c85fb39a63452049e6380f",
+      "w": "45e91cd6c4772c0e0ac62b915401dae4c6a26a73",
+      "wh": "7cd90e4b14e3eb4d0f4e4b515902591988f4a998"
+     },
+     "count": 148
+    },
+    "fwshowers": {
+     "attributes": {
+      "BX": "0e3d9215bc9e342860d46e942a83482e92193739",
+      "avg_pos": "435acd4b50d4dd69fe0f6f935e2ad695e6a79878",
+      "avg_time": "793291b4c9f264019e30ed7bad20e69921173aff",
+      "index": "29d666c962e399b9292edd4e4790b00c2a7a7007",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "max_wire": "88d6b9353a4998133fb0086a33aec932a56c4c48",
+      "min_wire": "123bfc6e20415a1599abd58011e640ec6956f1ce",
+      "nDigis": "76647363a389fea6fe4de1d9750fc7ea33b14d88",
+      "name": "03bdf11e43e21fc55413cbce3edbc54e453c3363",
+      "sc": "38c83b633c5f8e7ab52e52bc49e61d9be3fd10f3",
+      "sl": "068b35005fc38c0a8545d72c423a67a5a1fee170",
+      "st": "59657a9eb2a203f3abdfad5a5ce7bbecef1e225c",
+      "wh": "88eb39a2e63f7861f1de2453397f36c9d3adbe75",
+      "wires_profile": "5910f579aea8273f408e82dde06b702d1333fd9b"
+     },
+     "count": 2
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "88eb39a2e63f7861f1de2453397f36c9d3adbe75",
+      "eta": "ec522398650708a6489629478199c2bcb5e2d0a6",
+      "index": "29d666c962e399b9292edd4e4790b00c2a7a7007",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "b3c00c6f197cc12d4a982f791c0b90416e3ed078",
+      "pt": "c79152f5f7155ecfb66d8cba8774cf58096b42be",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "93dbe5eb86015239f0cba200a9f868ec9d87f93a",
+      "index": "be5905e7b4d1d6707aa3b542b9cb629ca3cc9adc",
+      "matched_genmuons": "cfbcb177ba3400013be887eb5dacda1d23fae0a4",
+      "matched_tps": "cfbcb177ba3400013be887eb5dacda1d23fae0a4",
+      "nHits_phi": "b553ad6150aab16cb20e1655c3c64f9b571847b3",
+      "nHits_z": "1192e86a76d9ce24ce3f39a1e3be6f7c44c9018d",
+      "name": "52f5b3688838154c1a9145ef4e674fda10bd0540",
+      "phi": "3c719c29d1071da9eae5ddace64e8c79db612b42",
+      "pos_locx_sl1": "f44bd64b412e25b1d187188dccbb708393e8ca57",
+      "pos_locx_sl3": "1631a9ecd76473b09a32f2b60ca8b1d1f51b9fb0",
+      "sc": "0e973e11bcae1341158a2e0e51c03c09e087a6ca",
+      "st": "e075f17d7d871cf1e366d742b67a0e33144aea26",
+      "t0_phi": "a134f1f1231e43825eefceb6864960cdaf97d554",
+      "wh": "a9b652c4b44ab23e6a4dca59ae80ff8c99f781b9"
+     },
+     "count": 14
+    },
+    "simhits": {
+     "attributes": {
+      "index": "e0e2b9db95a2e93aec51f585f82a686fd6acca31",
+      "l": "1b71eba972341274f0c3ace00dc9555de2b841da",
+      "name": "1f7b0376d87c6e7268621e1834367899173fbd4e",
+      "particle_type": "215f1383fe85df2e87e671eee253f6a40a7bb65c",
+      "process_type": "8e0c0f53b7f183101ee857053ee91665e6cc8940",
+      "sc": "50647186c6da099935fe963b3ecbabe69b740b40",
+      "sl": "7baa00fd5ace764a133bd7e075f8500263b46110",
+      "st": "191ed410b2bc618887da96cc344e6bf0c2d13d18",
+      "w": "894b25f08c079d0c9481bc58b6e0a2d2c7ea92ea",
+      "wh": "8e68bdc81e108fe74bac96d6043dc1d2b7decbbc"
+     },
+     "count": 47
+    },
+    "tps": {
+     "attributes": {
+      "BX": "44bf08fed59f9dfbc7677c1cfa4561cb9cd4ce13",
+      "dirLoc_phi": "04ee8daaab3f904bfb2afbf68de821e45f8e64cf",
+      "index": "0b4f51f5816e1e29f855da69b66dfeed097ab60d",
+      "matched_genmuons": "fa86432ea8b7362a8d67d4764fcec7c8305724e2",
+      "matched_segments": "fa86432ea8b7362a8d67d4764fcec7c8305724e2",
+      "matched_showers": "fa86432ea8b7362a8d67d4764fcec7c8305724e2",
+      "name": "de6faf6f4d7bab512d5a187aaa351034bb211da8",
+      "phi": "ce02f4a2649dcbd32f0745a2e9f65da97ab4eed1",
+      "phiB": "0d9b4392513f347bec35f37044d7d1b615ec8785",
+      "phires_conv": "c90295c9504ebce632fa896d22c4f5e3000b5b57",
+      "posLoc_x": "b654e0a7214482bed9ff509bd6b0c7f4ffe7b58d",
+      "quality": "a63855351bd4fe4febb247cc0182244e7db0fdbb",
+      "rpcFlag": "90ce532b97e09a328cb5f0cb999233db415532e6",
+      "sc": "3899cd93da5903e8bc9edc719f70fce84d50d752",
+      "sl": "90f48323c7c2acf35ad50b8ff08ba783228ed68e",
+      "st": "2706c13cdc773cbd2fa464f6725e83a3c8638b91",
+      "wh": "a3e3d8f2e059e0a108149112aa6a30a92d655877"
+     },
+     "count": 35
+    }
+   },
+   "index": 8,
+   "number": 39951
+  },
+  {
+   "attributes": {
+    "dR": "aefe6b9700666a10d7e64481cca104d270916057"
+   },
+   "collections": {
+    "digis": {
+     "attributes": {
+      "BX": "9eb898f2d0a37be1c7ee85951629e7555fc87a1b",
+      "index": "1990c9178aa7dc7fc2d9caab47f25b7d84638cdb",
+      "l": "883dfd678bc246d04df80e14ccf23420eea58da2",
+      "name": "97e8c088c2743b417705071bc520ba5b63023c3c",
+      "sc": "18c750fc1635f628abbfd3886e9092ba48d6cd1f",
+      "sl": "671857f4c0bca3a00945ab393d92b1b9f5f9078a",
+      "st": "fdd2d4898d68e1a8e8183c717166508b4dedebcc",
+      "time": "ae0cc18c0ca11027d2268be589dcba8fb5a6440e",
+      "w": "b49e64ab747f2bed75c7b57ef07c4ab102c21596",
+      "wh": "919204c0b2611b6f3fd4294b59f92d364f3a6420"
+     },
+     "count": 167
+    },
+    "fwshowers": {
+     "attributes": {
+      "BX": "429a2a93b8f5a81b779650a65c12e187d301cca4",
+      "avg_pos": "e9574a259610770e86afbd366059db352144eebf",
+      "avg_time": "7d47a11c52da72d1cf9ff9934281b93f5c4236b2",
+      "index": "1184f5b8d4b6dd08709cf1513f26744167065e0d",
+      "matched_tps": "1376774b81b43f6e0e269cb3187301b22cff8b7e",
+      "max_wire": "c6af6d540a927e91da4b259850ff7a864999ac4c",
+      "min_wire": "3915bb7e964d164d8de3c9e1dc65b330bb086f2c",
+      "nDigis": "10ae24979c5028fa873651bca338152dc0484245",
+      "name": "a4e8b41a53d7ce9a888ae094868536c4156a5de7",
+      "sc": "10ae24979c5028fa873651bca338152dc0484245",
+      "sl": "f629ae44b7b3dcfed444d363e626edf411ec69a8",
+      "st": "2499831338ca5dc8c44f3d063e076799bea9bdff",
+      "wh": "cb50653e856982b30f138272027a7408dfcfa0cc",
+      "wires_profile": "c84986193e0d29eb32b5e9acb1d5972018c59ba5"
+     },
+     "count": 1
+    },
+    "genmuons": {
+     "attributes": {
+      "charge": "88eb39a2e63f7861f1de2453397f36c9d3adbe75",
+      "eta": "977cf4c26a221417dfb92098ccdcaef13c557e34",
+      "index": "c033c9de1149661a14697d1e59cc4c947b8f4589",
+      "matched_segments": "164374825086dc65cd5dc548c248f61328b5d668",
+      "matched_tps": "164374825086dc65cd5dc548c248f61328b5d668",
+      "name": "0ad71a92c1d6c8f2353e7ff232d2d1b2b897afb3",
+      "phi": "c1ce7a051a30074604bd28b1d01acb128c6c568d",
+      "pt": "c1df3bf77e0cf414ad568e24a0ec32938b5ae8b4",
+      "showered": "54733c1e57e325c0f847aa0419d36fe5b3fb008e"
+     },
+     "count": 2
+    },
+    "segments": {
+     "attributes": {
+      "eta": "ed790525653d6c9b6a779b6dd5dbaceb9ff73d50",
+      "index": "4bc7c22a2b25aeb34db40761db0e79fe5e874753",
+      "matched_genmuons": "d39930c35fe25f09661b44004e6a617c6afa726b",
+      "matched_tps": "d39930c35fe25f09661b44004e6a617c6afa726b",
+      "nHits_phi": "b9b9afe8c44edfa0faa9d15f33cc517fdfd94bab",
+      "nHits_z": "c04e798456e357cd2a18ca122aca582c512c8601",
+      "name": "0bc0328991b84f6795f6f163d5fe2cd3da443fb2",
+      "phi": "5209f05f2c8dae8167144a8cda0c71a055628f2d",
+      "pos_locx_sl1": "d82a5508a0dd343a5eb8a190108e8ba7eaf9b7b4",
+      "pos_locx_sl3": "f79e2344a3fec265571ae59096aafa4d85535371",
+      "sc": "050bc9325fd5a5f9334d16bd615c8856185e40db",
+      "st": "bb922d54e84ce77ab431e77a4e9bd84acd0e36fc",
+      "t0_phi": "5c8e43af02d8d4e4fca8e99a3a6be0a2537153fc",
+      "wh": "f0d601dc7b6da4dad0c5cbc50525cd0f54eacee8"
+     },
+     "count": 21
+    },
+    "simhits": {
+     "attributes": {
+      "index": "41617d5be35f9649d44c0d39b42b7ec2f9ff2436",
+      "l": "2f4aed1dccd5ea18ee3885cdc845dc20c91bcd0c",
+      "name": "e677a268b6d79cba07000d22cee6d91c2b33286d",
+      "particle_type": "b0f7ca2f97108b44650fd2cd70c89caef9ebb272",
+      "process_type": "7da8785f362ce40375487e887ea401a9fa401e5a",
+      "sc": "727ae6dcc121933a047ff36a9baeef099b02ab5c",
+      "sl": "fb1d7a8b4dc7c444b6d6500c26f41ff4be1015e9",
+      "st": "8539f65eb79d7038a92f8fae676c2fcef238064d",
+      "w": "6d6473a99a3fe4d88a409bbadaea76f26f301b41",
+      "wh": "17420f91fa6ca4aa60bde2cfc459452227524a96"
+     },
+     "count": 188
+    },
+    "tps": {
+     "attributes": {
+      "BX": "12fdb5a002f7ea52ee8876fa437a078a5e675ca8",
+      "dirLoc_phi": "1d9f1c84b21526307e54f1a27d8e7c22307c567a",
+      "index": "e6ed3c2188a2af1541c7b6fcb45af251481226d7",
+      "matched_genmuons": "cf7bd57d03a9703096700a08efdb56551a9697f8",
+      "matched_segments": "cf7bd57d03a9703096700a08efdb56551a9697f8",
+      "matched_showers": "cf7bd57d03a9703096700a08efdb56551a9697f8",
+      "name": "86c2d444866da8f83a825b8a1ca1b3e62dfe2d89",
+      "phi": "1d89f153d8ec6526e18848cd10f5e3f86955acbf",
+      "phiB": "cf9c3ae587d27ddcafd5ba9ffec3e85a75ad4bf0",
+      "phires_conv": "435d1783d5e2b12cd360695b597f63b26f8c975c",
+      "posLoc_x": "272f9dfe0f827d5ad05ba3231a3351a43723fabf",
+      "quality": "3f4443673a0ff4679832669ea6144896f66d090a",
+      "rpcFlag": "8e1a38323c256151d03b4f6a97c287c0774c0850",
+      "sc": "bee8ef917e1f95fc0b2f6a6f0c67ced83de33259",
+      "sl": "808988d9c6a88e0a2e225ac8e8529629825d6fc8",
+      "st": "aa5677fa865c1487b0aa590ca1f5229a1ade017b",
+      "wh": "06ea2bc6012a8f8c86f88de98298594aa5593465"
+     },
+     "count": 27
+    }
+   },
+   "index": 9,
+   "number": 39954
+  }
+ ],
+ "meta": {
+  "config": "dtpr/utils/yamls/run_config.yaml",
+  "entries": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "generator": "tests/gen_event_snapshot.py",
+  "input": "tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root",
+  "round_digits": 12
+ }
+}

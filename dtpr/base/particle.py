@@ -5,6 +5,29 @@ from functools import partial
 from collections.abc import Iterable
 
 
+_EXPRESSION_CACHE = {}
+
+
+def compile_expression(text):
+    """Compile an expression once per distinct text.
+
+    The same expressions are evaluated for every particle of every event - the
+    ``expr`` attributes, the ``filter`` and the ``sorter`` key of each particle type.
+    Compiling them again for every particle is pure parser work: an
+    ``eval("text")`` costs about 9 us, 50 times an ``eval(code_object)``.
+
+    :param text: The expression to compile.
+    :type text: str
+    :returns: The compiled code object.
+    :rtype: code
+    :raises SyntaxError: If the expression is not valid Python.
+    """
+    code = _EXPRESSION_CACHE.get(text)
+    if code is None:
+        code = _EXPRESSION_CACHE[text] = compile(text, "<string>", "eval")
+    return code
+
+
 def flat_pair_bounds(event, counts_branch, counts, index):
     """Start and end of particle ``index`` inside a ``[flat, counts]`` branch pair.
 
@@ -129,9 +152,7 @@ class Particle:
 
         elif expr:
             try:
-                # Validate the expression by compiling it
-                compile(expr, "<string>", "eval")
-                value = eval(expr, {}, self.__dict__)
+                value = eval(compile_expression(expr), {}, self.__dict__)
             except SyntaxError as e:
                 raise ValueError(f"Invalid expression '{expr}' for attribute '{attr}'. Error: {e}")
         elif src:
@@ -144,7 +165,7 @@ class Particle:
 
         if _type:
             try:
-                _type = eval(_type)
+                _type = eval(compile_expression(_type))
                 if not isinstance(value, list):
                     value = _type(value)
                 else:

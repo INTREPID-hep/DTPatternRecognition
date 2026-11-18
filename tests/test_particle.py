@@ -100,6 +100,19 @@ def test_materialize_keeps_plain_values():
     assert materialize(7) == 7
 
 
+def test_expression_is_compiled_once():
+    from dtpr.base.particle import compile_expression
+
+    first = compile_expression("wh + 1")
+    assert compile_expression("wh + 1") is first, "the code object must be reused"
+    assert compile_expression("wh + 2") is not first
+
+
+def test_invalid_expression_raises_value_error():
+    with pytest.raises(ValueError):
+        Particle(index=0, wh=1, broken={"expr": "wh +"})
+
+
 def test_particle_equality_and_hash():
     p1 = Particle(index=0, wh=1, sc=2)
     p2 = Particle(index=1, wh=1, sc=2)

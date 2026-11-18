@@ -47,6 +47,33 @@ def split_entries(nentries, nchunks):
     return chunks
 
 
+def job_range(nentries, job_id, job_count):
+    """
+    The slice of ``[0, nentries)`` that job ``job_id`` of ``job_count`` handles.
+
+    A job axis is a different axis from the core count: it splits a run over
+    machines, and every job then splits its own slice over its cores.
+
+    :param nentries: Number of entries to split.
+    :type nentries: int
+    :param job_id: Index of this job, in ``[0, job_count)``.
+    :type job_id: int
+    :param job_count: Number of jobs.
+    :type job_count: int
+    :returns: Pair ``(begin, end)`` of the entries of this job.
+    :rtype: tuple
+    :raises ValueError: If ``job_id`` is outside ``[0, job_count)``.
+    """
+    job_count = max(1, int(job_count))
+    job_id = int(job_id)
+    if job_id < 0 or job_id >= job_count:
+        raise ValueError(f"job_id must be in [0, {job_count}), got {job_id}")
+    ranges = split_entries(nentries, job_count)
+    if job_id >= len(ranges):
+        return (nentries, nentries)
+    return ranges[job_id]
+
+
 def part_paths(outpath, count):
     """
     Names of the per-chunk files that live next to ``outpath``.

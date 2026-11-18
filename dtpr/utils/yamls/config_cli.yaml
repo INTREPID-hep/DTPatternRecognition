@@ -87,7 +87,24 @@ opt_args:
         dest: "ncores"
         type: int
         default: -1
-        help: "Number of CPU cores to use for parallel processing. Default is -1, which means no parallelization."
+        help: "Number of CPU cores to use for parallel processing. Default is -1, which means no parallelization. 0 uses every core."
+    no-merge: &no_merge
+        flags: ["--no-merge"]
+        dest: "merge"
+        action: "store_false"
+        help: "Write one ROOT file per chunk and keep them instead of merging them into the final file. Merge them by hand with 'hadd'."
+    job-id: &job_id
+        flags: ["--job-id"]
+        dest: "job_id"
+        type: int
+        default: 0
+        help: "Index of this job when the entries are split across machines. Default is 0."
+    job-count: &job_count
+        flags: ["--job-count"]
+        dest: "job_count"
+        type: int
+        default: 1
+        help: "Number of jobs the entries are split across. Default is 1, a single job."
     use-executable: &use_executable
         flags: ["-e", "--exec"]
         dest: "use_executable"
@@ -134,6 +151,9 @@ pos_args:
             max-files: *max_files
             max-events: *max_events
             cores-number: *cores_number
+            no-merge: *no_merge
+            job-id: *job_id
+            job-count: *job_count
             also-dump: *also_dump
             remove_nbranches: *remove_nbranches
     dump-events:
@@ -147,6 +167,10 @@ pos_args:
             tag: *tag
             max-files: *max_files
             max-events: *max_events
+            cores-number: *cores_number
+            no-merge: *no_merge
+            job-id: *job_id
+            job-count: *job_count
             format: *format
             dump-yaml: *dump_yaml
             force-overwrite-yaml: *force_overwrite_yaml

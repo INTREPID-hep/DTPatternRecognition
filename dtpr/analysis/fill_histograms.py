@@ -1,6 +1,7 @@
 import os
 import importlib
 import warnings
+from ..utils.dumper import dump_events
 import ROOT as r
 from tqdm import tqdm
 from ..base import NTuple
@@ -297,6 +298,8 @@ def fill_histos(
     tag: str,
     maxfiles: int,
     maxevents: int,
+    also_dump: bool = False,
+    remove_nbranches: bool = False,
 ) -> None:
     """
     Fill histograms based on NTuples information.
@@ -384,5 +387,17 @@ def fill_histos(
 
     all_histograms = {**event_histograms, **draw_histograms}
     save_histograms(outpath, tag, all_histograms)
+
+    if also_dump:
+        color_msg("Also dumping events...", color="purple", indentLevel=1)
+        dump_events(
+            ntuple.events[:_maxevents + 1] if _maxevents >= 0 else ntuple.events,
+            outpath=os.path.join(outfolder, "roots"),
+            tag=tag,
+            fRNTuple=False,
+            dump_yaml_schema=True,
+            force_overwrite_yaml=False,
+            remove_nbranches=remove_nbranches,
+        )
 
     color_msg("Done!", color="green")

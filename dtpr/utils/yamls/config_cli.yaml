@@ -110,7 +110,16 @@ opt_args:
         dest: "force_overwrite_yaml"
         action: "store_false"
         help: "Force overwrite the YAML schema if it already exists. By default, existing YAML schemas are preserved."
-
+    also-dump: &also_dump
+        flags: ["--also-dump"]
+        dest: "also_dump"
+        action: "store_true"
+        help: "Also dump the events after the analysis."
+    remove-nbranches: &remove_nbranches
+        flags: ["--remove-nbranches"]
+        dest: "remove_nbranches"
+        action: "store_true"
+        help: "Remove branches starting with 'n' from the output ROOT file. Default is False."
 # ---------------------------------- posible analysis ---------------------------------------- #
 pos_args:
     fill-histos:
@@ -125,6 +134,8 @@ pos_args:
             max-files: *max_files
             max-events: *max_events
             cores-number: *cores_number
+            also-dump: *also_dump
+            remove_nbranches: *remove_nbranches
     dump-events:
         name: "dump-events"
         help: "Dump events from DT NTuple files into a new ROOT file after processing."
@@ -139,6 +150,7 @@ pos_args:
             format: *format
             dump-yaml: *dump_yaml
             force-overwrite-yaml: *force_overwrite_yaml
+            remove_nbranches: *remove_nbranches
     plot-dt:
         name: "plot-dt"
         help: "Produce CMS DT chamber plot (local view) for a specific event digis information from a DT NTuple files."

@@ -57,6 +57,39 @@ def test_particle_init_from_flat_branch_pair():
 
     assert particle.matched_segments == [12, 20, 21]
 
+class FakeFlatTree:
+    tps_matched_segments_flat_ids = [10, 11, 12, 20, 21, 30, 31, 32, 33]
+    tps_matched_segments_flat_counts = [2, 3, 4]
+
+    def GetEntry(self, entry):
+        return 1
+
+
+def test_flat_pair_uses_cumulative_offsets():
+    from dtpr.base.entry_view import EntryView
+
+    view = EntryView(FakeFlatTree())
+    view.set_entry(0)
+
+    counts_branch = "tps_matched_segments_flat_counts"
+    assert view.cumulative_offsets(counts_branch) == [0, 2, 5, 9]
+    assert view.cumulative_offsets(counts_branch) is view.cumulative_offsets(counts_branch)
+
+    expected = {0: [10, 11], 1: [12, 20, 21], 2: [30, 31, 32, 33]}
+    for index, values in expected.items():
+        particle = Particle(
+            index=index,
+            ev=view,
+            matched_segments={
+                "branch": [
+                    "tps_matched_segments_flat_ids",
+                    "tps_matched_segments_flat_counts",
+                ]
+            },
+        )
+        assert particle.matched_segments == values
+
+
 def test_materialize_keeps_plain_values():
     from dtpr.base.entry_view import materialize
 

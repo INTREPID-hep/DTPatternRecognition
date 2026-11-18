@@ -65,5 +65,34 @@ class EntryView:
         cache[name] = value
         return value
 
+    def cumulative_offsets(self, counts_branch):
+        """Start offset of the flat values of every particle of a ``[flat, counts]`` pair.
+
+        The flat branch of a pair stores the concatenated values of every
+        particle, so particle ``i`` starts at ``sum(counts[:i])``. Computing
+        that sum per particle is quadratic; the offsets are computed once per
+        entry and cached under the counts branch name.
+
+        :param counts_branch: Name of the branch holding the per-particle counts.
+        :type counts_branch: str
+        :returns: List of length ``len(counts) + 1``; offsets[i] is the start of particle i.
+        :rtype: list of int
+        """
+        key = ("offsets", counts_branch)
+        cache = self._cache
+        try:
+            return cache[key]
+        except KeyError:
+            pass
+        counts = self.__getattr__(counts_branch)
+        offsets = [0] * (len(counts) + 1)
+        total = 0
+        for index, count in enumerate(counts):
+            offsets[index] = total
+            total += count
+        offsets[len(counts)] = total
+        cache[key] = offsets
+        return offsets
+
     def __repr__(self):
         return f"<EntryView of {self._tree.GetEntries()} entries, {len(self._cache)} cached>"

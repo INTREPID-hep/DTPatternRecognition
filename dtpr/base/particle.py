@@ -5,6 +5,30 @@ from functools import partial
 from collections.abc import Iterable
 
 
+def flat_pair_bounds(event, counts_branch, counts, index):
+    """Start and end of particle ``index`` inside a ``[flat, counts]`` branch pair.
+
+    Uses the per-entry cumulative offsets of an :class:``EntryView`` when the
+    event provides them, and falls back to summing the counts otherwise.
+
+    :param event: The event entry the attribute is read from.
+    :param counts_branch: Name of the branch holding the per-particle counts.
+    :type counts_branch: str
+    :param counts: The materialized counts of the branch.
+    :type counts: list
+    :param index: Index of the particle.
+    :type index: int
+    :returns: Pair ``(start, end)`` of positions in the flat branch.
+    :rtype: tuple of int
+    """
+    offsets_method = getattr(event, "cumulative_offsets", None)
+    if offsets_method is None:
+        start = sum(counts[:index])
+    else:
+        start = offsets_method(counts_branch)[index]
+    return start, start + counts[index]
+
+
 class Particle:
     """
     Base class to represent a particle.
@@ -91,8 +115,7 @@ class Particle:
                         f"Particle index {self.index} out of bounds for '{counts_branch}' "
                         f"with length {len(counts)}"
                     )
-                start = sum(counts[: self.index])
-                end = start + counts[self.index]
+                start, end = flat_pair_bounds(event, counts_branch, counts, self.index)
                 value = flat_vals[start:end]
                 is_two_branch_attr = True  # Mark as two-branch attribute
             else:

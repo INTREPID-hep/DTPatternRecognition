@@ -57,12 +57,23 @@ def test_particle_init_from_flat_branch_pair():
 
     assert particle.matched_segments == [12, 20, 21]
 
+class FakeBranch:
+    def GetEntry(self, entry):
+        return 1
+
+
 class FakeFlatTree:
     tps_matched_segments_flat_ids = [10, 11, 12, 20, 21, 30, 31, 32, 33]
     tps_matched_segments_flat_counts = [2, 3, 4]
 
-    def GetEntry(self, entry):
-        return 1
+    def LoadTree(self, entry):
+        return entry
+
+    def GetTreeNumber(self):
+        return 0
+
+    def GetBranch(self, name):
+        return FakeBranch() if hasattr(self, name) else None
 
 
 def test_flat_pair_uses_cumulative_offsets():

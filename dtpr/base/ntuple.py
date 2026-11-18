@@ -22,7 +22,9 @@ class NTuple(object):
         The list of events created from the TTree.
     """
 
-    def __init__(self, inputFolder, selectors=None, preprocessors=None, maxfiles=-1, CONFIG=None):
+    def __init__(
+        self, inputFolder, selectors=None, preprocessors=None, maxfiles=-1, CONFIG=None, entry_range=None
+    ):
         """
         Initialize an NTuple instance.
 
@@ -36,6 +38,10 @@ class NTuple(object):
         :type maxfiles: int, optional
         :param tree_name: The name of the TTree to load. Defaults to "/TTREE".
         :type tree_name: str, optional
+        :param entry_range: Pair ``(begin, end)`` of entries of the chain to expose through
+            ``self.events`` (``begin`` inclusive, ``end`` exclusive, ``end=None`` means the
+            last entry). Default is None, i.e. every entry of the chain.
+        :type entry_range: tuple, optional
         """
         # Save in attributes (avoid sharing mutable defaults)
         self._selectors = list(selectors) if selectors is not None else []
@@ -57,7 +63,10 @@ class NTuple(object):
         # Load preprocessors from config
         self._load_from_config("ntuple_preprocessors")
 
-        self.events = EventList(self.tree, self.event_processor, CONFIG=self.CONFIG)
+        begin, end = entry_range if entry_range is not None else (0, None)
+        self.events = EventList(
+            self.tree, self.event_processor, CONFIG=self.CONFIG, begin=begin, end=end
+        )
 
     def event_processor(self, ev: Event):
         """

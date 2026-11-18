@@ -5,9 +5,15 @@ from .config import RUN_CONFIG
 class EventList:
     """
     A class to manage events such as a list, but without loading all events in memory.
+
+    The list can be restricted to a contiguous entry range of the tree
+    (``begin`` inclusive, ``end`` exclusive), which is how the parallel
+    commands split one file into chunks. Indices given to this object are
+    relative to the range, while ``Event.index`` keeps the entry number in the
+    tree, so slicing a range yields exactly the same events as the full list.
     """
 
-    def __init__(self, tree, processor=None, CONFIG=None):
+    def __init__(self, tree, processor=None, CONFIG=None, begin=0, end=None):
         """
         Initialize an EventList instance.
 
@@ -17,11 +23,19 @@ class EventList:
         :type processor: function, optional
         :param use_config: Flag to indicate if configuration file should be used to build events (default is False).
         :type use_config: bool, optional
+        :param begin: First entry of the tree to expose (inclusive). Default is 0.
+        :type begin: int, optional
+        :param end: Last entry of the tree to expose (exclusive). Default is None (all entries).
+        :type end: int, optional
         """
         self._tree = tree
         self._processor = processor
-        self._length = tree.GetEntries()
         self.CONFIG = CONFIG if CONFIG is not None else RUN_CONFIG
+
+        total = tree.GetEntries()
+        self._begin = max(0, min(int(begin or 0), total))
+        self._end = total if end is None else max(self._begin, min(int(end), total))
+        self._length = self._end - self._begin
 
     def __len__(self):
         """
@@ -30,13 +44,19 @@ class EventList:
         return self._length
 
     def _make_event(self, index):
-        """Internal helper to build and process the event object."""
-        # Load the data into the tree's internal buffers
-        if self._tree.GetEntry(index) <= 0:
-            raise RuntimeError(f"Failed to retrieve event at index {index}")
+        """Internal helper to build and process the event object.
 
-        # Create the event
-        event = Event(self._tree, index, use_config=True, CONFIG=self.CONFIG)
+        :param index: Index inside this list (0 is the first entry of the range).
+        :type index: int
+        """
+        entry = self._begin + index
+
+        # Load the data into the tree's internal buffers
+        if self._tree.GetEntry(entry) <= 0:
+            raise RuntimeError(f"Failed to retrieve event at index {entry}")
+
+        # Create the event (index and number are entry numbers, not list positions)
+        event = Event(self._tree, entry, use_config=True, CONFIG=self.CONFIG)
 
         # Return processed or raw
         return self._processor(event) if self._processor else event
@@ -78,17 +98,18 @@ class EventList:
         :returns: Event: The event with the specified number.
         :rtype: Event
 
-        :raises: ValueError: If no event with the specified number is found.
+        :raises: ValueError: If no event with the specified number is found in this list.
         """
-        if self._tree.GetTreeIndex() is None:
+        # A missing index comes back as a null cppyy proxy, which is falsy but is not None
+        if not self._tree.GetTreeIndex():
             self._tree.BuildIndex("event_eventNumber", "0")
 
-        index = self._tree.GetEntryNumberWithIndex(number, 0)
+        entry = self._tree.GetEntryNumberWithIndex(number, 0)
 
-        if index < 0:
+        if entry < 0 or entry < self._begin or entry >= self._end:
             raise ValueError(f"No event found with number: {number}")
 
-        return self._make_event(index)
+        return self._make_event(entry - self._begin)
 
     def __iter__(self):
         """

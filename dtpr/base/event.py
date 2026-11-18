@@ -1,7 +1,7 @@
 import os
 import warnings
 from .config import RUN_CONFIG
-from .particle import Particle, compile_expression  # Import the base Particle class
+from .particle import Particle, attribute_reader, compile_expression
 from ..utils.functions import (
     color_msg,
     get_callable_from_src,
@@ -158,17 +158,32 @@ class Event:
         else:
             ParticleClass = Particle  # Default to the base Particle class
 
+        # Compile the attribute definitions once for the event, not for every particle
+        attributes = pinfo.get("attributes", {})
+        default_name = ptype.capitalize()[:-1]
+        readers = None
+        if ParticleClass is Particle and not any(
+            isinstance(spec, dict) and "src" in spec for spec in attributes.values()
+        ):
+            readers = [(attr, attribute_reader(attr, spec)) for attr, spec in attributes.items()]
+
         # Build the particles
         _particles = []
         for i in range(num_particles):
-            _particle = ParticleClass(
-                index=i,
-                ev=ev,
-                **pinfo.get("attributes", {}),
-            )
+            if readers is None:
+                # A custom class or a callable attribute: Particle.__init__ handles it
+                _particle = ParticleClass(
+                    index=i,
+                    ev=ev,
+                    **attributes,
+                )
+            else:
+                # The definitions were compiled once, above, for the whole collection
+                _particle = ParticleClass(index=i, ev=ev, readers=readers)
+
             if _particle.name == "Particle":
                 # If the name is not set, set it to the particle type
-                _particle.name = ptype.capitalize()[:-1]
+                _particle.name = default_name
 
             if "filter" in pinfo:  # Only keep the particles that pass the filter, if defined
                 filter_expr = pinfo["filter"]

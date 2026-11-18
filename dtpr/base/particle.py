@@ -68,6 +68,188 @@ def flat_pair_bounds(event, counts_branch, counts, index):
     return start, start + counts[index]
 
 
+def resolve_type_cast(text, attr):
+    """Resolve the ``type:`` cast of an attribute to a callable.
+
+    The cast is a Python expression evaluated in this module, exactly as
+    :meth:`Particle._init_from_dict` does, so ``type: int`` keeps working.
+
+    :param text: The expression held by the ``type`` field.
+    :type text: str
+    :param attr: The attribute name, for the error message.
+    :type attr: str
+    :returns: The object the expression evaluates to, usually a type.
+    :rtype: object
+    :raises ValueError: If the expression does not name a known object.
+    """
+    try:
+        return eval(compile_expression(text))
+    except NameError as e:
+        raise ValueError(f"Invalid type '{text}' for attribute '{attr}'. Error: {e}")
+
+
+def _literal_reader(value):
+    """Reader for an attribute written as a literal in the config.
+
+    Literals come from the config (``matched_tps: []``, ``showered: False``), so a
+    container has to be copied for every particle: one list must not be shared by
+    the whole collection.
+    """
+
+    if isinstance(value, (list, dict, set)):
+
+        def read(ev, index, state, _value=value):
+            return copy_literal(_value)
+
+    else:
+
+        def read(ev, index, state, _value=value):
+            return _value
+
+    return read
+
+
+def _branch_reader(branch):
+    """Reader for ``branch: name``: the column of the event, indexed by particle.
+
+    A scalar branch is handed to every particle unchanged, as before.
+    """
+
+    def read(ev, index, state, _branch=branch):
+        value = materialize(getattr(ev, _branch, None))
+        if value is None:
+            raise ValueError(f"Branch '{_branch}' not found in the event entry.")
+        if isinstance(value, list):
+            return value[index]
+        return value
+
+    return read
+
+
+def _pair_reader(attr, flat_branch, counts_branch, resolution):
+    """Reader for ``branch: [flat, counts]``: the slice of the flat column.
+
+    ``resolution`` is the pair (target, identifier) when the pair is a cross
+    reference. The reader then tags the attribute, so that Event resolves the raw
+    identifiers into particles once every collection has been built.
+    """
+
+    def read(ev, index, state, _flat=flat_branch, _counts=counts_branch):
+        flat_values = materialize(getattr(ev, _flat, None))
+        counts = materialize(getattr(ev, _counts, None))
+        if flat_values is None:
+            raise ValueError(f"Branch '{_flat}' not found in the event entry.")
+        if counts is None:
+            raise ValueError(f"Companion branch '{_counts}' not found for '{_flat}'.")
+        if index >= len(counts):
+            raise IndexError(
+                f"Particle index {index} out of bounds for '{_counts}' with length {len(counts)}"
+            )
+        if resolution is not None:
+            state["_needs_resolution"][attr] = resolution
+        start, end = flat_pair_bounds(ev, _counts, counts, index)
+        return flat_values[start:end]
+
+    return read
+
+
+def _expression_reader(code):
+    """Reader for ``expr: text``, evaluated with the values already set as locals.
+
+    ``state`` is the dictionary of the particle being built, so an expression may
+    use the attributes declared before it in the config (``detector_side`` from
+    ``wh``), exactly as it does today.
+    """
+
+    def read(ev, index, state, _code=code):
+        return eval(_code, {}, state)
+
+    return read
+
+
+def _cast_reader(reader, cast, attr, text):
+    """Wrap a reader with the ``type:`` cast of the attribute."""
+
+    def read(ev, index, state, _reader=reader, _cast=cast):
+        value = _reader(ev, index, state)
+        if not isinstance(value, list):
+            try:
+                return _cast(value)
+            except TypeError as e:
+                raise ValueError(
+                    f"Cannot convert value '{value}' to type '{text}' for attribute '{attr}'. Error: {e}"
+                )
+        # A list is converted lazily, as Particle._init_from_dict does
+        return map(_cast, value)
+
+    return read
+
+
+def attribute_reader(attr, spec):
+    """Compile one attribute definition of the config into a reader.
+
+    The reader is called as ``read(ev, index, state)`` and returns the value of the
+    attribute for particle ``index`` of the event ``ev``. ``state`` is the dictionary of
+    the particle being built, so an ``expr`` attribute sees the attributes declared
+    before it, exactly as in ``Particle.__init__``. A literal definition returns a
+    fresh copy for every particle.
+
+    Event compiles one reader per attribute and per event, then passes them to
+    ``Particle(readers=...)``, which calls each of them, instead of looking the
+    definition up again for every particle.
+
+    :param attr: The attribute name.
+    :type attr: str
+    :param spec: The attribute definition from the config: a dict with ``branch``,
+        ``expr``, ``src`` and ``type``, or a literal.
+    :type spec: dict or object
+    :returns: The reader.
+    :rtype: callable
+    :raises ValueError: If the definition is not valid.
+    """
+    if not isinstance(spec, dict):
+        return _literal_reader(spec)
+
+    branch = spec.get("branch", None)
+    expr = spec.get("expr", None)
+    src = spec.get("src", None)
+    cast = spec.get("type", None)
+
+    provided = [value for value in (branch, expr, src) if value is not None]
+    if len(provided) != 1:
+        raise ValueError(
+            f"'attributes' field must specify exactly one of 'branch', 'expr', or 'src' for attribute definition : '{attr}'."
+        )
+
+    if branch:
+        if isinstance(branch, list):
+            if len(branch) != 2:
+                raise ValueError(
+                    f"Branch list for attribute '{attr}' must contain exactly two entries: [flat, flat_counts]."
+                )
+            target = spec.get("target", None)
+            resolution = None
+            if target is not None:
+                resolution = (target, spec.get("identifier", None))
+            read = _pair_reader(attr, branch[0], branch[1], resolution)
+        else:
+            read = _branch_reader(branch)
+    elif expr:
+        try:
+            read = _expression_reader(compile_expression(expr))
+        except SyntaxError as e:
+            raise ValueError(f"Invalid expression '{expr}' for attribute '{attr}'. Error: {e}")
+    else:
+        # A callable over the particle object: Particle.__init__ calls it, see Event
+        raise ValueError(
+            f"Attribute '{attr}' uses 'src', which is only supported by Particle.__init__."
+        )
+
+    if cast:
+        read = _cast_reader(read, resolve_type_cast(cast, attr), attr, cast)
+    return read
+
+
 class Particle:
     """
     Base class to represent a particle.
@@ -80,20 +262,27 @@ class Particle:
         The name of the particle class. By default, it is the class name.
     """
 
-    def __init__(self, index=None, ev=None, **kwargs):
+    def __init__(self, index=None, ev=None, readers=None, **kwargs):
         """
         Initialize a Particle instance.
 
         :param index: The index of the particle.
         :type index: int
         :param ev: The TTree event entry containing event data.
-        :param branches: The branches to be used to define attributes.
-        :type branches: dict
+        :param readers: Attribute readers already compiled for the event, from
+            :func:`attribute_reader`. Event passes them to build a whole collection
+            without interpreting the config again for every particle; when they are
+            given, the definitions in ``kwargs`` are not used.
+        :type readers: list
         :param kwargs: Additional attributes to set explicitly.
         """
         self.index = index
         self.name = self.__class__.__name__  # By default, it is the class name
         self._needs_resolution = {}  # Track attributes that need cross-reference resolution
+
+        if readers is not None:
+            self._init_from_readers(readers, ev)
+            return
 
         for key, value in kwargs.items():
             if isinstance(value, dict):
@@ -199,6 +388,23 @@ class Particle:
 
         # Set the attribute to the value
         setattr(self, attr, value)
+
+    def _init_from_readers(self, readers, ev):
+        """Set the attributes from readers compiled for the event.
+
+        The counterpart of :meth:`_init_from_dict` for the readers that
+        :func:`attribute_reader` builds once per event. The instance dictionary
+        is filled in config order, so an ``expr`` attribute sees the attributes
+        declared before it, exactly as in the general path.
+
+        :param readers: Pairs ``(attribute, read)`` in config order.
+        :type readers: list
+        :param ev: The event entry the attributes are read from.
+        """
+        state = self.__dict__
+        index = self.index
+        for attr, read in readers:
+            state[attr] = read(ev, index, state)
 
     def __str__(self, indentLevel=0, include=None, exclude=None, **kwargs):
         """

@@ -1,4 +1,5 @@
 from ..utils.functions import color_msg, get_callable_from_src
+from .entry_view import materialize
 from copy import deepcopy
 from functools import partial
 from collections.abc import Iterable
@@ -59,15 +60,6 @@ class Particle:
                 f"'attributes' field must specify exactly one of 'branch', 'expr', or 'src' for attribute definition : '{attr}'."
             )
 
-        # Helper function to materialize PyROOT/cppyy proxy objects into plain Python values
-        def _materialize(obj):
-            """Convert PyROOT/cppyy proxy containers into plain Python values."""
-            if isinstance(obj, (str, bytes, dict)):
-                return obj
-            if hasattr(obj, "__iter__") or hasattr(obj, "__getitem__") or hasattr(obj, "__len__"):
-                return [_materialize(x) for x in obj]
-            return obj
-
         is_two_branch_attr = False  # Flag to track if this is a two-branch attribute
 
         if branch:
@@ -85,8 +77,8 @@ class Particle:
                         f"Branch list for attribute '{attr}' must contain exactly two entries: [flat, flat_counts]."
                     )
                 val_branch, counts_branch = branch
-                flat_vals = _materialize(getattr(event, val_branch, None))
-                counts = _materialize(getattr(event, counts_branch, None))
+                flat_vals = materialize(getattr(event, val_branch, None))
+                counts = materialize(getattr(event, counts_branch, None))
                 if flat_vals is None:
                     raise ValueError(f"Branch '{val_branch}' not found in the event entry.")
                 if counts is None:
@@ -104,7 +96,7 @@ class Particle:
                 value = flat_vals[start:end]
                 is_two_branch_attr = True  # Mark as two-branch attribute
             else:
-                value = _materialize(getattr(event, branch, None))
+                value = materialize(getattr(event, branch, None))
                 if value is None:
                     raise ValueError(f"Branch '{branch}' not found in the event entry.")
                 elif hasattr(value, "__getitem__"):

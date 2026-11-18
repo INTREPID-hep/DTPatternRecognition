@@ -1,3 +1,4 @@
+from .entry_view import EntryView
 from .event import Event
 from .config import RUN_CONFIG
 
@@ -29,6 +30,7 @@ class EventList:
         :type end: int, optional
         """
         self._tree = tree
+        self._view = EntryView(tree)
         self._processor = processor
         self.CONFIG = CONFIG if CONFIG is not None else RUN_CONFIG
 
@@ -51,12 +53,11 @@ class EventList:
         """
         entry = self._begin + index
 
-        # Load the data into the tree's internal buffers
-        if self._tree.GetEntry(entry) <= 0:
-            raise RuntimeError(f"Failed to retrieve event at index {entry}")
+        # Load the entry and materialize each branch at most once
+        self._view.set_entry(entry)
 
         # Create the event (index and number are entry numbers, not list positions)
-        event = Event(self._tree, entry, use_config=True, CONFIG=self.CONFIG)
+        event = Event(self._view, entry, use_config=True, CONFIG=self.CONFIG)
 
         # Return processed or raw
         return self._processor(event) if self._processor else event

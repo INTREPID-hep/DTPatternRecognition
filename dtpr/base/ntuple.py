@@ -10,6 +10,14 @@ import glob
 import warnings
 
 
+# ROOT reads a branch basket by basket. The TTreeCache turns the scattered
+# reads of an event loop into sequential ones: it costs a fixed buffer per file
+# and pays off on a local disk, much more over xrootd. It learns the order of
+# the first entries and then prefetches.
+TREE_CACHE_BYTES = 16 * 1024 * 1024
+TREE_CACHE_LEARN_ENTRIES = 50
+
+
 class NTuple(object):
     """
     A class to handle the loading and processing of NTuple's ROOT TTrees.
@@ -64,9 +72,28 @@ class NTuple(object):
         self._load_from_config("ntuple_preprocessors")
 
         begin, end = entry_range if entry_range is not None else (0, None)
+        self._setup_tree_cache(begin, end)
         self.events = EventList(
             self.tree, self.event_processor, CONFIG=self.CONFIG, begin=begin, end=end
         )
+
+    def _setup_tree_cache(self, begin, end):
+        """
+        Ask ROOT to prefetch the baskets of the entries this NTuple will read.
+
+        :param begin: First entry that will be read.
+        :type begin: int
+        :param end: Last entry that will be read (exclusive), or None for the rest of the chain.
+        :type end: int, optional
+        """
+        try:
+            self.tree.SetCacheSize(TREE_CACHE_BYTES)
+            self.tree.SetCacheLearnEntries(TREE_CACHE_LEARN_ENTRIES)
+            if end is not None:
+                self.tree.SetCacheEntryRange(begin, end)
+        except (AttributeError, TypeError):
+            # A TChain older than the cache API: run without prefetching
+            pass
 
     def event_processor(self, ev: Event):
         """

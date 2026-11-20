@@ -1,8 +1,10 @@
 import os
 import importlib
 import warnings
+import time
 from array import array
 from functools import partial
+from itertools import islice
 from ..core.engine import run_chunks, split_entries, job_range
 from ..utils.dumper import dump_events
 import ROOT as r
@@ -16,6 +18,12 @@ from ..utils.functions import (
 )
 from more_itertools import collapse
 from typing import Any, Dict, Optional, Tuple
+
+# The progress bar refreshes about PROGRESS_UPDATES times over a run; when one
+# refresh would take longer than PROGRESS_MAX_GAP seconds the blocks shrink, so
+# a slow range never leaves the bar still.
+PROGRESS_UPDATES = 10
+PROGRESS_MAX_GAP = 5.0
 
 
 def extract_histogram_name(draw_expr: str) -> Optional[str]:
@@ -322,6 +330,11 @@ def fill_histograms_range(events: Any, histos_to_fill: Dict[str, Any], progress:
     """
     Fill the histograms over an event range, buffering the 1D values.
 
+    The progress bar is advanced a fixed number of times over the range instead
+    of once per event: a tqdm call per event is Python overhead that adds up on
+    long runs. A block that takes longer than ``PROGRESS_MAX_GAP`` seconds is
+    split, so a slow range still shows progress.
+
     :param events: The events to process
     :type events: Iterable
     :param histos_to_fill: Dictionary defining histograms to fill
@@ -332,18 +345,39 @@ def fill_histograms_range(events: Any, histos_to_fill: Dict[str, Any], progress:
     :rtype: None
     """
     buffers: Dict[str, list] = {}
-    iterable = events
-    if progress:
-        iterable = tqdm(
-            events,
-            total=len(events),
-            desc=color_msg("Executing Event Loop", color="purple", indentLevel=1, return_str=True),
-            ncols=100,
-            ascii=True,
-            unit=" event",
-        )
-    for ev in iterable:
-        fill_histograms(ev, histos_to_fill, buffers)
+
+    if not progress:
+        for ev in events:
+            fill_histograms(ev, histos_to_fill, buffers)
+        flush_histograms(buffers, histos_to_fill)
+        return
+
+    total = len(events)
+    # The bar refreshes about ten times over the range, between blocks of
+    # events, instead of paying a tqdm call for every single event
+    step = max(1, total // PROGRESS_UPDATES)
+    bar = tqdm(
+        total=total,
+        desc=color_msg("Executing Event Loop", color="purple", indentLevel=1, return_str=True),
+        ncols=100,
+        ascii=True,
+        unit=" event",
+    )
+    stream = iter(events)
+    shown = 0
+    while shown < total:
+        size = min(step, total - shown)
+        started = time.perf_counter()
+        for ev in islice(stream, size):
+            fill_histograms(ev, histos_to_fill, buffers)
+        shown += size
+        bar.update(size)
+        # A block slower than the gap is split, so the bar never sits still
+        elapsed = time.perf_counter() - started
+        if elapsed > PROGRESS_MAX_GAP:
+            step = max(1, int(size * PROGRESS_MAX_GAP / elapsed))
+    bar.close()
+
     flush_histograms(buffers, histos_to_fill)
 
 

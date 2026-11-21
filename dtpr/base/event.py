@@ -1,7 +1,7 @@
 import os
 import warnings
 from .config import RUN_CONFIG
-from .particle import Particle  # Import the base Particle class
+from .particle import Particle, attribute_reader, compile_expression
 from ..utils.functions import (
     color_msg,
     get_callable_from_src,
@@ -158,17 +158,32 @@ class Event:
         else:
             ParticleClass = Particle  # Default to the base Particle class
 
+        # Compile the attribute definitions once for the event, not for every particle
+        attributes = pinfo.get("attributes", {})
+        default_name = ptype.capitalize()[:-1]
+        readers = None
+        if ParticleClass is Particle and not any(
+            isinstance(spec, dict) and "src" in spec for spec in attributes.values()
+        ):
+            readers = [(attr, attribute_reader(attr, spec)) for attr, spec in attributes.items()]
+
         # Build the particles
         _particles = []
         for i in range(num_particles):
-            _particle = ParticleClass(
-                index=i,
-                ev=ev,
-                **pinfo.get("attributes", {}),
-            )
+            if readers is None:
+                # A custom class or a callable attribute: Particle.__init__ handles it
+                _particle = ParticleClass(
+                    index=i,
+                    ev=ev,
+                    **attributes,
+                )
+            else:
+                # The definitions were compiled once, above, for the whole collection
+                _particle = ParticleClass(index=i, ev=ev, readers=readers)
+
             if _particle.name == "Particle":
                 # If the name is not set, set it to the particle type
-                _particle.name = ptype.capitalize()[:-1]
+                _particle.name = default_name
 
             if "filter" in pinfo:  # Only keep the particles that pass the filter, if defined
                 filter_expr = pinfo["filter"]
@@ -178,14 +193,13 @@ class Event:
                         f"The 'filter' must be a string, got {type(filter_expr)} instead."
                     )
                 try:
-                    # Validate the filter expression by compiling it
-                    compile(filter_expr, "<string>", "eval")
+                    filter_code = compile_expression(filter_expr)
                 except SyntaxError as e:
                     raise ValueError(
                         f"Event {self.index} ({self.number}) - Invalid filter expression: {filter_expr}. Error: {e}"
                     )
 
-                if eval(filter_expr, {}, {"p": _particle, "ev": ev}):
+                if eval(filter_code, {}, {"p": _particle, "ev": ev}):
                     _particles.append(_particle)
             else:
                 _particles.append(_particle)
@@ -203,8 +217,7 @@ class Event:
                     f"Event {self.index} ({self.number}) - The sorter 'by' must be a string, got {type(key_expr)} instead."
                 )
             try:
-                # Validate the sorter expression by compiling it
-                compile(key_expr, "<string>", "eval")
+                key_code = compile_expression(key_expr)
             except SyntaxError as e:
                 raise ValueError(
                     f"Event {self.index} ({self.number}) - Invalid sorter expression: {key_expr}. Error: {e}"
@@ -212,7 +225,7 @@ class Event:
 
             _particles = sorted(
                 _particles,
-                key=lambda p, ev=ev: eval(key_expr),
+                key=lambda p, ev=ev, _code=key_code: eval(_code),
                 reverse=sorter_info.get("reverse", False),
             )
 

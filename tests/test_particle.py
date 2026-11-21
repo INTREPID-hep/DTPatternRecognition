@@ -57,6 +57,85 @@ def test_particle_init_from_flat_branch_pair():
 
     assert particle.matched_segments == [12, 20, 21]
 
+class FakeBranch:
+    def GetEntry(self, entry):
+        return 1
+
+
+class FakeFlatTree:
+    tps_matched_segments_flat_ids = [10, 11, 12, 20, 21, 30, 31, 32, 33]
+    tps_matched_segments_flat_counts = [2, 3, 4]
+
+    def LoadTree(self, entry):
+        return entry
+
+    def GetTreeNumber(self):
+        return 0
+
+    def GetBranch(self, name):
+        return FakeBranch() if hasattr(self, name) else None
+
+
+def test_flat_pair_uses_cumulative_offsets():
+    from dtpr.base.entry_view import EntryView
+
+    view = EntryView(FakeFlatTree())
+    view.set_entry(0)
+
+    counts_branch = "tps_matched_segments_flat_counts"
+    assert view.cumulative_offsets(counts_branch) == [0, 2, 5, 9]
+    assert view.cumulative_offsets(counts_branch) is view.cumulative_offsets(counts_branch)
+
+    expected = {0: [10, 11], 1: [12, 20, 21], 2: [30, 31, 32, 33]}
+    for index, values in expected.items():
+        particle = Particle(
+            index=index,
+            ev=view,
+            matched_segments={
+                "branch": [
+                    "tps_matched_segments_flat_ids",
+                    "tps_matched_segments_flat_counts",
+                ]
+            },
+        )
+        assert particle.matched_segments == values
+
+
+def test_materialize_keeps_plain_values():
+    from dtpr.base.entry_view import materialize
+
+    values = [10, 11, 12]
+    assert materialize(values) is values, "a plain list must not be copied again"
+    assert materialize("abc") == "abc", "a string branch must not be shredded"
+    assert materialize(None) is None
+    assert materialize(7) == 7
+
+
+def test_literal_attributes_are_not_shared():
+    p1 = Particle(index=0, matched_tps=[])
+    p2 = Particle(index=1, matched_tps=[])
+    assert p1.matched_tps is not p2.matched_tps
+    p1.matched_tps.append(1)
+    assert p2.matched_tps == []
+
+    nested = Particle(index=2, profile=[[1, 2]])
+    nested.profile[0].append(3)
+    assert Particle(index=3, profile=[[1, 2]]).profile == [[1, 2]]
+
+
+def test_expression_is_compiled_once():
+    from dtpr.base.particle import compile_expression
+
+    first = compile_expression("wh + 1")
+    assert compile_expression("wh + 1") is first, "the code object must be reused"
+    assert compile_expression("wh + 2") is not first
+
+
+def test_invalid_expression_raises_value_error():
+    with pytest.raises(ValueError):
+        Particle(index=0, wh=1, broken={"expr": "wh +"})
+
+
 def test_particle_equality_and_hash():
     p1 = Particle(index=0, wh=1, sc=2)
     p2 = Particle(index=1, wh=1, sc=2)
@@ -65,6 +144,20 @@ def test_particle_equality_and_hash():
     assert p1 != p3
     assert hash(p1) == hash(p2)
     assert hash(p1) != hash(p3)
+
+def test_particle_equality_ignores_private_attributes():
+    p1 = Particle(index=0, wh=1, sc=2)
+    p2 = Particle(index=1, wh=1, sc=2)
+    p2._needs_resolution["matched"] = ("segments", "idx")
+    assert p1 == p2
+    assert hash(p1) == hash(p2)
+
+
+def test_particle_equality_ignores_containers():
+    p1 = Particle(index=0, wh=1, matched_tps=[object()])
+    p2 = Particle(index=0, wh=1, matched_tps=[])
+    assert p1 == p2
+
 
 def test_particle_str():
     p = Particle(index=0, wh=1, sc=2)

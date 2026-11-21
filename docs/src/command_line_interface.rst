@@ -21,8 +21,9 @@ The ``dtpr`` command invokes ``dtpr/cli.py``, making it straightforward to add n
 
 The positional argument ``ANALYSIS-NAME`` specifies the analysis-tool to run. Available options include: 
 ``fill-histos``, ``dump-events``, ``plot-dts``, ``plot-dt``, ``event-visualizer``, and more. Optional arguments can be 
-explored using the ``-h/--help`` flag. Key optional arguments include: ``-i/--inpath``, ``-o/--outpath``, 
-``--maxfiles``, and ``--maxevents``. Refer to their respective sections for more details.
+explored using the ``-h/--help`` flag. Key optional arguments include: ``-i/--inputpath``, ``-o/--outputpath``,
+``--maxfiles``, and ``--maxevents``; the analysis tools that read events also accept ``--cores``,
+``--no-merge``, ``--job-id`` and ``--job-count``. Refer to their respective sections for more details.
 
 .. tip::
     The configuration file also defines parameters such as which histograms to fill or which matplotlib styles to apply.

@@ -290,6 +290,7 @@ class Particle:
             else:
                 setattr(self, key, copy_literal(value))
 
+    # [start-init-from-dict]
     def _init_from_dict(self, attr, attr_info, event=None):
         """
         Initialize the particle attributes from a dictionary containing evaluable expressions, callable method, or branch names.
@@ -313,6 +314,7 @@ class Particle:
             )
 
         is_two_branch_attr = False  # Flag to track if this is a two-branch attribute
+        # [end-init-from-dict]
 
         if branch:
             # If a branch is provided, set the attribute to the value from the event

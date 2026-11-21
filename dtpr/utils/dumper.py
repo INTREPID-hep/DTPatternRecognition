@@ -166,6 +166,150 @@ def _build_yaml_schema_from_branches(branches: dict[str, ak.Array]) -> dict:
     }
 
 
+def resolve_output_file(outpath: str, tag: str = "") -> str:
+    """
+    Path of the ROOT file to write for a dump.
+
+    :param outpath: A file path, or a folder to put the default file name in
+    :type outpath: str
+    :param tag: Tag appended to the file name
+    :type tag: str
+    :return: The path of the file to write
+    :rtype: str
+    """
+    if ".root" not in outpath:
+        outpath = os.path.join(outpath, "dtpr_events_dumped.root")
+    file_name = outpath.replace(".root", f"{tag}.root")
+    create_outfolder(os.path.dirname(os.path.abspath(file_name)))
+    return file_name
+
+
+def write_events_file(
+    events,
+    file_name: str,
+    fRNTuple: bool = False,
+    include_emptybranches: bool = False,
+) -> dict:
+    """
+    Dump a list of Event objects into one ROOT file, as a TTree or an RNTuple.
+
+    :param events: The events to dump
+    :param file_name: Path of the ROOT file to write
+    :type file_name: str
+    :param fRNTuple: Write an RNTuple instead of a TTree
+    :type fRNTuple: bool
+    :param include_emptybranches: Keep the branches that are empty in every event
+    :type include_emptybranches: bool
+    :return: The flattened columns that were written
+    :rtype: dict
+    """
+    raw_event_dicts = [ev.to_dict() for ev in events if ev is not None]
+    if not raw_event_dicts:
+        color_msg("No events to dump.", "yellow")
+        return {}
+
+    # 1. Sanitize: Clean up nested Particle instances (converts them to index integers)
+    clean_event_dicts = _sanitize_for_awkward(raw_event_dicts)
+
+    # 2. Let Awkward C++ backend handle the heavy lifting (Row -> Column pivot)
+    events_array = ak.from_iter(clean_event_dicts)
+
+    # 3. Recursively clean None values using Awkward
+    events_array = _clean_awkward_nulls(events_array)
+
+    # 4. Fast branch renaming (Flattening nested Awkward structures)
+    output_data = _flatten_awkward_to_dict(events_array, skip_empty=not include_emptybranches)
+
+    # 5. Write to ROOT
+    with uproot.recreate(file_name) as f:
+        if fRNTuple:
+            f.mkrntuple("dtprDumper/Events", output_data)
+        else:
+            f.mktree("dtprDumper/Events", output_data)
+
+    color_msg(f"Successfully saved {len(clean_event_dicts)} events to {file_name}", "green")
+    return output_data
+
+
+def remove_nbranches_from_file(file_name: str) -> None:
+    """
+    Rewrite a dumped file without the branches whose name starts with 'n'.
+
+    :param file_name: Path of the ROOT file to clean
+    :type file_name: str
+    :return: None
+    :rtype: None
+    """
+    color_msg(f"Removing branches starting with 'n' from {file_name}", "yellow")
+    with uproot.open(file_name) as in_file:
+        tree = in_file["dtprDumper/Events"]
+
+        # Find branches to keep (those NOT starting with 'n')
+        branches_to_keep = [b for b in tree.keys() if not b.startswith("n")]
+
+        # Calculate total uncompressed size in MB
+        uncompressed_bytes = sum(tree[b].uncompressed_bytes for b in branches_to_keep)
+        uncompressed_mb = uncompressed_bytes / (1024 ** 2)
+        new_file_name = file_name.replace(".root", "_clean.root")
+        with uproot.recreate(new_file_name) as f:
+            # If the total size is less than 1 GB, load all at once
+            if uncompressed_mb < 1024:
+                f["dtprDumper/Events"] = tree.arrays(branches_to_keep)
+            else:
+                is_first_chunk = True
+                for chunk in tree.iterate(branches_to_keep, step_size="200 MB"):
+                    if is_first_chunk:
+                        f["dtprDumper/Events"] = chunk
+                        is_first_chunk = False
+                    else:
+                        f["dtprDumper/Events"].extend(chunk)
+
+    os.replace(new_file_name, file_name)  # Overwrite the original file with the new one without 'n' branches
+
+
+def write_yaml_schema(
+    branch_names,
+    file_name: str,
+    tag: str = "",
+    force_overwrite_yaml: bool = False,
+) -> None:
+    """
+    Write the YAML schema that the dumped file needs to be read back by dtpr.
+
+    :param branch_names: Names of the branches of the dumped file
+    :param file_name: Path of the dumped ROOT file (the schema goes next to it)
+    :type file_name: str
+    :param tag: Tag appended to the schema file name
+    :type tag: str
+    :param force_overwrite_yaml: Overwrite an existing schema
+    :type force_overwrite_yaml: bool
+    :return: None
+    :rtype: None
+    """
+    yaml_path = os.path.join(os.path.dirname(file_name), f"dumps_events_config{tag}.yaml")
+    if os.path.exists(yaml_path) and not force_overwrite_yaml:
+        color_msg(f"YAML schema already exists at {yaml_path}, skipping dump.", "yellow")
+        return
+
+    yaml_schema = _build_yaml_schema_from_branches({name: None for name in branch_names})
+    with open(yaml_path, "w", encoding="utf-8") as yaml_file:
+        yaml.safe_dump(yaml_schema, yaml_file, sort_keys=False)
+    color_msg(f"Saved YAML schema to {yaml_path}", "green")
+
+
+def dumped_branch_names(file_name: str):
+    """
+    Names of the branches of a dumped ROOT file.
+
+    :param file_name: Path of the dumped file
+    :type file_name: str
+    :return: The branch names
+    :rtype: list of str
+    """
+    with uproot.open(file_name) as handle:
+        return list(handle["dtprDumper/Events"].keys())
+
+
 def dump_events(
     events,
     outpath: str,
@@ -181,78 +325,20 @@ def dump_events(
     """
     color_msg(f"Dumping events to {outpath}", "green")
 
-    if ".root" not in outpath:
-        create_outfolder(os.path.dirname(outpath))
-        outpath = os.path.join(outpath, f"dtpr_events_dumped.root")
-    else:
-        dir = os.path.dirname(outpath)
-        create_outfolder(dir)
-
-    # 1. Convert Event objects to raw dictionaries using your class's built-in method
-    raw_event_dicts = [ev.to_dict() for ev in events if ev is not None]
-
-    if not raw_event_dicts:
-        color_msg("No events to dump.", "yellow")
+    file_name = resolve_output_file(outpath, tag)
+    output_data = write_events_file(
+        events, file_name, fRNTuple=fRNTuple, include_emptybranches=include_emptybranches
+    )
+    if not output_data:
         return
 
-    # 2. Sanitize: Clean up nested Particle instances (converts them to index integers)
-    clean_event_dicts = _sanitize_for_awkward(raw_event_dicts)
-
-    # 3. Let Awkward C++ backend handle the heavy lifting (Row -> Column pivot)
-    events_array = ak.from_iter(clean_event_dicts)
-
-    # 3.5 Recursively clean None values using Awkward
-    events_array = _clean_awkward_nulls(events_array)
-
-    # 4. Fast branch renaming (Flattening nested Awkward structures)
-    output_data = _flatten_awkward_to_dict(events_array, skip_empty=not include_emptybranches)
-
-    # 5. Write to ROOT
-    file_name = outpath.replace(".root", f"{tag}.root")
-
-    with uproot.recreate(file_name) as f:
-        if fRNTuple:
-            f.mkrntuple("dtprDumper/Events", output_data)
-        else:
-            f.mktree("dtprDumper/Events", output_data)
-
     if remove_nbranches:
-        color_msg(f"Removing branches starting with 'n' from {file_name}", "yellow")
-        with uproot.open(file_name) as in_file:
-            tree = in_file["dtprDumper/Events"]
+        remove_nbranches_from_file(file_name)
 
-            # Find branches to keep (those NOT starting with 'n')
-            branches_to_keep = [b for b in tree.keys() if not b.startswith("n")]
-
-            # Calculate total uncompressed size in MB
-            uncompressed_bytes = sum(tree[b].uncompressed_bytes for b in branches_to_keep)
-            uncompressed_mb = uncompressed_bytes / (1024 ** 2)
-            new_file_name = file_name.replace(".root", "_clean.root")
-            with uproot.recreate(new_file_name) as f:
-                # If the total size is less than 1 GB, load all at once
-                if uncompressed_mb < 1024:
-                    f["dtprDumper/Events"] = tree.arrays(branches_to_keep)
-                else:
-                    is_first_chunk = True
-                    for chunk in tree.iterate(branches_to_keep, step_size="200 MB"):
-                        if is_first_chunk:
-                            f["dtprDumper/Events"] = chunk
-                            is_first_chunk = False
-                        else:
-                            f["dtprDumper/Events"].extend(chunk)
-
-        os.replace(new_file_name,file_name)  # Overwrite the original file with the new one without 'n' branches
-
-    color_msg(f"Successfully saved {len(clean_event_dicts)} events", "green")
-
-    # 6 Optional: Build and dump YAML schema for this output structure (only if requested)
     if dump_yaml_schema:
-        yaml_path = os.path.join(os.path.dirname(file_name), f"dumps_events_config{tag}.yaml")
-        if os.path.exists(yaml_path) and not force_overwrite_yaml:
-            color_msg(f"YAML schema already exists at {yaml_path}, skipping dump.", "yellow")
-            return
-
-        yaml_schema = _build_yaml_schema_from_branches(output_data)
-        with open(yaml_path, "w", encoding="utf-8") as yaml_file:
-            yaml.safe_dump(yaml_schema, yaml_file, sort_keys=False)
-        color_msg(f"Saved YAML schema to {yaml_path}", "green")
+        write_yaml_schema(
+            output_data.keys(),
+            file_name,
+            tag=tag,
+            force_overwrite_yaml=force_overwrite_yaml,
+        )

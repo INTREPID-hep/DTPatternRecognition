@@ -1,6 +1,11 @@
 import os
 import importlib
 import warnings
+import time
+from array import array
+from functools import partial
+from itertools import islice
+from ..core.engine import run_chunks, split_entries, job_range
 from ..utils.dumper import dump_events
 import ROOT as r
 from tqdm import tqdm
@@ -13,6 +18,12 @@ from ..utils.functions import (
 )
 from more_itertools import collapse
 from typing import Any, Dict, Optional, Tuple
+
+# The progress bar refreshes about PROGRESS_UPDATES times over a run; when one
+# refresh would take longer than PROGRESS_MAX_GAP seconds the blocks shrink, so
+# a slow range never leaves the bar still.
+PROGRESS_UPDATES = 10
+PROGRESS_MAX_GAP = 5.0
 
 
 def extract_histogram_name(draw_expr: str) -> Optional[str]:
@@ -67,7 +78,9 @@ def classify_histograms(histograms: Dict[str, Any]) -> Tuple[Dict[str, Any], Dic
     return event_histograms, draw_histograms
 
 
-def execute_draw_histograms(tree: Any, draw_histograms: Dict[str, Any], maxentries: int) -> None:
+def execute_draw_histograms(
+    tree: Any, draw_histograms: Dict[str, Any], maxentries: int, firstentry: int = 0
+) -> None:
     """
     Execute all Draw-based histograms and retrieve from ROOT gDirectory.
 
@@ -77,6 +90,9 @@ def execute_draw_histograms(tree: Any, draw_histograms: Dict[str, Any], maxentri
     :type draw_histograms: Dict[str, Any]
     :param maxentries: Number of entries to process (>0) or all entries (<=0)
     :type maxentries: int
+    :param firstentry: First entry to draw (the chunks of a parallel run each
+        draw their own range and the merge adds them)
+    :type firstentry: int
     :return: None
     :rtype: None
     """
@@ -97,7 +113,6 @@ def execute_draw_histograms(tree: Any, draw_histograms: Dict[str, Any], maxentri
         # Execute Draw respecting CLI maxevents.
         # ROOT uses kMaxEntries to process all entries.
         nentries = maxentries if maxentries > 0 else r.TTree.kMaxEntries
-        firstentry = 0
 
         try:
             draw_result = tree.Draw(draw_expr, selection, option, nentries, firstentry)
@@ -179,14 +194,37 @@ def _execute_histo_function(func: Any, event: Any, histo_key: str) -> Optional[A
         return None
 
 
-def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
+def distribution_values(val: Any) -> list:
+    """
+    Values a 1D distribution histogram receives for one event.
+
+    :param val: Result of the histogram function
+    :type val: Any
+    :return: The values to fill
+    :rtype: list
+    """
+    if isinstance(val, (list, tuple)):
+        return list(collapse(val))
+    return [val] if val else []
+
+
+def fill_histograms(
+    ev: Any, histos_to_fill: Dict[str, Any], buffers: Optional[Dict[str, list]] = None
+) -> None:
     """
     Fill predefined histograms with event data.
+
+    When ``buffers`` is given, 1D values are appended to it instead of being
+    filled one by one; ``flush_histograms`` then fills them with ``FillN``. This
+    is worth it: ROOT digests ~25 values per ``Fill`` call but a ``FillN`` call
+    takes an array, and a production run fills millions of values.
 
     :param ev: The event object containing data (instance of dtpr.base.Event)
     :type ev: Any
     :param histos_to_fill: Dictionary defining histograms to fill
     :type histos_to_fill: Dict[str, Any]
+    :param buffers: Optional per-histogram value buffers
+    :type buffers: Dict[str, list], optional
     :return: None
     :rtype: None
     """
@@ -210,24 +248,27 @@ def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
         # Handle different histogram types
         # Distribution histograms (1D)
         if hType == "distribution":
+            values = distribution_values(val)
+            if buffers is not None:
+                buffers.setdefault(histo_key, []).extend(values)
+                continue
             h = histoinfo["histo"]
-            if isinstance(val, (list, tuple)):
-                # Handle multi-value results
-                for ival in collapse(val):
-                    h.Fill(ival)
-            elif val:
-                h.Fill(val)
+            for ival in values:
+                h.Fill(ival)
 
         # Efficiency histograms
         elif hType == "eff":
-            num = histoinfo["histoNum"]
-            den = histoinfo["histoDen"]
-
             # Get which values pass the criteria
             numPasses = _execute_histo_function(histoinfo["numdef"], ev, histo_key)
             if numPasses is None:
                 continue
 
+            if buffers is not None:
+                buffers.setdefault(histo_key, []).extend(zip(val, numPasses))
+                continue
+
+            num = histoinfo["histoNum"]
+            den = histoinfo["histoDen"]
             # Fill denominator for all values, numerator only for passing values
             for v, passes in zip(val, numPasses):
                 den.Fill(v)
@@ -245,21 +286,114 @@ def fill_histograms(ev: Any, histos_to_fill: Dict[str, Any]) -> None:
                 h.Fill(*val)
 
 
-def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) -> None:
+def fill_n(histogram: Any, values: list) -> None:
     """
-    Store histograms in a ROOT file.
+    Fill a 1D histogram with one array, in a single ROOT call.
 
-    :param outfolder: The output folder path
-    :type outfolder: str
-    :param tag: Tag to append to the filename
-    :type tag: str
+    :param histogram: The histogram to fill
+    :type histogram: Any
+    :param values: The values to fill
+    :type values: list
+    :return: None
+    :rtype: None
+    """
+    if not values:
+        return
+    weights = array("d", [1.0]) * len(values)
+    histogram.FillN(len(values), array("d", values), weights, 1)
+
+
+def flush_histograms(buffers: Dict[str, list], histos_to_fill: Dict[str, Any]) -> None:
+    """
+    Fill every buffered histogram with ``FillN`` and empty the buffers.
+
+    :param buffers: Per-histogram value buffers filled by fill_histograms
+    :type buffers: Dict[str, list]
+    :param histos_to_fill: Dictionary defining histograms to fill
+    :type histos_to_fill: Dict[str, Any]
+    :return: None
+    :rtype: None
+    """
+    for histo_key, values in buffers.items():
+        if not values:
+            continue
+        histoinfo = histos_to_fill[histo_key]
+        if histoinfo.get("type") == "eff":
+            fill_n(histoinfo["histoDen"], [value for value, _ in values])
+            fill_n(histoinfo["histoNum"], [value for value, passes in values if passes])
+        else:
+            fill_n(histoinfo["histo"], values)
+        values.clear()
+
+
+def fill_histograms_range(events: Any, histos_to_fill: Dict[str, Any], progress: bool = False) -> None:
+    """
+    Fill the histograms over an event range, buffering the 1D values.
+
+    The progress bar is advanced a fixed number of times over the range instead
+    of once per event: a tqdm call per event is Python overhead that adds up on
+    long runs. A block that takes longer than ``PROGRESS_MAX_GAP`` seconds is
+    split, so a slow range still shows progress.
+
+    :param events: The events to process
+    :type events: Iterable
+    :param histos_to_fill: Dictionary defining histograms to fill
+    :type histos_to_fill: Dict[str, Any]
+    :param progress: Show a progress bar (only for a serial run)
+    :type progress: bool
+    :return: None
+    :rtype: None
+    """
+    buffers: Dict[str, list] = {}
+
+    if not progress:
+        for ev in events:
+            fill_histograms(ev, histos_to_fill, buffers)
+        flush_histograms(buffers, histos_to_fill)
+        return
+
+    total = len(events)
+    # The bar refreshes about ten times over the range, between blocks of
+    # events, instead of paying a tqdm call for every single event
+    step = max(1, total // PROGRESS_UPDATES)
+    bar = tqdm(
+        total=total,
+        desc=color_msg("Executing Event Loop", color="purple", indentLevel=1, return_str=True),
+        ncols=100,
+        ascii=True,
+        unit=" event",
+    )
+    stream = iter(events)
+    shown = 0
+    while shown < total:
+        size = min(step, total - shown)
+        started = time.perf_counter()
+        for ev in islice(stream, size):
+            fill_histograms(ev, histos_to_fill, buffers)
+        shown += size
+        bar.update(size)
+        # A block slower than the gap is split, so the bar never sits still
+        elapsed = time.perf_counter() - started
+        if elapsed > PROGRESS_MAX_GAP:
+            step = max(1, int(size * PROGRESS_MAX_GAP / elapsed))
+    bar.close()
+
+    flush_histograms(buffers, histos_to_fill)
+
+
+def write_histograms_file(outpath: str, histos_to_save: Dict[str, Any]) -> None:
+    """
+    Store histograms in one ROOT file.
+
+    :param outpath: Path of the ROOT file to write
+    :type outpath: str
     :param histos_to_save: Dictionary of histograms to save
     :type histos_to_save: Dict[str, Any]
     :return: None
     :rtype: None
     """
-    outname = os.path.join(outfolder, f"histograms{tag}.root")
-    with r.TFile.Open(os.path.abspath(outname), "RECREATE") as f:
+    create_outfolder(os.path.dirname(os.path.abspath(outpath)))
+    with r.TFile.Open(os.path.abspath(outpath), "RECREATE") as f:
         for histo_key, histoinfo in histos_to_save.items():
             hType = histoinfo.get("type", "")
 
@@ -292,6 +426,60 @@ def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) ->
                     )
 
 
+def save_histograms(outfolder: str, tag: str, histos_to_save: Dict[str, Any]) -> None:
+    """
+    Store histograms in a ROOT file named after the tag.
+
+    :param outfolder: The output folder path
+    :type outfolder: str
+    :param tag: Tag to append to the filename
+    :type tag: str
+    :param histos_to_save: Dictionary of histograms to save
+    :type histos_to_save: Dict[str, Any]
+    :return: None
+    :rtype: None
+    """
+    write_histograms_file(os.path.join(outfolder, f"histograms{tag}.root"), histos_to_save)
+
+
+def write_histograms_chunk(
+    chunk: Tuple[int, int],
+    outpath: str,
+    inpath: str,
+    maxfiles: int = -1,
+    progress: bool = False,
+) -> None:
+    """
+    Fill the histograms of one entry range and write them to one ROOT file.
+
+    The draw-based histograms are drawn over the same range, so the merge of
+    the chunk files adds up to the histogram of the full range.
+
+    :param chunk: Pair ``(begin, end)`` of entries to process
+    :type chunk: Tuple[int, int]
+    :param outpath: Path of the ROOT file to write for this chunk
+    :type outpath: str
+    :param inpath: Path to the input folder containing NTuples
+    :type inpath: str
+    :param maxfiles: Maximum number of files to process
+    :type maxfiles: int
+    :param progress: Show the event progress bar (only for a serial run)
+    :type progress: bool
+    :return: None
+    :rtype: None
+    """
+    begin, end = chunk
+    ntuple = NTuple(inputFolder=inpath, maxfiles=maxfiles, entry_range=(begin, end))
+
+    event_histograms, draw_histograms = set_histograms_dict()
+    if draw_histograms:
+        execute_draw_histograms(ntuple.tree, draw_histograms, end - begin, firstentry=begin)
+    if event_histograms:
+        fill_histograms_range(ntuple.events, event_histograms, progress=progress)
+
+    write_histograms_file(outpath, {**event_histograms, **draw_histograms})
+
+
 def fill_histos(
     inpath: str,
     outfolder: str,
@@ -300,9 +488,18 @@ def fill_histos(
     maxevents: int,
     also_dump: bool = False,
     remove_nbranches: bool = False,
+    ncores: int = -1,
+    merge: bool = True,
+    job_id: int = 0,
+    job_count: int = 1,
 ) -> None:
     """
     Fill histograms based on NTuples information.
+
+    The entries are split into one chunk per core; each chunk fills its own
+    histograms (draw-based ones over its own range) and writes a ROOT file, and
+    the files are merged with ROOT. With ``merge=False`` the chunk files are
+    kept for a manual ``hadd``.
 
     :param inpath: Path to the input folder containing NTuples
     :type inpath: str
@@ -314,6 +511,14 @@ def fill_histos(
     :type maxfiles: int
     :param maxevents: Maximum number of events to process (0 = all)
     :type maxevents: int
+    :param ncores: Number of worker processes; <= 1 runs serially, 0 uses every core
+    :type ncores: int
+    :param merge: Merge the chunk files into the final histogram file
+    :type merge: bool
+    :param job_id: Index of this job when the run is split across machines
+    :type job_id: int
+    :param job_count: Number of jobs the entries are split across
+    :type job_count: int
     :return: None
     :rtype: None
     """
@@ -321,7 +526,7 @@ def fill_histos(
 
     # Create the Ntuple object and set maxevents
     ntuple = NTuple(inputFolder=inpath, maxfiles=maxfiles)
-    _maxevents = min(maxevents if maxevents > 0 else len(ntuple.events), len(ntuple.events)) - 1
+    total = min(maxevents if maxevents > 0 else len(ntuple.events), len(ntuple.events))
 
     # Set up histograms to fill from configured sources
     event_histograms, draw_histograms = set_histograms_dict()
@@ -355,45 +560,40 @@ def fill_histos(
     else:
         color_msg("None", color="yellow", indentLevel=3)
 
-    # Execute draw-based histograms before event loop
-    if draw_histograms:
-        color_msg("Executing Draw-based histograms...", color="cyan", indentLevel=1)
-        execute_draw_histograms(ntuple.tree, draw_histograms, _maxevents+1)
+    # Split the entries: one slice per job, one chunk per core inside the job
+    job_begin, job_end = job_range(total, job_id, job_count)
+    ncores = os.cpu_count() if ncores == 0 else ncores
+    chunks = [
+        (job_begin + begin, job_begin + end)
+        for begin, end in split_entries(job_end - job_begin, max(1, ncores))
+    ]
+    suffix = f"_p{job_id}" if job_count > 1 else ""
+    outpath = os.path.join(outfolder, "histograms", f"histograms{tag}{suffix}.root")
 
-    # Process events with progress bar\
-    if event_histograms:
-        with tqdm(
-            total=_maxevents + 1,
-            desc=color_msg("Executing Event Loop", color="purple", indentLevel=1, return_str=True),
-            ncols=100,
-            ascii=True,
-            unit=" event",
-        ) as pbar:
+    if ncores > 1:
+        color_msg(
+            f"Filling {len(chunks)} chunks on {min(ncores, len(chunks))} cores...",
+            color="cyan",
+            indentLevel=1,
+        )
 
-            # Sequential processing
-            each_print = (_maxevents + 1) // 10 if (_maxevents + 1) > 10 else 1
-            for i, ev in enumerate(ntuple.events):
-                if i > _maxevents:
-                    pbar.update(_maxevents + 1 - pbar.n)
-                    break
-                if i > 0 and i % each_print == 0:
-                    pbar.update(each_print)
-                fill_histograms(ev, event_histograms)
+    writer = partial(
+        write_histograms_chunk,
+        inpath=inpath,
+        maxfiles=maxfiles,
+        progress=ncores <= 1,
+    )
+    run_chunks(writer, chunks, ncores, outpath, merge=merge, desc="histograms")
 
-    # Save histograms to output directory
-    color_msg("Saving histograms...", color="purple", indentLevel=1)
-    outpath = os.path.join(outfolder, "histograms")
-    create_outfolder(outpath)
-
-    all_histograms = {**event_histograms, **draw_histograms}
-    save_histograms(outpath, tag, all_histograms)
+    color_msg("Histograms saved in:", color="purple", indentLevel=1)
+    color_msg(outpath, color="yellow", indentLevel=2)
 
     if also_dump:
         color_msg("Also dumping events...", color="purple", indentLevel=1)
         dump_events(
-            ntuple.events[:_maxevents + 1] if _maxevents >= 0 else ntuple.events,
+            ntuple.events[job_begin:job_end],
             outpath=os.path.join(outfolder, "roots"),
-            tag=tag,
+            tag=tag + suffix,
             fRNTuple=False,
             dump_yaml_schema=True,
             force_overwrite_yaml=False,

@@ -3,10 +3,12 @@
 from functools import partial
 import os
 import math
-import matplotlib.pyplot as plt
 from copy import deepcopy
 from importlib import import_module
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Tuple
+
+if TYPE_CHECKING:  # Only needed for the type hint of save_mpl_canvas
+    import matplotlib.pyplot as plt
 
 
 def color_msg(
@@ -209,7 +211,7 @@ def create_outfolder(outname: str) -> None:
         os.system("mkdir -p %s" % outname)
 
 
-def save_mpl_canvas(fig: plt.Figure, name: str, path: str = "./results", dpi: int = 500) -> None:
+def save_mpl_canvas(fig: "plt.Figure", name: str, path: str = "./results", dpi: int = 500) -> None:
     """
     Save the given matplotlib figure to the specified path in SVG format.
 

@@ -10,6 +10,8 @@
 import os
 import importlib
 import warnings
+import time
+from itertools import islice
 from dtpr.base import Event, NTuple
 from dtpr.base.config import RUN_CONFIG
 from dtpr.utils.functions import color_msg, create_outfolder
@@ -51,17 +53,34 @@ def {name}(
         maxfiles=maxfiles,
     )
 
-    for ev in tqdm(
-        ntuple.events,
-        total=len(ntuple.events),
+    # The bar refreshes about ten times over the run, between blocks of events,
+    # instead of paying a tqdm call for every single event. A block that takes
+    # longer than max_gap seconds is split, so the bar never sits still.
+    max_gap = 5.0
+    total = len(ntuple.events)
+    step = max(1, total // 10)
+    pbar = tqdm(
+        total=total,
         desc=color_msg(f"Running:", color="purple", indentLevel=1, return_str=True),
         ncols=100,
         ascii=True,
         unit="event"
-    ):
-        if not ev: continue
+    )
+    stream = iter(ntuple.events)
+    shown = 0
+    while shown < total:
+        size = min(step, total - shown)
+        started = time.perf_counter()
+        for ev in islice(stream, size):
+            if not ev: continue
 
-        _process_event(ev)
+            _process_event(ev)
+        shown += size
+        pbar.update(size)
+        elapsed = time.perf_counter() - started
+        if elapsed > max_gap:
+            step = max(1, int(size * max_gap / elapsed))
+    pbar.close()
 
     # save things as needed...
     # color_msg(f"Saving results...", color="purple", indentLevel=1)

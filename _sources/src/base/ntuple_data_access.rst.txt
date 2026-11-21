@@ -170,6 +170,26 @@ The following example shows how to use the ``NTuple`` class to read DT Ntuples a
     This design prevents loading all events into memory simultaneously. Instead, it allows iteration and access by index and slice,
     while internally iterating over the root tree entries to create the required event on the fly.
 
+Reading a range of entries
+--------------------------
+
+``NTuple`` can be restricted to one contiguous window of the chain. This is how a single file is
+processed in pieces, for example by several jobs or by several worker processes:
+
+.. code-block:: python
+
+    from dtpr.base import NTuple
+
+    ntuple = NTuple("path/to/ntuples", entry_range=(begin, end))
+
+    len(ntuple.events)      # end - begin
+    ntuple.events[0].index  # entry number in the tree, not the position in the list
+
+``begin`` is inclusive, ``end`` is exclusive and ``end=None`` means "up to the last entry". The
+window is clamped to the entries of the chain. ``Event.index`` and ``Event.number`` keep the entry's
+own values, so an event built from a window is identical to the same event built from the full chain.
+``EventList`` accepts the window directly as ``EventList(tree, begin=..., end=...)``.
+
 .. _event_list:
 
 EventList

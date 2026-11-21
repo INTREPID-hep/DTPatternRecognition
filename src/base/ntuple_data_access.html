@@ -10,7 +10,7 @@
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -20,8 +20,7 @@
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../_static/copybutton.js?v=f281be69"></script>
-      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
-      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
       <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
 
@@ -30,173 +29,11 @@
 
 const initStyles = () => {
     const defaultStyle = document.createElement('style');
-    defaultStyle.textContent = `pre.mermaid {
-    /* Same as .mermaid-container > pre */
-    display: block;
-    width: 100%;
-}
-
-pre.mermaid > svg {
-    /* Same as .mermaid-container > pre > svg */
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}`;
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
     document.head.appendChild(defaultStyle);
 
     const fullscreenStyle = document.createElement('style');
-    fullscreenStyle.textContent = `.mermaid-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.mermaid-container > pre {
-    display: block;
-    width: 100%;
-}
-
-.mermaid-container > pre > svg {
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}
-
-.mermaid-fullscreen-btn {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    color: #333;
-}
-
-.mermaid-fullscreen-btn:hover {
-    opacity: 100% !important;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-btn.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-btn.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 95vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    padding: 20px;
-    overflow: auto;
-}
-
-.mermaid-fullscreen-modal.dark-theme {
-    background: rgba(0, 0, 0, 0.98);
-}
-
-.mermaid-fullscreen-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen {
-    position: relative;
-    width: 95vw;
-    height: 90vh;
-    max-width: 95vw;
-    max-height: 90vh;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen.dark-theme {
-    background: #1a1a1a;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-}
-
-.mermaid-container-fullscreen pre.mermaid {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen .mermaid svg {
-    height: 100% !important;
-    width: 100% !important;
-    cursor: grab;
-}
-
-.mermaid-fullscreen-close {
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s;
-    font-size: 24px;
-    line-height: 1;
-    color: #333;
-}
-
-.mermaid-fullscreen-close:hover {
-    background: white;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-close.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-close.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
-    display: none !important;
-}`;
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
     document.head.appendChild(fullscreenStyle);
 }
 
@@ -241,6 +78,32 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -248,7 +111,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -265,42 +136,100 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
-    if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
         if(mermaids_to_add_zoom > 0) {
-            var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
     }
 
     // Stop here if not adding fullscreen capability
-    if ("True" !== "True") return;
+    if (!true) return;
 
     if (modal !== null ) {
         // Destroy existing modal
@@ -323,7 +252,7 @@ const runMermaid = async (rerun) => {
     modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
 
-    const closeModal = () => {
+    closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
         document.body.style.overflow = ''
@@ -334,12 +263,6 @@ const runMermaid = async (rerun) => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
@@ -359,8 +282,8 @@ const runMermaid = async (rerun) => {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.style.opacity = '50%';
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -372,7 +295,7 @@ const runMermaid = async (rerun) => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
-            previousScrollOffset = [window.scroll, window.scrollY];
+            previousScrollOffset = [window.scrollX, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -384,9 +307,9 @@ const runMermaid = async (rerun) => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.sdisplay = 'block';
+                svg.style.display = 'block';
 
-                if ("False" === "True") {
+                if (false) {
                     setTimeout(() => {
                         const g = svg.querySelector('g');
                         if (g) {
@@ -409,8 +332,11 @@ const runMermaid = async (rerun) => {
     });
 };
 
+
+
 const load = async () => {
     initStyles();
+
 
     await runMermaid(true);
 
@@ -420,10 +346,8 @@ const load = async () => {
             darkTheme = newDarkTheme;
             console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
             await mermaid.initialize(
-                {...JSON.parse(
-                    `{"startOnLoad": false}`
-                ),
-                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
                 }
             );
             await runMermaid(true);
@@ -448,10 +372,8 @@ const load = async () => {
 
 console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
 mermaid.initialize(
-    {...JSON.parse(
-        `{"startOnLoad": false}`
-    ),
-    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
     }
 );
 
@@ -492,6 +414,7 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">NTuple Data Access</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#example-preprocessor-and-selector-functions">Example: Preprocessor and Selector Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#how-data-is-accessed">How Data is Accessed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reading-a-range-of-entries">Reading a range of entries</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#eventlist">EventList</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#dtpr.base.EventList"><code class="docutils literal notranslate"><span class="pre">EventList</span></code></a></li>
 </ul>
@@ -502,6 +425,7 @@ window.runMermaid = runMermaid;</script>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../performance.html">Performance</a></li>
 </ul>
 
         </div>
@@ -544,17 +468,17 @@ window.runMermaid = runMermaid;</script>
 </ul>
 <p>Both preprocessors and selectors maps should contain a <code class="docutils literal notranslate"><span class="pre">src</span></code> key specifying the path to the function, and optionally a <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> map for additional parameters.</p>
 <p class="rubric">Example configuration</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ntuple_tree_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;/dtNtupleProducer/DTTREE&#39;</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ntuple_tree_name</span><span class="p">:</span><span class="w"> </span><span class="s">'/dtNtupleProducer/DTTREE'</span>
 
 <span class="nt">ntuple_preprocessors</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">test-preprocessor</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;dtpr.utils.preprocessors.test_preprocessor&#39;</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">'dtpr.utils.preprocessors.test_preprocessor'</span>
 <span class="w">    </span><span class="nt">kwargs</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">dummy_val</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-999</span>
 
 <span class="nt">ntuple_selectors</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">test-selector</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;dtpr.utils.selectors.test_selector&#39;</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">'dtpr.utils.selectors.test_selector'</span>
 </pre></div>
 </div>
 <section id="example-preprocessor-and-selector-functions">
@@ -562,7 +486,7 @@ window.runMermaid = runMermaid;</script>
 <p>A preprocessor can be used to compute new event-level quantities before selection or analysis. For example, to compute the deltaR between the two generator muons and store it as an attribute in the event:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">..base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">deltaR</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">List</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">test_preprocessor</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span> <span class="n">dummy_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">999</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -571,6 +495,67 @@ window.runMermaid = runMermaid;</script>
         <span class="n">event</span><span class="o">.</span><span class="n">dR</span> <span class="o">=</span> <span class="n">deltaR</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="n">event</span><span class="o">.</span><span class="n">dR</span> <span class="o">=</span> <span class="n">dummy_val</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_collection_by_composite_key</span><span class="p">(</span>
+    <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">,</span>
+    <span class="n">source_collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">target_collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">source_key_attrs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">target_key_attrs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">resultColName</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Resolve a flattened collection using a composite key.</span>
+
+<span class="sd">    This is useful when a single identifier is not enough to uniquely match</span>
+<span class="sd">    objects, for example when digis share the same wire but differ by layer.</span>
+
+<span class="sd">    :param source_collection: Name of the source collection to resolve.</span>
+<span class="sd">    :type source_collection: str</span>
+<span class="sd">    :param target_collection: Name of the target collection to resolve against.</span>
+<span class="sd">    :type target_collection: str</span>
+<span class="sd">    :param source_key_attrs: Attribute names on the source object that define the key.</span>
+<span class="sd">    :type source_key_attrs: Sequence[str]</span>
+<span class="sd">    :param target_key_attrs: Attribute names on the target objects. If omitted, the</span>
+<span class="sd">        source attribute names are reused.</span>
+<span class="sd">    :type target_key_attrs: Optional[Sequence[str]]</span>
+<span class="sd">    :return: List of matched target objects, preserving source order.</span>
+<span class="sd">    :rtype: List[Any]</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">target_key_attrs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">target_key_attrs</span> <span class="o">=</span> <span class="n">source_key_attrs</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_key_attrs</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_key_attrs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"source_key_attrs and target_key_attrs must have the same length"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_as_list</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">p_source</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">source_collection</span><span class="p">):</span>
+
+        <span class="n">source_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">_as_list</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">p_source</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">source_key_attrs</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">source_values</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="ow">not</span> <span class="n">values</span> <span class="k">for</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">source_values</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">lookup</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">target_collection</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">target_key_attrs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="kc">None</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">lookup</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
+        <span class="n">resolved</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">source_values</span><span class="p">):</span>
+            <span class="n">resolved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lookup</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">key</span><span class="p">)))</span>
+
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">p_source</span><span class="p">,</span> <span class="n">resultColName</span><span class="p">,</span> <span class="n">resolved</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>A selector can be used to filter events, for example, to keep only those with at least two generator muons:</p>
@@ -578,7 +563,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">test_selector</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="n">genMuons</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s2">&quot;genmuons&quot;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">genMuons</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s2">"genmuons"</span><span class="p">,</span> <span class="p">[])</span>
     <span class="n">AtLeastTwoMuons</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">genMuons</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
 
     <span class="k">return</span> <span class="n">AtLeastTwoMuons</span>
@@ -626,7 +611,7 @@ This design ensures that only the requested events are loaded and processed, min
 <p>The following example shows how to use the <code class="docutils literal notranslate"><span class="pre">NTuple</span></code> class to read DT Ntuples and access events:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RUN_CONFIG</span>
 
-<span class="c1"># update the configuration file -&gt; if it is not set, it will use the default one &#39;run_config.yaml&#39;</span>
+<span class="c1"># update the configuration file -&gt; if it is not set, it will use the default one 'run_config.yaml'</span>
 <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config_file</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="n">cf_path</span><span class="p">)</span>
 
 <span class="c1"># input_file could be the path to the DT Ntuple, or to a folder with several files</span>
@@ -645,7 +630,7 @@ This design ensures that only the requested events are loaded and processed, min
 
 <span class="c1"># or simply, you can still use the TTree (It is a ROOT.TChain)</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ntuple</span><span class="o">.</span><span class="n">tree</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event orbit number: </span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">event_orbitNumber</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Event orbit number: </span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">event_orbitNumber</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">break</span>
 </pre></div>
 </div>
@@ -718,6 +703,23 @@ This design prevents loading all events into memory simultaneously. Instead, it 
 while internally iterating over the root tree entries to create the required event on the fly.</p>
 </div>
 </section>
+<section id="reading-a-range-of-entries">
+<h2>Reading a range of entries<a class="headerlink" href="#reading-a-range-of-entries" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">NTuple</span></code> can be restricted to one contiguous window of the chain. This is how a single file is
+processed in pieces, for example by several jobs or by several worker processes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">NTuple</span>
+
+<span class="n">ntuple</span> <span class="o">=</span> <span class="n">NTuple</span><span class="p">(</span><span class="s2">"path/to/ntuples"</span><span class="p">,</span> <span class="n">entry_range</span><span class="o">=</span><span class="p">(</span><span class="n">begin</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span>
+
+<span class="nb">len</span><span class="p">(</span><span class="n">ntuple</span><span class="o">.</span><span class="n">events</span><span class="p">)</span>      <span class="c1"># end - begin</span>
+<span class="n">ntuple</span><span class="o">.</span><span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>  <span class="c1"># entry number in the tree, not the position in the list</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">begin</span></code> is inclusive, <code class="docutils literal notranslate"><span class="pre">end</span></code> is exclusive and <code class="docutils literal notranslate"><span class="pre">end=None</span></code> means “up to the last entry”. The
+window is clamped to the entries of the chain. <code class="docutils literal notranslate"><span class="pre">Event.index</span></code> and <code class="docutils literal notranslate"><span class="pre">Event.number</span></code> keep the entry’s
+own values, so an event built from a window is identical to the same event built from the full chain.
+<code class="docutils literal notranslate"><span class="pre">EventList</span></code> accepts the window directly as <code class="docutils literal notranslate"><span class="pre">EventList(tree,</span> <span class="pre">begin=...,</span> <span class="pre">end=...)</span></code>.</p>
+</section>
 <section id="eventlist">
 <span id="event-list"></span><h2>EventList<a class="headerlink" href="#eventlist" title="Link to this heading"></a></h2>
 <p>Since a ROOT TTree can contain many events (entries), it is useful to have a class that manages a
@@ -735,8 +737,13 @@ are required. The preprocessing function is applied to each generated <code clas
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="dtpr.base.EventList">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dtpr.base.</span></span><span class="sig-name descname"><span class="pre">EventList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CONFIG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event_list.html#EventList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.EventList" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dtpr.base.</span></span><span class="sig-name descname"><span class="pre">EventList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CONFIG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event_list.html#EventList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.EventList" title="Link to this definition"></a></dt>
 <dd><p>A class to manage events such as a list, but without loading all events in memory.</p>
+<p>The list can be restricted to a contiguous entry range of the tree
+(<code class="docutils literal notranslate"><span class="pre">begin</span></code> inclusive, <code class="docutils literal notranslate"><span class="pre">end</span></code> exclusive), which is how the parallel
+commands split one file into chunks. Indices given to this object are
+relative to the range, while <code class="docutils literal notranslate"><span class="pre">Event.index</span></code> keeps the entry number in the
+tree, so slicing a range yields exactly the same events as the full list.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dtpr.base.EventList.get_by_number">
 <span class="sig-name descname"><span class="pre">get_by_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/event_list.html#EventList.get_by_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.EventList.get_by_number" title="Link to this definition"></a></dt>
@@ -752,7 +759,7 @@ are required. The preprocessing function is applied to each generated <code clas
 <dd class="field-odd"><p><a class="reference internal" href="event_abstraction.html#dtpr.base.Event" title="dtpr.base.Event">Event</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p>ValueError: If no event with the specified number is found.</p>
+<dd class="field-even"><p>ValueError: If no event with the specified number is found in this list.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -10,7 +10,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
@@ -20,7 +20,7 @@
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../_static/copybutton.js?v=f281be69"></script>
-      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -59,6 +59,7 @@
 <li class="toctree-l2"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
 </ul>
 
         </div>
@@ -102,7 +103,7 @@ under the <code class="docutils literal notranslate"><span class="pre">inspector
 the source (Python import path) and optional keyword arguments:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">inspector-functions</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">func1</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.inspector_functions.digi_inspector&quot;</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">"dtpr.utils.inspector_functions.digi_inspector"</span>
 <span class="w">    </span><span class="nt">kwargs</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">arg1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value1</span>
 <span class="w">  </span><span class="c1"># Add more inspector functions as needed</span>
@@ -134,7 +135,7 @@ are specified, the tool will print a summary of the event by default.</p>
 <p>Inspector functions receive the event as their first argument and can accept additional keyword arguments as specified in the configuration. For example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># File: dtpr/utils/inspector_functions.py</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">digi_inspector</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">arg1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tqdm_pbar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">: Number of digis = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;digis&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Event </span><span class="si">{</span><span class="n">event</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">: Number of digis = </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'digis'</span><span class="p">,</span><span class="w"> </span><span class="p">[]))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="c1"># Additional inspection logic here</span>
 </pre></div>
 </div>

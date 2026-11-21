@@ -10,7 +10,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
@@ -20,7 +20,7 @@
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../_static/copybutton.js?v=f281be69"></script>
-      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
       <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -60,6 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
 </ul>
 
         </div>
@@ -120,6 +121,21 @@ dtpr<span class="w"> </span>dump-events<span class="w"> </span>-i<span class="w"
 <li><p><code class="docutils literal notranslate"><span class="pre">--no-yaml</span></code>: skip YAML schema generation.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--force-overwrite-yaml</span></code>: overwrite existing YAML schema files instead of skipping them.</p></li>
 </ul>
+<p class="rubric">Parallel Runs and Job Splitting</p>
+<p><code class="docutils literal notranslate"><span class="pre">dump-events</span></code> splits the entries the same way <code class="docutils literal notranslate"><span class="pre">fill-histos</span></code> does. <code class="docutils literal notranslate"><span class="pre">--cores</span> <span class="pre">N</span></code> processes <code class="docutils literal notranslate"><span class="pre">N</span></code>
+chunks at the same time; every chunk dumps its own ROOT file and the files are merged with ROOT at
+the end, so a chunked dump holds exactly the same events as a serial one.</p>
+<p><code class="docutils literal notranslate"><span class="pre">--no-merge</span></code> keeps the per-chunk files and prints the <code class="docutils literal notranslate"><span class="pre">hadd</span></code> command that reassembles them. The
+YAML schema and the branch cleanup (<code class="docutils literal notranslate"><span class="pre">--remove-nbranches</span></code>) describe the merged file, so they are
+written only for a merged run.</p>
+<p>To split one run across machines, <code class="docutils literal notranslate"><span class="pre">--job-id</span></code> and <code class="docutils literal notranslate"><span class="pre">--job-count</span></code> give each job its own slice of the
+entries. A job writes <code class="docutils literal notranslate"><span class="pre">dtpr_events_dumped_p[JOB_ID].root</span></code>, and the job files are merged once all
+jobs have finished:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dtpr<span class="w"> </span>dump-events<span class="w"> </span>-i<span class="w"> </span>./input_ntuple.root<span class="w"> </span>-o<span class="w"> </span>./results<span class="w"> </span>--job-id<span class="w"> </span><span class="m">0</span><span class="w"> </span>--job-count<span class="w"> </span><span class="m">4</span>
+<span class="c1"># ... one run per job, then:</span>
+hadd<span class="w"> </span>-f<span class="w"> </span>results/dtpr_events_dumped.root<span class="w"> </span>results/dtpr_events_dumped_p*.root
+</pre></div>
+</div>
 <p class="rubric">Output Files</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">-o/--outputpath</span></code> points to a directory, the command creates:</p>
 <ul class="simple">
@@ -150,14 +166,14 @@ uses a deterministic flattening convention so relationships can be reconstructed
 <span class="w">  </span><span class="nt">tps</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">attributes</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">matched_segments</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;segments&quot;</span>
-<span class="w">        </span><span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;idx&quot;</span>
+<span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">"segments"</span>
+<span class="w">        </span><span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s">"idx"</span>
 <span class="w">        </span><span class="nt">branch</span><span class="p">:</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_segments_flat</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_segments_counts</span>
 <span class="w">      </span><span class="nt">matched_genmuons</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;genmuons&quot;</span>
-<span class="w">        </span><span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;idx&quot;</span>
+<span class="w">        </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="s">"genmuons"</span>
+<span class="w">        </span><span class="nt">identifier</span><span class="p">:</span><span class="w"> </span><span class="s">"idx"</span>
 <span class="w">        </span><span class="nt">branch</span><span class="p">:</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_genmuons_flat</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tps_matched_genmuons_counts</span>

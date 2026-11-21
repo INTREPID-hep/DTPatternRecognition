@@ -37,6 +37,26 @@ Common examples:
 - ``--no-yaml``: skip YAML schema generation.
 - ``--force-overwrite-yaml``: overwrite existing YAML schema files instead of skipping them.
 
+.. rubric:: Parallel Runs and Job Splitting
+
+``dump-events`` splits the entries the same way ``fill-histos`` does. ``--cores N`` processes ``N``
+chunks at the same time; every chunk dumps its own ROOT file and the files are merged with ROOT at
+the end, so a chunked dump holds exactly the same events as a serial one.
+
+``--no-merge`` keeps the per-chunk files and prints the ``hadd`` command that reassembles them. The
+YAML schema and the branch cleanup (``--remove-nbranches``) describe the merged file, so they are
+written only for a merged run.
+
+To split one run across machines, ``--job-id`` and ``--job-count`` give each job its own slice of the
+entries. A job writes ``dtpr_events_dumped_p[JOB_ID].root``, and the job files are merged once all
+jobs have finished:
+
+.. code-block:: bash
+
+    dtpr dump-events -i ./input_ntuple.root -o ./results --job-id 0 --job-count 4
+    # ... one run per job, then:
+    hadd -f results/dtpr_events_dumped.root results/dtpr_events_dumped_p*.root
+
 .. rubric:: Output Files
 
 When ``-o/--outputpath`` points to a directory, the command creates:

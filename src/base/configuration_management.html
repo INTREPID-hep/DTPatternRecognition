@@ -10,7 +10,7 @@
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -20,7 +20,7 @@
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../_static/copybutton.js?v=f281be69"></script>
-      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -59,11 +59,16 @@
 <li class="toctree-l4"><a class="reference internal" href="#dtpr.base.config.Config.change_config_file"><code class="docutils literal notranslate"><span class="pre">Config.change_config_file()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#dtpr.base.config.IncludeLoader"><code class="docutils literal notranslate"><span class="pre">IncludeLoader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dtpr.base.config.IncludeLoader.yaml_constructors"><code class="docutils literal notranslate"><span class="pre">IncludeLoader.yaml_constructors</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../performance.html">Performance</a></li>
 </ul>
 
         </div>
@@ -111,18 +116,18 @@ modify configuration parameters from anywhere in your codebase without hardcodin
 <p>A snippet from <code class="docutils literal notranslate"><span class="pre">run_config.yaml</span></code> might look like:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">particle_types</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">digis</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">amount</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_nDigis&#39;</span>
+<span class="w">    </span><span class="nt">amount</span><span class="p">:</span><span class="w"> </span><span class="s">'digi_nDigis'</span>
 <span class="w">    </span><span class="nt">attributes</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">wh</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;digi_wheel&#39;</span>
+<span class="w">        </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="s">'digi_wheel'</span>
 <span class="w">      </span><span class="nt">BX</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;time</span><span class="nv"> </span><span class="s">//</span><span class="nv"> </span><span class="s">25</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">time</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">None</span><span class="nv"> </span><span class="s">else</span><span class="nv"> </span><span class="s">None&#39;</span>
+<span class="w">        </span><span class="nt">expr</span><span class="p">:</span><span class="w"> </span><span class="s">'time</span><span class="nv"> </span><span class="s">//</span><span class="nv"> </span><span class="s">25</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">time</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">None</span><span class="nv"> </span><span class="s">else</span><span class="nv"> </span><span class="s">None'</span>
 <span class="w">    </span><span class="nt">sorter</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">by</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;p.BX&#39;</span>
+<span class="w">      </span><span class="nt">by</span><span class="p">:</span><span class="w"> </span><span class="s">'p.BX'</span>
 
 <span class="nt">ntuple_preprocessors</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">genmuon_matcher</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dtpr.utils.genmuon_functions.analyze_genmuon_matches&quot;</span>
+<span class="w">    </span><span class="nt">src</span><span class="p">:</span><span class="w"> </span><span class="s">"dtpr.utils.genmuon_functions.analyze_genmuon_matches"</span>
 
 <span class="nt">histo_names</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">seg_eff_MB1</span>
@@ -130,7 +135,7 @@ modify configuration parameters from anywhere in your codebase without hardcodin
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LeadingMuon_pt</span>
 
 <span class="nt">plot_configs</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">mplhep-style</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;CMS&#39;</span>
+<span class="w">  </span><span class="nt">mplhep-style</span><span class="p">:</span><span class="w"> </span><span class="s">'CMS'</span>
 <span class="w">  </span><span class="nt">figure-configs</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">figure.dpi</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
 </pre></div>
@@ -139,19 +144,19 @@ modify configuration parameters from anywhere in your codebase without hardcodin
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dtpr.base.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RUN_CONFIG</span>
 
 <span class="c1"># Accessing particle type definitions</span>
-<span class="n">digi_config</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">particle_types</span><span class="p">[</span><span class="s2">&quot;digis&quot;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Digi particle amount source: </span><span class="si">{</span><span class="n">digi_config</span><span class="p">[</span><span class="s1">&#39;amount&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Digi BX attribute expression: </span><span class="si">{</span><span class="n">digi_config</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">][</span><span class="s1">&#39;BX&#39;</span><span class="p">][</span><span class="s1">&#39;expr&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">digi_config</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">particle_types</span><span class="p">[</span><span class="s2">"digis"</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Digi particle amount source: </span><span class="si">{</span><span class="n">digi_config</span><span class="p">[</span><span class="s1">'amount'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Digi BX attribute expression: </span><span class="si">{</span><span class="n">digi_config</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">][</span><span class="s1">'BX'</span><span class="p">][</span><span class="s1">'expr'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Accessing preprocessor definition</span>
-<span class="n">genmuon_matcher_src</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">ntuple_preprocessors</span><span class="p">[</span><span class="s2">&quot;genmuon_matcher&quot;</span><span class="p">][</span><span class="s2">&quot;src&quot;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Genmuon matcher function source: </span><span class="si">{</span><span class="n">genmuon_matcher_src</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">genmuon_matcher_src</span> <span class="o">=</span> <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">ntuple_preprocessors</span><span class="p">[</span><span class="s2">"genmuon_matcher"</span><span class="p">][</span><span class="s2">"src"</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Genmuon matcher function source: </span><span class="si">{</span><span class="n">genmuon_matcher_src</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Accessing list of histogram names to fill</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First histogram to fill: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">histo_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"First histogram to fill: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">histo_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Accessing plotting style</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matplotlib HEP style: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">[</span><span class="s1">&#39;mplhep-style&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Matplotlib HEP style: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">[</span><span class="s1">'mplhep-style'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="rubric">Output</p>
@@ -172,18 +177,18 @@ This is useful for running multiple analysis scenarios, testing different event 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="c1"># Print initial config file and style</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial config file: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial Matplotlib HEP style: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">[</span><span class="s1">&#39;mplhep-style&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Initial config file: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Initial Matplotlib HEP style: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">[</span><span class="s1">'mplhep-style'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Load a custom configuration file</span>
-<span class="n">custom_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;my_custom_config.yaml&quot;</span><span class="p">)</span>
+<span class="n">custom_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">"my_custom_config.yaml"</span><span class="p">)</span>
 <span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config_file</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="n">custom_config_path</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">New config file: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New Matplotlib HEP style: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">[</span><span class="s1">&#39;mplhep-style&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">New config file: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"New Matplotlib HEP style: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">[</span><span class="s1">'mplhep-style'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Switch back to the default config</span>
-<span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config_file</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;dtpr/utils/yamls/run_config.yaml&quot;</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Switched back to default. Matplotlib HEP style: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">[</span><span class="s1">&#39;mplhep-style&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">change_config_file</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">"dtpr/utils/yamls/run_config.yaml"</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Switched back to default. Matplotlib HEP style: </span><span class="si">{</span><span class="n">RUN_CONFIG</span><span class="o">.</span><span class="n">plot_configs</span><span class="p">[</span><span class="s1">'mplhep-style'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Output:</strong></p>
@@ -214,6 +219,26 @@ configuration. <code class="docutils literal notranslate"><span class="pre">CLI_
 </dd>
 </dl>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dtpr.base.config.IncludeLoader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dtpr.base.config.</span></span><span class="sig-name descname"><span class="pre">IncludeLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visited</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/dtpr/base/config.html#IncludeLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dtpr.base.config.IncludeLoader" title="Link to this definition"></a></dt>
+<dd><p>YAML loader that resolves <code class="docutils literal notranslate"><span class="pre">!include</span></code> directives.</p>
+<p><code class="docutils literal notranslate"><span class="pre">!include</span></code> takes a path or a list of paths, resolved relative to the file
+that names them:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>included_map: !include maps.yaml
+merged_map: !include [maps_a.yaml, maps_b.yaml]
+included_list: !include list.yaml
+</pre></div>
+</div>
+<p>A list is merged in order: mappings key by key, anything else replaced by
+the last file. Circular includes raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dtpr.base.config.IncludeLoader.yaml_constructors">
+<span class="sig-name descname"><span class="pre">yaml_constructors</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'!include':</span> <span class="pre">&lt;function</span> <span class="pre">_construct_include&gt;,</span> <span class="pre">'tag:yaml.org,2002:binary':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_binary&gt;,</span> <span class="pre">'tag:yaml.org,2002:bool':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_bool&gt;,</span> <span class="pre">'tag:yaml.org,2002:float':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_float&gt;,</span> <span class="pre">'tag:yaml.org,2002:int':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_int&gt;,</span> <span class="pre">'tag:yaml.org,2002:map':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_map&gt;,</span> <span class="pre">'tag:yaml.org,2002:null':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_null&gt;,</span> <span class="pre">'tag:yaml.org,2002:omap':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_omap&gt;,</span> <span class="pre">'tag:yaml.org,2002:pairs':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_pairs&gt;,</span> <span class="pre">'tag:yaml.org,2002:seq':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_seq&gt;,</span> <span class="pre">'tag:yaml.org,2002:set':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_set&gt;,</span> <span class="pre">'tag:yaml.org,2002:str':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_str&gt;,</span> <span class="pre">'tag:yaml.org,2002:timestamp':</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_yaml_timestamp&gt;,</span> <span class="pre">None:</span> <span class="pre">&lt;function</span> <span class="pre">SafeConstructor.construct_undefined&gt;}</span></span><a class="headerlink" href="#dtpr.base.config.IncludeLoader.yaml_constructors" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

@@ -61,9 +61,17 @@ allows attributes to be defined dynamically. For each attribute, its value can b
 Understanding this mechanism enables the definition of particle initialization through the configuration file or passing directly.
 the dictionary-like structure to read from a ROOT TTree entry.
 
+.. note::
+
+    The definitions of a collection are interpreted once per event, not once per particle: the
+    framework prepares how to read each attribute of the collection and then builds every particle
+    from those readers. An ``expr`` attribute still sees the attributes declared before it, and a
+    ``src`` attribute is called with the particle itself.
+
 .. literalinclude:: ../../../dtpr/base/particle.py
     :language: python
-    :lines: 223-254
+    :start-after: [start-init-from-dict]
+    :end-before: [end-init-from-dict]
     :dedent:
 
 .. rubric:: Output

@@ -253,13 +253,38 @@ Once your configuration and histogram definitions are set, run:
 
     dtpr fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] [other options]
 
-You can also run the histogram filling in parallel by specifying the number of CPU cores with the ``-c`` or ``--ncores`` argument:
+The entries can be split into chunks that are processed at the same time. Every chunk fills the
+same histograms over its own entries and writes its own ROOT file, and the chunk files are merged
+into the final file at the end. Use ``--cores`` to choose how many chunks run at once (``-1``, the
+default, runs the whole range serially in one process; ``0`` uses every available core):
 
 .. code-block:: shell
 
-    dtpr fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] -c 4
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] --cores 4
 
-This will process your events using 4 CPU cores, speeding up the filling for large datasets.
+Draw-based histograms are drawn over the same entry range as the events of their chunk, so the merge
+adds up to the histogram of the full run: ``--cores 4`` produces the same histograms, bin by bin, as
+a serial run. With one chunk nothing is written twice and no merge takes place.
+
+``--no-merge`` keeps the per-chunk files and prints the ``hadd`` command that reassembles them, so
+the finished chunks of an interrupted run (or the intermediate results of any run) stay on disk:
+
+.. code-block:: shell
+
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] --cores 8 --no-merge
+
+To split one run across machines, ``--job-id`` and ``--job-count`` give each job its own slice of the
+entries. A job writes ``histograms_p[JOB_ID].root``, and the job files are merged once all jobs have
+finished:
+
+.. code-block:: shell
+
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] --job-id 0 --job-count 4
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] --job-id 1 --job-count 4
+    # ... one run per job, then:
+    hadd -f results/histograms/histograms.root results/histograms/histograms_p*.root
+
+A job splits its own slice over its ``--cores``, so both options can be combined.
 
 .. rubric:: How It Works
 
@@ -268,10 +293,8 @@ This will process your events using 4 CPU cores, speeding up the filling for lar
 - For each event, the tool calls the ``func`` for each histogram, passing the event object (``reader``).
 - For efficiency histograms, it also evaluates ``numdef`` to determine which entries go into the numerator.
 - The filled histograms are saved to a ROOT file for further analysis or plotting.
-- When running in parallel, temporary files are merged automatically at the end.
-
-.. warning:: 
-    Multiprocessing was removed in >v3.4 since no representative speedup was observed.
+- When the entries are split into chunks, the chunk files are merged into the final ROOT file with
+  ROOT's ``TFileMerger`` and removed afterwards.
 
 .. rubric:: Advanced Usage
 

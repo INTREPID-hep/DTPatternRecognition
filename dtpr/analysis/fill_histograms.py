@@ -156,10 +156,10 @@ def set_histograms_dict(CONFIG=None) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     for source in getattr(config, "histo_sources", []):
         module = importlib.import_module(source)
         module_histos = getattr(module, "histos", {})
-        
+
         # Get requested names/patterns
         requested = getattr(config, "histo_names", [])
-        
+
         # Match each loaded histogram against the patterns
         for hname, histoinfo in module_histos.items():
             for pattern in requested:
@@ -326,7 +326,9 @@ def flush_histograms(buffers: Dict[str, list], histos_to_fill: Dict[str, Any]) -
         values.clear()
 
 
-def fill_histograms_range(events: Any, histos_to_fill: Dict[str, Any], progress: bool = False) -> None:
+def fill_histograms_range(
+    events: Any, histos_to_fill: Dict[str, Any], progress: bool = False
+) -> None:
     """
     Fill the histograms over an event range, buffering the 1D values.
 

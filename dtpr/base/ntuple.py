@@ -9,7 +9,6 @@ from natsort import natsorted
 import glob
 import warnings
 
-
 # ROOT reads a branch basket by basket. The TTreeCache turns the scattered
 # reads of an event loop into sequential ones: it costs a fixed buffer per file
 # and pays off on a local disk, much more over xrootd. It learns the order of
@@ -31,7 +30,13 @@ class NTuple(object):
     """
 
     def __init__(
-        self, inputFolder, selectors=None, preprocessors=None, maxfiles=-1, CONFIG=None, entry_range=None
+        self,
+        inputFolder,
+        selectors=None,
+        preprocessors=None,
+        maxfiles=-1,
+        CONFIG=None,
+        entry_range=None,
     ):
         """
         Initialize an NTuple instance.

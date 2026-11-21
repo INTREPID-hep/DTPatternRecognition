@@ -3,7 +3,6 @@ from .entry_view import materialize
 from functools import partial
 from collections.abc import Iterable
 
-
 _EXPRESSION_CACHE = {}
 
 

@@ -249,7 +249,7 @@ def remove_nbranches_from_file(file_name: str) -> None:
 
         # Calculate total uncompressed size in MB
         uncompressed_bytes = sum(tree[b].uncompressed_bytes for b in branches_to_keep)
-        uncompressed_mb = uncompressed_bytes / (1024 ** 2)
+        uncompressed_mb = uncompressed_bytes / (1024**2)
         new_file_name = file_name.replace(".root", "_clean.root")
         with uproot.recreate(new_file_name) as f:
             # If the total size is less than 1 GB, load all at once
@@ -264,7 +264,9 @@ def remove_nbranches_from_file(file_name: str) -> None:
                     else:
                         f["dtprDumper/Events"].extend(chunk)
 
-    os.replace(new_file_name, file_name)  # Overwrite the original file with the new one without 'n' branches
+    os.replace(
+        new_file_name, file_name
+    )  # Overwrite the original file with the new one without 'n' branches
 
 
 def write_yaml_schema(

@@ -4,9 +4,9 @@ using as input data `.root` NTuples in a format similar to [this one](test-ntupl
 each branch represents a property of a CMS event or particle(s).
 
 Since the framework was developed in the context of the Drift Tube detectors, it also includes visualization tools considering
-the geometrical features of the CMS DT system by using the [mplDTs package](https://danielestrada971102.github.io/mplDTs) and custom implementations in the [`dtpr/utils/dt_plot_functions.py`](plot-functions-folder) module.
+the geometrical features of the CMS DT system by using the [mplDTs package](https://intrepid-hep.github.io/mplDTs) and custom implementations in the [`dtpr/utils/dt_plot_functions.py`](plot-functions-folder) module.
 
-Comprehensive documentation is available in read-the-docs format at the [GitHub Pages site](https://danielestrada971102.github.io/DTPatternRecognition/).
+Comprehensive documentation is available in read-the-docs format at the [GitHub Pages site](https://intrepid-hep.github.io/DTPatternRecognition/). The manual is versioned: every release is published next to the manual of `main` and can be selected from the version menu at the top of the page. See the [releases](https://github.com/INTREPID-hep/DTPatternRecognition/releases) for what changed in each one.
 
 The package is under development, so feel free to contribute, report bugs, or suggest improvements.
 Take a look at the [Contributors](CONTRIBUTING.md) and [Developers](DEVELOPERS.md) guides.

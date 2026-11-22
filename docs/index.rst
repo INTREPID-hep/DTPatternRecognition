@@ -3,7 +3,7 @@ DT Pattern Recognition Package
 This package is intended to serve as a base framework for Trigger pattern recognition processes in the CMS Drift Tubes system,
 using as input data ``.root`` NTuples in a format similar to :download:`this one <./_static/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root>`.
 Since the framework was developed in the context of the Drift Tube detectors, it also includes visualization tools considering
-the geometrical features of the CMS DT system by using another auxiliary package `mplDTs <https://danielestrada971102.github.io/mplDTs>`_ 
+the geometrical features of the CMS DT system by using another auxiliary package `mplDTs <https://intrepid-hep.github.io/mplDTs>`_ 
 and custom implementations in the ``dtpr/utils/dt_plot_functions.py`` module.
 
 The core idea of this framework is to simplify the analysis of input data by adopting an event-by-event approach 

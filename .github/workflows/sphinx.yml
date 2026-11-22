@@ -4,47 +4,103 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
     paths:
-      - 'docs/**'
+      - "docs/**"
+      - "CHANGELOG.md"
+      - ".github/workflows/sphinx.yml"
+      - ".github/scripts/**"
   pull_request:
     branches:
       - main
     paths:
-      - 'docs/**'
+      - "docs/**"
+      - "CHANGELOG.md"
+      - ".github/workflows/sphinx.yml"
+      - ".github/scripts/**"
   workflow_dispatch:
+
+concurrency:
+  group: sphinx-docs
+  cancel-in-progress: true
 
 jobs:
   build-gpages:
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        python-version: ['3.12']
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
 
-      - name: Install Poetry
-        uses: abatilo/actions-poetry@v3
+      - name: Install the documentation dependencies
+        run: pip install -r docs/requirements.txt
 
-      - name: Install dependencies with Poetry
+      - name: Build the manual of every tag
+        if: github.event_name != 'pull_request'
         run: |
-          poetry install --with docs
+          set -e
+          out="$PWD/docs/_build/html"
+          mkdir -p "$out"
+          for tag in $(git tag -l 'v*' | sort -V); do
+            version="${tag#v}"
+            src="/tmp/dtpr-docs/$tag"
+            git worktree add --quiet --detach "$src" "$tag"
+            PYTHONPATH="$src" SPHINX_RELEASE="$version" \
+              sphinx-build -q -b html -D release="$version" -D version="$version" \
+              "$src/docs" "$out/$tag"
+            git worktree remove --force "$src"
+          done
 
-      - name: Build docs
+      - name: Build the manual of main
+        if: github.event_name != 'pull_request'
         run: |
-          cd docs
-          poetry run make html
+          PYTHONPATH="$PWD" SPHINX_RELEASE="main" \
+            sphinx-build -q -b html -D release="main" -D version="main" \
+            docs docs/_build/html/latest
+
+      - name: Build the manual (pull request check)
+        if: github.event_name == 'pull_request'
+        run: |
+          PYTHONPATH="$PWD" SPHINX_RELEASE="main" \
+            sphinx-build -q -b html -D release="main" -D version="main" \
+            docs /tmp/docs-html
+
+      - name: Add the version selector to every page
+        if: github.event_name != 'pull_request'
+        run: |
+          versions=$(printf 'latest\n%s\n' "$(git tag -l 'v*' | sort -Vr)" | paste -sd, -)
+          python .github/scripts/version_selector.py \
+            docs/_build/html "$versions" "/${GITHUB_REPOSITORY#*/}"
+
+      - name: Point the site root at the manual of main
+        if: github.event_name != 'pull_request'
+        run: |
+          cat > docs/_build/html/index.html <<'HTML'
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta http-equiv="refresh" content="0; url=latest/">
+              <link rel="canonical" href="latest/">
+            </head>
+            <body><a href="latest/">Documentation</a></body>
+          </html>
+          HTML
 
       - name: Deploy
+        if: github.event_name != 'pull_request'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/_build/html
+          force_orphan: true

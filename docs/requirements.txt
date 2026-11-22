@@ -1,1 +1,5 @@
-furo==2021.11.16
+sphinx
+sphinx-rtd-theme
+sphinx-copybutton
+sphinx-design
+sphinxcontrib-mermaid

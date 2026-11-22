@@ -61,7 +61,7 @@ pre-release, and dates are the tag dates.
 ### Changed
 
 - Multiprocessing was removed from histogram filling; `fill-histos` runs
-  serially until the chunked writer replaced it.
+  serially and `--cores` has no effect.
 
 ### Fixed
 

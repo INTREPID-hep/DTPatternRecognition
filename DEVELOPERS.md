@@ -74,7 +74,37 @@ make html
 
 The generated files will be placed in the `docs/_build` directory. You can view the main `index.html` file at `docs/_build/html/index.html`.
 
-Once your changes are ready, commit and push them. The updates will be automatically deployed to the online documentation via GitHub Actions when the main branch is updated.
+Once your changes are ready, commit and push them. GitHub Actions rebuilds the manual: the `main` branch is published as `latest/`, every tag is published under its own name, and every page carries a version selector. The site root redirects to `latest/`.
+
+To build the manual of a tag locally, without leaving the current branch:
+
+```shell
+git worktree add --detach /tmp/dtpr-docs v3.5.0
+PYTHONPATH=/tmp/dtpr-docs SPHINX_RELEASE=v3.5.0 sphinx-build -b html /tmp/dtpr-docs/docs /tmp/docs-v3.5.0
+```
+
+The version shown by the manual comes from `pyproject.toml`, or from `SPHINX_RELEASE` when a tag is built, so it is never typed by hand.
+
+## Releasing
+
+1. Add the section of the new version to `CHANGELOG.md` (newest first, same shape as the existing ones) and commit it.
+2. Create the annotated tag with that section as its message, and push it:
+
+    ```shell
+    python .github/scripts/changelog_section.py v3.7.0 > /tmp/notes.md
+    git tag -a v3.7.0 -F /tmp/notes.md
+    git push origin v3.7.0
+    ```
+
+3. Publish the GitHub Release with the same text:
+
+    ```shell
+    gh release create v3.7.0 --title v3.7.0 --notes-file /tmp/notes.md
+    ```
+
+    Add `--prerelease` for a `-beta` version.
+
+Pushing the tag rebuilds the manual and adds the new version to the selector.
 
 ## Tips
 

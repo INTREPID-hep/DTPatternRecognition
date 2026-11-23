@@ -10,6 +10,13 @@ pre-release, and dates are the tag dates.
 
 ## [Unreleased]
 
+### Fixed
+
+- `!include` of a whole configuration file (a directive on its own line, at the
+  top level or inside a mapping) is spliced into the file that names it again,
+  as it was before `v3.6.0-beta`. The loader introduced in that release could
+  only resolve `key: !include file`.
+
 ### Documentation
 
 - The documentation site is built for every tag, and a version selector at the

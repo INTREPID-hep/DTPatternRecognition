@@ -1,0 +1,5 @@
+!include standalone_part.yaml
+
+mapping:
+  !include nested/inner.yaml
+  sibling: 3

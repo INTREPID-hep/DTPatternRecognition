@@ -1,91 +1,40 @@
 import os
+import re
 import warnings
 import yaml
 
+DIRECTIVE = re.compile(r"^(\s*)(?:([\w.-]+)\s*:\s*)?!include\s+(.+?)\s*$")
 
-def _merge(base, extra):
+
+def _include_paths(spec):
     """
-    Merge two YAML documents.
+    Return the paths named by an ``!include`` directive.
 
-    Mappings are merged key by key (recursively); anything else is replaced by
-    ``extra``, so a list of included files behaves like a sequence of overrides.
-
-    :param base: The document merged so far, or None.
-    :param extra: The document to merge into it.
-    :return: The merged document.
+    :param spec: Everything written after ``!include``.
+    :type spec: str
+    :return: One path, or several when the directive uses a list.
+    :rtype: list of str
     """
-    if isinstance(base, dict) and isinstance(extra, dict):
-        merged = dict(base)
-        for key, value in extra.items():
-            merged[key] = _merge(merged[key], value) if key in merged else value
-        return merged
-    return extra
+    spec = spec.split(" #")[0].strip()
+    if spec.startswith("[") and spec.endswith("]"):
+        return [path.strip().strip("\"'") for path in spec[1:-1].split(",") if path.strip()]
+    return [spec.strip("\"'")]
 
 
-class IncludeLoader(yaml.SafeLoader):
+def _read_include(resolved, path):
     """
-    YAML loader that resolves ``!include`` directives.
+    Read an included file, reporting both the path and how it was resolved.
 
-    ``!include`` takes a path or a list of paths, resolved relative to the file
-    that names them::
-
-        included_map: !include maps.yaml
-        merged_map: !include [maps_a.yaml, maps_b.yaml]
-        included_list: !include list.yaml
-
-    A list is merged in order: mappings key by key, anything else replaced by
-    the last file. Circular includes raise a ``ValueError``.
-    """
-
-    def __init__(self, stream, base_dir, visited=()):
-        super().__init__(stream)
-        self.base_dir = base_dir
-        self.visited = visited
-
-
-def _construct_include(loader, node):
-    """Build the value of an ``!include`` node."""
-    if isinstance(node, yaml.ScalarNode):
-        paths = [loader.construct_scalar(node)]
-    elif isinstance(node, yaml.SequenceNode):
-        paths = [loader.construct_scalar(item) for item in node.value]
-    else:
-        raise yaml.constructor.ConstructorError(
-            None,
-            None,
-            "!include expects a path or a list of paths",
-            node.start_mark,
-        )
-
-    merged = None
-    for path in paths:
-        merged = _merge(merged, _load_file(os.path.join(loader.base_dir, path), loader.visited))
-    return merged
-
-
-IncludeLoader.add_constructor("!include", _construct_include)
-
-
-def _load_file(path, visited):
-    """
-    Load one YAML file, resolving its own includes relative to its directory.
-
-    :param path: Path to the file.
+    :param resolved: Absolute path of the included file.
+    :type resolved: str
+    :param path: Path as it was written in the directive.
     :type path: str
-    :param visited: Files already being loaded, used to detect circular includes.
-    :type visited: tuple of str
-    :return: The loaded document.
-    :raises FileNotFoundError: If the file cannot be found.
-    :raises IOError: If the file cannot be read.
-    :raises ValueError: If an include is circular.
-    :raises yaml.YAMLError: If the YAML is invalid.
+    :return: The content of the file.
+    :rtype: str
     """
-    resolved = os.path.abspath(path)
-    if resolved in visited:
-        raise ValueError(f"Circular include detected: {resolved}")
-
     try:
-        handle = open(resolved, "r")
+        with open(resolved) as handle:
+            return handle.read()
     except FileNotFoundError as error:
         raise FileNotFoundError(
             f"Cannot find included file '{path}' (resolved to: {resolved})"
@@ -93,14 +42,54 @@ def _load_file(path, visited):
     except IOError as error:
         raise IOError(f"Cannot read included file '{path}' (resolved to: {resolved})") from error
 
-    with handle:
-        loader = IncludeLoader(
-            handle, base_dir=os.path.dirname(resolved), visited=visited + (resolved,)
-        )
-        try:
-            return loader.get_single_data()
-        finally:
-            loader.dispose()
+
+def _resolve_includes(text, base_dir, visited=()):
+    """
+    Splice every ``!include`` directive into the text.
+
+    ``key: !include file`` becomes ``key:`` followed by the content of the file
+    indented two more spaces, so the content is the value of that key. A bare
+    ``!include file`` is spliced at its own indentation, so its keys merge with
+    its siblings, which is how a configuration is split into several files.
+
+    Paths are relative to the file that names them and a circular include raises
+    ``ValueError``. When a directive names several files they are spliced in
+    order, so the last one wins for a key that appears in more than one.
+
+    :param text: YAML text to process.
+    :type text: str
+    :param base_dir: Directory of the file the text belongs to.
+    :type base_dir: str
+    :param visited: Absolute paths already being expanded.
+    :type visited: tuple of str
+    :return: The text with every include resolved.
+    :rtype: str
+    :raises FileNotFoundError: If an included file is missing.
+    :raises IOError: If an included file cannot be read.
+    :raises ValueError: If an include is circular.
+    """
+    lines = []
+    for line in text.splitlines():
+        match = DIRECTIVE.match(line)
+        if not match:
+            lines.append(line)
+            continue
+
+        indent, key, spec = match.groups()
+        if key:
+            lines.append(f"{indent}{key}:")
+        shift = indent + ("  " if key else "")
+
+        for path in _include_paths(spec):
+            resolved = os.path.abspath(os.path.join(base_dir, path))
+            if resolved in visited:
+                raise ValueError(f"Circular include detected: {resolved}")
+
+            content = _read_include(resolved, path)
+            expanded = _resolve_includes(content, os.path.dirname(resolved), visited + (resolved,))
+            lines.extend(shift + line if line.strip() else line for line in expanded.splitlines())
+
+    return "\n".join(lines)
 
 
 class Config:
@@ -162,17 +151,17 @@ class Config:
     @staticmethod
     def _load_config(config_path):
         """
-        Loads the configuration from a YAML file supporting !include directives.
+        Loads the configuration from a YAML file, resolving ``!include`` directives.
 
-        The directives are resolved by IncludeLoader while the YAML is parsed,
-        so an include can appear anywhere a value can and a list of includes is
-        merged in order. Paths are relative to the file that names them.
+        Includes are spliced into the text before parsing, so a directive can be
+        the value of a key or a stand-alone line, and an included file can itself
+        contain directives.
 
-        :param config_path: The path to the configuration file.
+        :param config_path: The path to the config file.
         :type config_path: str
         :return: The loaded configuration dictionary.
         :rtype: dict
-        :raises FileNotFoundError: If the config file or any included file is not found.
+        :raises FileNotFoundError: If the config file or an included file is not found.
         :raises yaml.YAMLError: If there's an error parsing the YAML.
         :raises ValueError: If circular includes are detected.
         """
@@ -181,11 +170,22 @@ class Config:
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
         try:
-            config = _load_file(path, ())
-        except (FileNotFoundError, ValueError, IOError) as e:
-            raise type(e)(f"Error processing includes in {config_path}: {e}") from e
-        except yaml.YAMLError as e:
-            raise yaml.YAMLError(f"Error parsing YAML configuration from {config_path}: {e}") from e
+            with open(path) as handle:
+                text = handle.read()
+        except IOError as error:
+            raise IOError(f"Cannot read configuration file: {config_path}") from error
+
+        try:
+            text = _resolve_includes(text, os.path.dirname(path))
+        except (FileNotFoundError, ValueError, IOError) as error:
+            raise type(error)(f"Error processing includes in {config_path}: {error}") from error
+
+        try:
+            config = yaml.safe_load(text)
+        except yaml.YAMLError as error:
+            raise yaml.YAMLError(
+                f"Error parsing YAML configuration from {config_path}: {error}"
+            ) from error
 
         return config if config else {}
 

@@ -21,6 +21,13 @@ def test_include_is_relative_to_the_including_file():
     assert cfg.nested_map == {"outer": 1, "inner_map": {"inner": 2}}
 
 
+def test_standalone_include_merges_with_the_file_that_names_it():
+    fixtures_dir = Path(__file__).parent / "fixtures" / "config_include"
+    cfg = Config(str(fixtures_dir / "standalone_main.yaml"))
+    assert cfg.from_part == 1
+    assert cfg.mapping == {"inner": 2, "sibling": 3}
+
+
 def test_circular_include_raises():
     fixtures_dir = Path(__file__).parent / "fixtures" / "config_include"
     with pytest.raises(ValueError):

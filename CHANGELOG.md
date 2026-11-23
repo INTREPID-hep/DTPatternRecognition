@@ -8,7 +8,7 @@ GitHub Release, and the source of the `docs/src/release_notes.rst` table.
 Versions follow [Semantic Versioning](https://semver.org/), `-beta` marks a
 pre-release, and dates are the tag dates.
 
-## [Unreleased]
+## [v3.6.1-beta] - 2026-11-23
 
 ### Fixed
 
@@ -25,6 +25,7 @@ pre-release, and dates are the tag dates.
 - New `docs/requirements.txt` with the actual Sphinx dependencies, and the
   `release` shown by the manual is taken from `pyproject.toml` (or from
   `SPHINX_RELEASE`) instead of being typed by hand.
+- `!include` is documented in the configuration guide.
 
 ## [v3.6.0-beta] - 2026-11-21
 
@@ -197,6 +198,7 @@ are included.
 
 > `pyproject.toml` declared `0.1.0`; install by tag.
 
+[v3.6.1-beta]: https://github.com/INTREPID-hep/DTPatternRecognition/tree/v3.6.1-beta
 [v3.6.0-beta]: https://github.com/INTREPID-hep/DTPatternRecognition/tree/v3.6.0-beta
 [v3.5.0]: https://github.com/INTREPID-hep/DTPatternRecognition/tree/v3.5.0
 [v3.4.0]: https://github.com/INTREPID-hep/DTPatternRecognition/tree/v3.4.0
@@ -207,4 +209,3 @@ are included.
 [v2.0.0]: https://github.com/INTREPID-hep/DTPatternRecognition/tree/v2.0.0
 [v1.1.0]: https://github.com/INTREPID-hep/DTPatternRecognition/tree/v1.1.0
 [v1.0.0]: https://github.com/INTREPID-hep/DTPatternRecognition/tree/v1.0.0
-[unreleased]: https://github.com/INTREPID-hep/DTPatternRecognition/compare/v3.6.0-beta...main

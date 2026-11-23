@@ -11,7 +11,7 @@ __all__ = [
 try:
     __version__ = version("DTPatternRecognition")
 except PackageNotFoundError:
-    __version__ = "3.6.0-beta"
+    __version__ = "3.6.1-beta"
 
 __doc__ = "Set of tools to implement pattern recognition algorithms on CMS DTs"
 

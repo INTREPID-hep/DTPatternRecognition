@@ -17,6 +17,10 @@ manual you are reading now describes the version selected there.
    * - Release
      - Date
      - Highlights
+   * - `v3.6.1-beta <https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.6.1-beta>`_
+     - 2026-11-23
+     - ``!include`` of a whole configuration file works again, the manual is built for
+       every release and ``!include`` is documented.
    * - `v3.6.0-beta <https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.6.0-beta>`_
      - 2026-11-21
      - Particle building through one reader per attribute, ``entry_range``

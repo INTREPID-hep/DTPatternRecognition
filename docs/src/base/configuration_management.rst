@@ -82,6 +82,50 @@ You can access these settings directly in your Python code:
 This demonstrates how ``RUN_CONFIG`` centralizes all settings, making them easily accessible throughout 
 the application without hardcoding values or logic into Python files.
 
+.. rubric:: Splitting a Configuration Across Files
+
+A configuration can be split into several files with the ``!include`` directive.
+The content of the included file is inserted where the directive is written, so the
+result is the same configuration you would get by writing everything in one file.
+
+``!include`` can appear in three positions:
+
+- ``key: !include file.yaml`` — the file becomes the value of that key. This is the
+  form used for a block such as the plotting style:
+
+  .. code-block:: yaml
+
+      plot_configs: !include plot_configs.yaml
+
+- ``!include file.yaml`` on a line of its own — the file is inserted at that level,
+  so its keys become siblings of the keys above and below it. It can be the first
+  line of the configuration, which is how a whole base configuration is reused:
+
+  .. code-block:: yaml
+
+      !include common/base_config.yaml
+
+      histo_names:
+        - seg_eff_MB1
+        - AM_rate_allBX_MB1
+
+  or it can be indented inside a mapping:
+
+  .. code-block:: yaml
+
+      particle_types:
+        !include particles/digis.yaml
+        !include particles/segments.yaml
+
+- ``!include [a.yaml, b.yaml]`` — several files, inserted in the order given, so a
+  key that appears in more than one of them keeps the value of the last file.
+
+Paths are resolved relative to the file that contains the directive, not to the
+directory the command is run from, and an included file can contain directives of its
+own. A file that includes itself, directly or through another file, raises
+``ValueError``, and a missing file raises ``FileNotFoundError`` naming the path it was
+resolved to.
+
 .. rubric:: Changing the Configuration File
 
 A key feature of ``RUN_CONFIG`` is its ability to switch between different configuration files at runtime. 

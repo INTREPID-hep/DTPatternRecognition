@@ -46,5 +46,3 @@ and `Developers <https://github.com/INTREPID-hep/DTPatternRecognition/blob/main/
    src/command_line_interface
    src/performance
    src/release_notes
-
-   src/release_notes

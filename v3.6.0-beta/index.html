@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DT Pattern Recognition Package &mdash; DTPatternRecognition 3.6.0-beta documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=6a604523" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=214d3d3e"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="_static/design-tabs.js?v=fcb327ea"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="src/installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" ><div class="dtpr-versions" style="margin: 0.6em 0; text-align: center;"><label for="dtpr-versions"><small>Version</small></label><br><select id="dtpr-versions" style="width: 100%;" onchange="if (this.value) window.location.href = this.value;"><option value="/DTPatternRecognition/latest/">latest (main)</option><option value="/DTPatternRecognition/v3.6.1-beta/">v3.6.1-beta</option><option value="/DTPatternRecognition/v3.6.0-beta/" selected>v3.6.0-beta</option><option value="/DTPatternRecognition/v3.5.0/">v3.5.0</option><option value="/DTPatternRecognition/v3.4.0/">v3.4.0</option><option value="/DTPatternRecognition/v3.3.0/">v3.3.0</option><option value="/DTPatternRecognition/v3.2.0/">v3.2.0</option><option value="/DTPatternRecognition/v3.0.0/">v3.0.0</option><option value="/DTPatternRecognition/v2.1.0/">v2.1.0</option><option value="/DTPatternRecognition/v2.0.0/">v2.0.0</option><option value="/DTPatternRecognition/v1.1.0/">v1.1.0</option><option value="/DTPatternRecognition/v1.0.0/">v1.0.0</option></select></div>
+
+          
+          
+          <a href="#" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="src/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/base/main.html">Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/performance.html">Performance</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">DT Pattern Recognition Package</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/INTREPID-hep/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="dt-pattern-recognition-package">
+<h1>DT Pattern Recognition Package<a class="headerlink" href="#dt-pattern-recognition-package" title="Link to this heading"></a></h1>
+<p>This package is intended to serve as a base framework for Trigger pattern recognition processes in the CMS Drift Tubes system,
+using as input data <code class="docutils literal notranslate"><span class="pre">.root</span></code> NTuples in a format similar to <a class="reference download internal" download="" href="_downloads/c501ed77dbcc84dbc55f57ac73f7b198/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"><code class="xref download docutils literal notranslate"><span class="pre">this</span> <span class="pre">one</span></code></a>.
+Since the framework was developed in the context of the Drift Tube detectors, it also includes visualization tools considering
+the geometrical features of the CMS DT system by using another auxiliary package <a class="reference external" href="https://danielestrada971102.github.io/mplDTs">mplDTs</a>
+and custom implementations in the <code class="docutils literal notranslate"><span class="pre">dtpr/utils/dt_plot_functions.py</span></code> module.</p>
+<p>The core idea of this framework is to simplify the analysis of input data by adopting an event-by-event approach
+using Python classes. This approach makes the code more intuitive and readable. For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">muon</span> <span class="ow">in</span> <span class="n">events</span><span class="o">.</span><span class="n">genmuons</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">muon</span><span class="o">.</span><span class="n">pt</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="n">muon</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>is much clearer compared to the traditional method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">gen_pdgID</span><span class="p">)):</span>
+   <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">gen_pt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">gen_eta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>In addition to the event-by-event approach, the framework is designed to be highly flexible, aiming to support various
+data formats since the mapping of input data into Python classes is configurable through a <code class="docutils literal notranslate"><span class="pre">YAML</span></code> <a class="reference download internal" download="" href="_downloads/f5460224d6fd97fc70da64df3fa38483/run_config.yaml"><code class="xref download docutils literal notranslate"><span class="pre">configuration</span> <span class="pre">file</span></code></a>, as you will
+see along the different sections. The idea is that this allows users to adapt the framework to their specific needs.</p>
+<p>Some useful, and as general as possible, tools using the framework have been implemented to facilitate some common tasks
+such as filling ROOT histograms, or inspecting or visualizing information from the NTuples. They are accessible through the
+<code class="docutils literal notranslate"><span class="pre">dtpr</span></code> CLI command and are described in the <a class="reference internal" href="src/command_line_interface.html"><span class="doc">Command Line Interface (CLI)</span></a> section. Reading, manipulating, and mapping
+the information from the input files into the respective classes are handled
+by central classes, just go around the <a class="reference internal" href="src/base/main.html"><span class="doc">Base</span></a> section to know more about them.</p>
+<p>Bear in mind that the package is under development, so feel free to contribute, report bugs, or suggest improvements.
+Take a look at the <a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/blob/main/CONTRIBUTING.md">Contributors</a>
+and <a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/blob/main/DEVELOPERS.md">Developers</a> guides.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="src/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/base/main.html">Base</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/base/particle_abstraction.html">Particle Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/base/event_abstraction.html">Event Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/base/ntuple_data_access.html">NTuple Data Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/base/configuration_management.html">Configuration Management</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src/command_line_interface.html">Command Line Interface (CLI)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/histogram_filling.html">Histogram Filling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/events_dumping.html">Event Dumping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/events_inspection.html">Event Inspection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/matplotlib_plotting.html">Matplotlib Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/events_visualizer_gui.html">Events Visualizer (GUI)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src/performance.html">Performance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/performance.html#reading-only-what-is-needed">Reading only what is needed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/performance.html#building-particles">Building particles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/performance.html#running-several-chunks-at-once">Running several chunks at once</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/performance.html#processing-part-of-a-file-from-python">Processing part of a file from Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/performance.html#measuring-the-loop">Measuring the loop</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="src/installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

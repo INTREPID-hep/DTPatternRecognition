@@ -1,0 +1,1009 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dtpr.base.particle &mdash; DTPatternRecognition 3.6.1-beta documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
+
+  
+    <link rel="canonical" href="https://intrepid-hep.github.io/DTPatternRecognition/_modules/dtpr/base/particle.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=be0fa9a4"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" ><div class="dtpr-versions" style="margin: 0.6em 0; text-align: center;"><label for="dtpr-versions"><small>Version</small></label><br><select id="dtpr-versions" style="width: 100%;" onchange="if (this.value) window.location.href = this.value;"><option value="/DTPatternRecognition/latest/">latest (main)</option><option value="/DTPatternRecognition/v3.6.1-beta/" selected>v3.6.1-beta</option><option value="/DTPatternRecognition/v3.6.0-beta/">v3.6.0-beta</option><option value="/DTPatternRecognition/v3.5.0/">v3.5.0</option><option value="/DTPatternRecognition/v3.4.0/">v3.4.0</option><option value="/DTPatternRecognition/v3.3.0/">v3.3.0</option><option value="/DTPatternRecognition/v3.2.0/">v3.2.0</option><option value="/DTPatternRecognition/v3.0.0/">v3.0.0</option><option value="/DTPatternRecognition/v2.1.0/">v2.1.0</option><option value="/DTPatternRecognition/v2.0.0/">v2.0.0</option><option value="/DTPatternRecognition/v1.1.0/">v1.1.0</option><option value="/DTPatternRecognition/v1.0.0/">v1.0.0</option></select></div>
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/base/main.html">Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/performance.html">Performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../src/release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dtpr.base.particle</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dtpr.base.particle</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">..utils.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">color_msg</span><span class="p">,</span> <span class="n">get_callable_from_src</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.entry_view</span><span class="w"> </span><span class="kn">import</span> <span class="n">materialize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+
+<span class="n">_EXPRESSION_CACHE</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">compile_expression</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Compile an expression once per distinct text.</span>
+
+<span class="sd">    The same expressions are evaluated for every particle of every event - the</span>
+<span class="sd">    ``expr`` attributes, the ``filter`` and the ``sorter`` key of each particle type.</span>
+<span class="sd">    Compiling them again for every particle is pure parser work: an</span>
+<span class="sd">    ``eval("text")`` costs about 9 us, 50 times an ``eval(code_object)``.</span>
+
+<span class="sd">    :param text: The expression to compile.</span>
+<span class="sd">    :type text: str</span>
+<span class="sd">    :returns: The compiled code object.</span>
+<span class="sd">    :rtype: code</span>
+<span class="sd">    :raises SyntaxError: If the expression is not valid Python.</span>
+<span class="sd">    """</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">_EXPRESSION_CACHE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">_EXPRESSION_CACHE</span><span class="p">[</span><span class="n">text</span><span class="p">]</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span> <span class="s2">"eval"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">code</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">copy_literal</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return a fresh copy of a literal attribute.</span>
+
+<span class="sd">    Literal attributes come from the config (``matched_tps: []``, ``showered:</span>
+<span class="sd">    False``), so one object would otherwise be shared by every particle that</span>
+<span class="sd">    uses the same key. Only plain containers are copied: deepcopy() costs 5x as</span>
+<span class="sd">    much and literals are scalars or lists of scalars.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">copy_literal</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">copy_literal</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">flat_pair_bounds</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">counts_branch</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Start and end of particle ``index`` inside a ``[flat, counts]`` branch pair.</span>
+
+<span class="sd">    Uses the per-entry cumulative offsets of an :class:``EntryView`` when the</span>
+<span class="sd">    event provides them, and falls back to summing the counts otherwise.</span>
+
+<span class="sd">    :param event: The event entry the attribute is read from.</span>
+<span class="sd">    :param counts_branch: Name of the branch holding the per-particle counts.</span>
+<span class="sd">    :type counts_branch: str</span>
+<span class="sd">    :param counts: The materialized counts of the branch.</span>
+<span class="sd">    :type counts: list</span>
+<span class="sd">    :param index: Index of the particle.</span>
+<span class="sd">    :type index: int</span>
+<span class="sd">    :returns: Pair ``(start, end)`` of positions in the flat branch.</span>
+<span class="sd">    :rtype: tuple of int</span>
+<span class="sd">    """</span>
+    <span class="n">offsets_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s2">"cumulative_offsets"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">offsets_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="p">[:</span><span class="n">index</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">offsets_method</span><span class="p">(</span><span class="n">counts_branch</span><span class="p">)[</span><span class="n">index</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">counts</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_type_cast</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Resolve the ``type:`` cast of an attribute to a callable.</span>
+
+<span class="sd">    The cast is a Python expression evaluated in this module, exactly as</span>
+<span class="sd">    :meth:`Particle._init_from_dict` does, so ``type: int`` keeps working.</span>
+
+<span class="sd">    :param text: The expression held by the ``type`` field.</span>
+<span class="sd">    :type text: str</span>
+<span class="sd">    :param attr: The attribute name, for the error message.</span>
+<span class="sd">    :type attr: str</span>
+<span class="sd">    :returns: The object the expression evaluates to, usually a type.</span>
+<span class="sd">    :rtype: object</span>
+<span class="sd">    :raises ValueError: If the expression does not name a known object.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">compile_expression</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">NameError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid type '</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">' for attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">'. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_literal_reader</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader for an attribute written as a literal in the config.</span>
+
+<span class="sd">    Literals come from the config (``matched_tps: []``, ``showered: False``), so a</span>
+<span class="sd">    container has to be copied for every particle: one list must not be shared by</span>
+<span class="sd">    the whole collection.</span>
+<span class="sd">    """</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">_value</span><span class="o">=</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">copy_literal</span><span class="p">(</span><span class="n">_value</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">_value</span><span class="o">=</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_value</span>
+
+    <span class="k">return</span> <span class="n">read</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_branch_reader</span><span class="p">(</span><span class="n">branch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader for ``branch: name``: the column of the event, indexed by particle.</span>
+
+<span class="sd">    A scalar branch is handed to every particle unchanged, as before.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">_branch</span><span class="o">=</span><span class="n">branch</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">_branch</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch '</span><span class="si">{</span><span class="n">_branch</span><span class="si">}</span><span class="s2">' not found in the event entry."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">read</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pair_reader</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">flat_branch</span><span class="p">,</span> <span class="n">counts_branch</span><span class="p">,</span> <span class="n">resolution</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader for ``branch: [flat, counts]``: the slice of the flat column.</span>
+
+<span class="sd">    ``resolution`` is the pair (target, identifier) when the pair is a cross</span>
+<span class="sd">    reference. The reader then tags the attribute, so that Event resolves the raw</span>
+<span class="sd">    identifiers into particles once every collection has been built.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">_flat</span><span class="o">=</span><span class="n">flat_branch</span><span class="p">,</span> <span class="n">_counts</span><span class="o">=</span><span class="n">counts_branch</span><span class="p">):</span>
+        <span class="n">flat_values</span> <span class="o">=</span> <span class="n">materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">_flat</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">_counts</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">flat_values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch '</span><span class="si">{</span><span class="n">_flat</span><span class="si">}</span><span class="s2">' not found in the event entry."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Companion branch '</span><span class="si">{</span><span class="n">_counts</span><span class="si">}</span><span class="s2">' not found for '</span><span class="si">{</span><span class="n">_flat</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Particle index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> out of bounds for '</span><span class="si">{</span><span class="n">_counts</span><span class="si">}</span><span class="s2">' with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">resolution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"_needs_resolution"</span><span class="p">][</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">resolution</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">flat_pair_bounds</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">_counts</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">flat_values</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">read</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_expression_reader</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reader for ``expr: text``, evaluated with the values already set as locals.</span>
+
+<span class="sd">    ``state`` is the dictionary of the particle being built, so an expression may</span>
+<span class="sd">    use the attributes declared before it in the config (``detector_side`` from</span>
+<span class="sd">    ``wh``), exactly as it does today.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">_code</span><span class="o">=</span><span class="n">code</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">_code</span><span class="p">,</span> <span class="p">{},</span> <span class="n">state</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">read</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cast_reader</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Wrap a reader with the ``type:`` cast of the attribute."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">_reader</span><span class="o">=</span><span class="n">reader</span><span class="p">,</span> <span class="n">_cast</span><span class="o">=</span><span class="n">cast</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">_reader</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_cast</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Cannot convert value '</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">' to type '</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">' for attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">'. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+        <span class="c1"># A list is converted lazily, as Particle._init_from_dict does</span>
+        <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="n">_cast</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">read</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">attribute_reader</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Compile one attribute definition of the config into a reader.</span>
+
+<span class="sd">    The reader is called as ``read(ev, index, state)`` and returns the value of the</span>
+<span class="sd">    attribute for particle ``index`` of the event ``ev``. ``state`` is the dictionary of</span>
+<span class="sd">    the particle being built, so an ``expr`` attribute sees the attributes declared</span>
+<span class="sd">    before it, exactly as in ``Particle.__init__``. A literal definition returns a</span>
+<span class="sd">    fresh copy for every particle.</span>
+
+<span class="sd">    Event compiles one reader per attribute and per event, then passes them to</span>
+<span class="sd">    ``Particle(readers=...)``, which calls each of them, instead of looking the</span>
+<span class="sd">    definition up again for every particle.</span>
+
+<span class="sd">    :param attr: The attribute name.</span>
+<span class="sd">    :type attr: str</span>
+<span class="sd">    :param spec: The attribute definition from the config: a dict with ``branch``,</span>
+<span class="sd">        ``expr``, ``src`` and ``type``, or a literal.</span>
+<span class="sd">    :type spec: dict or object</span>
+<span class="sd">    :returns: The reader.</span>
+<span class="sd">    :rtype: callable</span>
+<span class="sd">    :raises ValueError: If the definition is not valid.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_literal_reader</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+
+    <span class="n">branch</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"branch"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">expr</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"expr"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"src"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">cast</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">provided</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">provided</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"'attributes' field must specify exactly one of 'branch', 'expr', or 'src' for attribute definition : '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">'."</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">branch</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Branch list for attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">' must contain exactly two entries: [flat, flat_counts]."</span>
+                <span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"target"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">resolution</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">resolution</span> <span class="o">=</span> <span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"identifier"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="n">read</span> <span class="o">=</span> <span class="n">_pair_reader</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">branch</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">branch</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">resolution</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">read</span> <span class="o">=</span> <span class="n">_branch_reader</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">expr</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">read</span> <span class="o">=</span> <span class="n">_expression_reader</span><span class="p">(</span><span class="n">compile_expression</span><span class="p">(</span><span class="n">expr</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid expression '</span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s2">' for attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">'. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># A callable over the particle object: Particle.__init__ calls it, see Event</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">' uses 'src', which is only supported by Particle.__init__."</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cast</span><span class="p">:</span>
+        <span class="n">read</span> <span class="o">=</span> <span class="n">_cast_reader</span><span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="n">resolve_type_cast</span><span class="p">(</span><span class="n">cast</span><span class="p">,</span> <span class="n">attr</span><span class="p">),</span> <span class="n">attr</span><span class="p">,</span> <span class="n">cast</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">read</span>
+
+
+<div class="viewcode-block" id="Particle">
+<a class="viewcode-back" href="../../../src/base/particle_abstraction.html#dtpr.base.Particle">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Particle</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Base class to represent a particle.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    index : int</span>
+<span class="sd">        The index of the particle.</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the particle class. By default, it is the class name.</span>
+<span class="sd">    """</span>
+
+<div class="viewcode-block" id="Particle.__init__">
+<a class="viewcode-back" href="../../../src/base/particle_abstraction.html#dtpr.base.Particle.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">readers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Initialize a Particle instance.</span>
+
+<span class="sd">        :param index: The index of the particle.</span>
+<span class="sd">        :type index: int</span>
+<span class="sd">        :param ev: The TTree event entry containing event data.</span>
+<span class="sd">        :param readers: Attribute readers already compiled for the event, from</span>
+<span class="sd">            :func:`attribute_reader`. Event passes them to build a whole collection</span>
+<span class="sd">            without interpreting the config again for every particle; when they are</span>
+<span class="sd">            given, the definitions in ``kwargs`` are not used.</span>
+<span class="sd">        :type readers: list</span>
+<span class="sd">        :param kwargs: Additional attributes to set explicitly.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>  <span class="c1"># By default, it is the class name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_needs_resolution</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Track attributes that need cross-reference resolution</span>
+
+        <span class="k">if</span> <span class="n">readers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_from_readers</span><span class="p">(</span><span class="n">readers</span><span class="p">,</span> <span class="n">ev</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_init_from_dict</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">ev</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">copy_literal</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
+
+
+    <span class="c1"># [start-init-from-dict]</span>
+<div class="viewcode-block" id="Particle._init_from_dict">
+<a class="viewcode-back" href="../../../src/base/particle_abstraction.html#dtpr.base.Particle._init_from_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_from_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">attr_info</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Initialize the particle attributes from a dictionary containing evaluable expressions, callable method, or branch names.</span>
+
+<span class="sd">        :param attr: The attribute name to set.</span>
+<span class="sd">        :param attr_info: A dictionary containing the information to set the attribute.</span>
+<span class="sd">        """</span>
+        <span class="n">branch</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"branch"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"expr"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"src"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"kwargs"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">_type</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"target"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Target collection for cross-reference resolution</span>
+        <span class="n">identifier</span> <span class="o">=</span> <span class="n">attr_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"identifier"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># identifier for cross-reference resolution</span>
+
+        <span class="c1"># Ensure exactly one of 'branch', 'expr', or 'src' is provided</span>
+        <span class="n">provided</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">branch</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">src</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">provided</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"'attributes' field must specify exactly one of 'branch', 'expr', or 'src' for attribute definition : '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">'."</span>
+            <span class="p">)</span>
+
+        <span class="n">is_two_branch_attr</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Flag to track if this is a two-branch attribute</span>
+        <span class="c1"># [end-init-from-dict]</span>
+
+        <span class="k">if</span> <span class="n">branch</span><span class="p">:</span>
+            <span class="c1"># If a branch is provided, set the attribute to the value from the event</span>
+            <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Event must be provided to set attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">' from branch '</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">'."</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">branch</span><span class="p">,</span> <span class="nb">list</span>
+            <span class="p">):</span>  <span class="c1"># Special handling for attributes defined by a pair of branches (flat + flat_counts)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"Branch list for attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">' must contain exactly two entries: [flat, flat_counts]."</span>
+                    <span class="p">)</span>
+                <span class="n">val_branch</span><span class="p">,</span> <span class="n">counts_branch</span> <span class="o">=</span> <span class="n">branch</span>
+                <span class="n">flat_vals</span> <span class="o">=</span> <span class="n">materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">val_branch</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                <span class="n">counts</span> <span class="o">=</span> <span class="n">materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">counts_branch</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">flat_vals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch '</span><span class="si">{</span><span class="n">val_branch</span><span class="si">}</span><span class="s2">' not found in the event entry."</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"Companion branch '</span><span class="si">{</span><span class="n">counts_branch</span><span class="si">}</span><span class="s2">' not found for '</span><span class="si">{</span><span class="n">val_branch</span><span class="si">}</span><span class="s2">'."</span>
+                    <span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"Particle index </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> out of bounds for '</span><span class="si">{</span><span class="n">counts_branch</span><span class="si">}</span><span class="s2">' "</span>
+                        <span class="sa">f</span><span class="s2">"with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="p">)</span>
+                <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">flat_pair_bounds</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">counts_branch</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">flat_vals</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+                <span class="n">is_two_branch_attr</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Mark as two-branch attribute</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">materialize</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">branch</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Branch '</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">' not found in the event entry."</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="c1"># The event caches one materialized list per branch: index it</span>
+                    <span class="c1"># instead of converting it again for every particle.</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">expr</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">compile_expression</span><span class="p">(</span><span class="n">expr</span><span class="p">),</span> <span class="p">{},</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid expression '</span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s2">' for attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">'. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">src</span><span class="p">:</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="n">get_callable_from_src</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Method '</span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s2">' not found in module."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">method</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_type</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_type</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">compile_expression</span><span class="p">(</span><span class="n">_type</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">_type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">_type</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">NameError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid type '</span><span class="si">{</span><span class="n">_type</span><span class="si">}</span><span class="s2">' for attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">'. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Cannot convert value '</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">' to type '</span><span class="si">{</span><span class="n">_type</span><span class="si">}</span><span class="s2">' for attribute '</span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">'. Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Tag for cross-reference resolution if this is a two-branch attribute with a target</span>
+        <span class="k">if</span> <span class="n">is_two_branch_attr</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_needs_resolution</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span>
+
+        <span class="c1"># Set the attribute to the value</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_from_readers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">readers</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Set the attributes from readers compiled for the event.</span>
+
+<span class="sd">        The counterpart of :meth:`_init_from_dict` for the readers that</span>
+<span class="sd">        :func:`attribute_reader` builds once per event. The instance dictionary</span>
+<span class="sd">        is filled in config order, so an ``expr`` attribute sees the attributes</span>
+<span class="sd">        declared before it, exactly as in the general path.</span>
+
+<span class="sd">        :param readers: Pairs ``(attribute, read)`` in config order.</span>
+<span class="sd">        :type readers: list</span>
+<span class="sd">        :param ev: The event entry the attributes are read from.</span>
+<span class="sd">        """</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">readers</span><span class="p">:</span>
+            <span class="n">state</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indentLevel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Generate a string representation of the Particle instance.</span>
+
+<span class="sd">        :param indentLevel: The indentation level for the summary.</span>
+<span class="sd">        :type indentLevel: int</span>
+<span class="sd">        :param include: List of property names to include in the summary. If None, include all.</span>
+<span class="sd">        :type include: list or None</span>
+<span class="sd">        :param exclude: List of property names to exclude from the summary. If None, exclude none.</span>
+<span class="sd">        :type exclude: list or None</span>
+<span class="sd">        :param kwargs: Additional keyword arguments to pass to the ``color_msg`` function.</span>
+<span class="sd">        :return: The particle summary.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        """</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">color_msg</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2"> info --&gt;"</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"color"</span><span class="p">,</span> <span class="s2">"yellow"</span><span class="p">),</span>
+                <span class="n">indentLevel</span><span class="o">=</span><span class="n">indentLevel</span><span class="p">,</span>
+                <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"index"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">}</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">include</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">include</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">exclude</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">color_msg</span><span class="p">(</span>
+                <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">()]),</span>
+                <span class="n">indentLevel</span><span class="o">=</span><span class="n">indentLevel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">return_str</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_comparable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Attributes that take part in equality and hashing.</span>
+
+<span class="sd">        Private attributes, the index and the name are excluded, and so is every</span>
+<span class="sd">        container: a particle holds lists of other particles (``matched_tps``),</span>
+<span class="sd">        which would recurse. Two particles compare equal when their scalar</span>
+<span class="sd">        attributes are equal, and their containers do not make them differ.</span>
+
+<span class="sd">        :return: The comparable attributes of the particle.</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"index"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">}</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Compare two Particle instances by their scalar attributes.</span>
+
+<span class="sd">        Private attributes (such as the internal resolution bookkeeping) and the</span>
+<span class="sd">        index and name are ignored, and so is every container attribute.</span>
+
+<span class="sd">        :param other: The other Particle instance to compare.</span>
+<span class="sd">        :type other: Particle</span>
+<span class="sd">        :return: True if the instances are equal, False otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Particle</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_comparable</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_comparable</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Generate a hash for the Particle instance from its scalar attributes.</span>
+
+<span class="sd">        :return: The hash value of the Particle instance.</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_comparable</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="c1"># case 1 : Directly set attributes</span>
+    <span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span>
+        <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wh</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">sc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detector_side</span><span class="o">=</span><span class="p">{</span><span class="s2">"expr"</span><span class="p">:</span> <span class="s2">"'+z' if wh &gt; 0 else '-z'"</span><span class="p">}</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
+    <span class="c1"># case 2 : Set attributes from a TTree event entry. Input file is a dt ntuple here</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+    <span class="c1"># Example usage</span>
+    <span class="n">input_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span>
+            <span class="s2">"../../tests/ntuples/DTDPGNtuple_12_4_2_Phase2Concentrator_thr6_Simulation_99.root"</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">ROOT</span><span class="w"> </span><span class="kn">import</span> <span class="n">TFile</span>
+
+    <span class="c1"># first, create a TFile object to read the dt ntuple (this is not necessary by using NTuple Class)</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"pt"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"branch"</span><span class="p">:</span> <span class="s2">"gen_pt"</span><span class="p">},</span>
+        <span class="s2">"eta"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"branch"</span><span class="p">:</span> <span class="s2">"gen_eta"</span><span class="p">},</span>
+        <span class="s2">"phi"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"branch"</span><span class="p">:</span> <span class="s2">"gen_phi"</span><span class="p">},</span>
+        <span class="s2">"charge"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"branch"</span><span class="p">:</span> <span class="s2">"gen_charge"</span><span class="p">},</span>
+    <span class="p">}</span>
+    <span class="k">with</span> <span class="n">TFile</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="s2">"read"</span><span class="p">)</span> <span class="k">as</span> <span class="n">ntuple</span><span class="p">:</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ntuple</span><span class="p">[</span><span class="s2">"dtNtupleProducer/DTTREE;1"</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">iev</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+            <span class="c1"># in events of this ntuple, each event contains more o less 2 genmuons,</span>
+            <span class="c1"># so, set index 0 or 1 allows to take properties of the first or second genmuon</span>
+            <span class="n">particle</span> <span class="o">=</span> <span class="n">Particle</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ev</span><span class="o">=</span><span class="n">ev</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"GenMuon"</span><span class="p">,</span> <span class="o">**</span><span class="n">attributes</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">particle</span><span class="p">)</span>
+            <span class="k">break</span>  <span class="c1"># just to test the first event</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

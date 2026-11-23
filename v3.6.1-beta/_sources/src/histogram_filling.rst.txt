@@ -1,0 +1,359 @@
+Histogram Filling
+=================
+
+The histogram filling tool in DTPatternRecognition automates the process of extracting physics quantities
+from your events and populating ROOT histograms for further analysis or plotting. You define *what* to 
+fill and *how* to extract the values, and the framework handles the repetitive event loop and output file creation.
+
+You specify which histograms to fill and how to fill them using a combination of your configuration 
+file and Python modules that define the histogram logic. This system is highly 
+flexible: you can add new histograms, change their binning, or update their filling logic without 
+modifying the core analysis code.
+
+.. rubric:: General Format for Histogram Definitions
+
+Histograms should be defined in a Python dictionary called ``histos`` within your source modules. The supported formats are:
+
+**For Flat Distributions (1D, 2D, 3D):**
+
+.. code-block:: python
+
+    "HISTONAME": {
+        "type": "distribution",  # also supports "distribution2d", "distribution3d"
+        "histo": r.TH1D("HISTONAME", r';TitleX; Events', nBins, firstBin, lastBin),
+        "func": __function_for_filling_histograms__,
+    }
+
+- ``HISTONAME``: The name that will appear in the output ``.root`` file.
+- ``func``: A function that provides the value(s) for filling the histogram. It takes the ``reader`` (an ``Event`` instance) as input.
+
+**For Efficiencies:**
+
+.. code-block:: python
+
+    "HISTONAME": {
+        "type": "eff",
+        "histoDen": r.TH1D("Denominator name", r';TitleX; Events', nBins, firstBin, lastBin),
+        "histoNum": r.TH1D("Numerator name", r';TitleX; Events', nBins, firstBin, lastBin),
+        "func": __function_for_filling_histogram__,
+        "numdef": __condition_for_numerator__
+    }
+
+- ``func``: Returns the value(s) to fill for the denominator.
+- ``numdef``: Returns a boolean or list of booleans (same length as ``func`` output) to determine which entries go into the numerator.
+
+.. rubric:: Example
+
+Suppose you want to study:
+
+1. The transverse momentum (:math:`p_T`) of the leading generator muon in each event.
+
+2. The :math:`\Delta R` between the generator muons (see :ref:`preprocessor_selector_examples`).
+
+3. The efficiency of a trigger algorithm (e.g., `AM`) by wheel and station type.
+
+You want to fill these into ROOT histograms and save them for later analysis.
+
+.. rubric:: Step 1: Specify Histogram Sources and Names
+
+First, tell DTPatternRecognition where to find your histogram definitions and which ones to fill. In your ``run_config.yaml``:
+
+.. code-block:: yaml
+
+    histo_sources:
+      - dtpr.utils.histograms   # Contains muon-related histograms
+      - my.path.to.am_histos    # Contains AM efficiency/rate histograms
+
+    histo_names:
+      - LeadingMuon_pt
+      - muon_DR
+      - seg_eff_MB1
+
+This tells the framework to look for histogram definitions in the specified Python modules and to fill only the listed histograms.
+
+.. rubric:: Step 2: Define Histograms in Python
+
+In your source modules (e.g., ``dtpr/utils/histograms.py``), define your histograms in a dictionary called ``histos``. For example:
+
+.. code-block:: python
+
+    import ROOT as r
+
+    histos = {}
+
+    histos.update({
+        "LeadingMuon_pt": {
+            "type": "distribution",
+            "histo": r.TH1D("LeadingMuon_pt", r';Leading muon p_T; Events', 20, 0, 1000),
+            "func": lambda reader: reader.genmuons[0].pt,
+        },
+        "muon_DR" : {
+        "type" : "distribution",
+        "histo" : r.TH1D("muon_DR", r';#DeltaR both muons; Events', 20, 1 , 6),
+        "func" : lambda reader: reader.dR,
+        },
+    })
+
+For efficiency histograms, you can use the following structure (and also use auxiliary functions):
+
+.. code-block:: python
+
+    def am_eff_func(reader, station):
+        return [seg.wh for seg in list_of_offline_segments_that_match_genmuon if seg.st == station]
+
+    def am_eff_numdef(reader, station):
+        return [ len(seg.am_tps_matches) > 0 for seg in list_of_offline_segments_that_match_genmuon if seg.st == station]
+
+    histos.update({
+        "seg_eff_MB1": {
+            "type": "eff",
+            "histoDen": r.TH1D("Denominator", r';p_{T}; Events', 20, 0, 1000),
+            "histoNum": r.TH1D("Numerator", r';p_{T}; Events', 20, 0, 1000),
+            "func": lambda reader: am_eff_func(reader, station=1),
+            "numdef": lambda reader: am_eff_numdef(reader, station=1),
+        },
+    })
+
+**Key fields:**
+
+- ``type``: The histogram type (`distribution`, `distribution2d`, `distribution3d`, `eff` for efficiency, or `root-draw` for ROOT Draw expressions).
+
+- ``histo``/``histoDen``/``histoNum``: The ROOT histogram objects.
+
+- ``func``: A function that extracts the value(s) to fill from the event (the ``reader``).
+
+- ``numdef``: For efficiency histograms, a function that returns a boolean or list of booleans indicating which entries go into the numerator.
+
+**For ROOT Draw-based Histograms (Direct ROOT TTree::Draw Syntax):**
+
+The framework also supports filling histograms using ROOT's native ``TTree::Draw`` syntax, which is powerful for:
+
+- Quick exploratory analysis without writing Python extraction functions
+- Complex ROOT expressions (array masking, ROOT functions like ``Max$``, ``Min$``, etc.)
+- 2D and profile histograms using ROOT syntax
+
+For detailed information on ROOT Draw syntax and options, see the `official ROOT TTree::Draw documentation <https://root.cern/doc/v628/classTTree.html#a73450649dc6e54b5b94516c468523e45>`_.
+
+.. code-block:: python
+
+    "HISTONAME": {
+        "type": "root-draw",
+        "draw": "variable >> histogram_name(nbins, min, max)",
+        "selection": "cut_condition",  # optional, default ""
+        "option": "goff",              # optional, default "goff"
+    }
+
+- ``draw``: The ROOT Draw expression. Must include ``>> histogram_name(...)`` to define the output histogram name and binning. (Required)
+- ``selection``: Optional ROOT cut condition (e.g., ``"abs(eta) < 2.4"``). Default is empty string (no cut).
+- ``option``: Optional ROOT Draw option (e.g., ``"goff"`` for no graphics, ``"prof"`` for profile histogram, ``"colz"`` for 2D). Default is ``"goff"``.
+
+**Implicit Behavior:**
+
+- ROOT histograms are created automatically by ROOT's ``Draw`` operation (no need to pre-create ``r.TH1D(...)``, etc.)
+- Drawing always respects the CLI ``--maxevents`` parameter (same entry range as the event loop).
+- No screen canvas is displayed (``goff`` is recommended and default).
+
+**Examples:**
+
+Simple variable:
+
+.. code-block:: python
+
+    "gen_pt_draw": {
+        "type": "root-draw",
+        "draw": "gen_pt >> h_gen_pt(100, 0, 500)",
+        "selection": "abs(gen_eta) < 2.4",
+    }
+
+Array element access:
+
+.. code-block:: python
+
+    "vector_first_element": {
+        "type": "root-draw",
+        "draw": "vector[0] >> h_vec_first(50, -10, 10)",
+        "selection": "Length$(vector) > 0",
+    }
+
+ROOT functions (Max$, Min$, etc.):
+
+.. code-block:: python
+
+    "vector_max": {
+        "type": "root-draw",
+        "draw": "Max$(vector) >> h_vec_max(100, 0, 100)",
+        "selection": "Length$(vector) > 0",
+    }
+
+Complex ROOT expression with masking:
+
+.. code-block:: python
+
+    "vector_masked_max": {
+        "type": "root-draw",
+        "draw": "Max$(vector * (vector < Max$(vector))) >> h_masked(100, 0, 100)",
+    }
+
+2D histogram using ROOT syntax:
+
+.. code-block:: python
+
+    "pt_vs_eta": {
+        "type": "root-draw",
+        "draw": "gen_eta : gen_pt >> h_pt_vs_eta(100, 0, 500, 50, -3, 3)",
+        "option": "colz",
+    }
+
+Profile histogram:
+
+.. code-block:: python
+
+    "mean_pt_vs_eta": {
+        "type": "root-draw",
+        "draw": "gen_pt : gen_eta >> h_profile(50, -3, 3)",
+        "option": "prof",
+    }
+
+**Mixing Event-Based and Draw-Based Histograms:**
+
+You can freely mix both histogram types in the same module:
+
+.. code-block:: python
+
+    import ROOT as r
+
+    histos = {}
+
+    histos.update({
+        # Event-based histogram (Python function)
+        "leading_muon_pt": {
+            "type": "distribution",
+            "histo": r.TH1D("leading_muon_pt", r';p_T; Events', 20, 0, 1000),
+            "func": lambda reader: reader.genmuons[0].pt,
+        },
+
+        # Draw-based histogram (ROOT syntax)
+        "gen_pt_draw": {
+            "type": "root-draw",
+            "draw": "gen_pt >> h_gen_pt(100, 0, 500)",
+            "selection": "abs(gen_eta) < 2.4",
+        },
+    })
+
+When you run ``fill-histos``, both histogram types are automatically detected and filled in the correct order:
+(1) Draw-based histograms are executed once before the event loop.
+(2) Event-based histograms are filled for each event.
+(3) All histograms are saved to the output ROOT file.
+
+.. rubric:: Step 3: Run the Histogram Filling Tool
+
+Once your configuration and histogram definitions are set, run:
+
+.. code-block:: shell
+
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] [other options]
+
+The entries can be split into chunks that are processed at the same time. Every chunk fills the
+same histograms over its own entries and writes its own ROOT file, and the chunk files are merged
+into the final file at the end. Use ``--cores`` to choose how many chunks run at once (``-1``, the
+default, runs the whole range serially in one process; ``0`` uses every available core):
+
+.. code-block:: shell
+
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] -cf [CONFIGFILE] --cores 4
+
+Draw-based histograms are drawn over the same entry range as the events of their chunk, so the merge
+adds up to the histogram of the full run: ``--cores 4`` produces the same histograms, bin by bin, as
+a serial run. With one chunk nothing is written twice and no merge takes place.
+
+``--no-merge`` keeps the per-chunk files and prints the ``hadd`` command that reassembles them, so
+the finished chunks of an interrupted run (or the intermediate results of any run) stay on disk:
+
+.. code-block:: shell
+
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] --cores 8 --no-merge
+
+To split one run across machines, ``--job-id`` and ``--job-count`` give each job its own slice of the
+entries. A job writes ``histograms_p[JOB_ID].root``, and the job files are merged once all jobs have
+finished:
+
+.. code-block:: shell
+
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] --job-id 0 --job-count 4
+    dtpr fill-histos -i [INPATH] -o [OUTPATH] --job-id 1 --job-count 4
+    # ... one run per job, then:
+    hadd -f results/histograms/histograms.root results/histograms/histograms_p*.root
+
+A job splits its own slice over its ``--cores``, so both options can be combined.
+
+.. rubric:: How It Works
+
+- The tool loads the histogram definitions from the modules listed in ``histo_sources``.
+- Only the histograms listed in ``histo_names`` are filled.
+- For each event, the tool calls the ``func`` for each histogram, passing the event object (``reader``).
+- For efficiency histograms, it also evaluates ``numdef`` to determine which entries go into the numerator.
+- The filled histograms are saved to a ROOT file for further analysis or plotting.
+- When the entries are split into chunks, the chunk files are merged into the final ROOT file with
+  ROOT's ``TFileMerger`` and removed afterwards.
+
+.. rubric:: Advanced Usage
+
+.. mermaid::
+    :name: histogram_filling_diagram
+    :align: center
+    :zoom: true
+
+    sequenceDiagram
+        participant User
+        participant dtpr CLI
+        participant RUN_CONFIG
+        participant NTuple
+        participant EventList
+        participant Event
+        participant Histogram Filler
+
+        User->>dtpr CLI: dtpr fill-histos ...
+        dtpr CLI->>RUN_CONFIG: Load/Update config (histo_sources, histo_names)
+        dtpr CLI->>Histogram Filler: Call fill_histos(inpath, outfolder, ...)
+        Histogram Filler->>Histogram Filler: Call set_histograms_dict()
+        Histogram Filler->>RUN_CONFIG: Request histo_sources and histo_names
+        Note over Histogram Filler: Loads Python modules and initializes ROOT histograms
+        Histogram Filler->>NTuple: Create NTuple(inpath)
+        NTuple-->>Histogram Filler: NTuple object ready (contains EventList)
+
+        Note over Histogram Filler: Classify histograms: event-based vs. root-draw
+
+        alt If root-draw histograms exist
+            Histogram Filler->>Histogram Filler: Execute Draw-based histograms
+            Histogram Filler->>NTuple: Call tree.Draw(...) for each draw histogram
+            Note over Histogram Filler: Retrieve histograms from ROOT gDirectory
+        end
+
+        loop For each event in NTuple.events
+            Histogram Filler->>EventList: Request next Event
+            EventList->>NTuple: Get raw data entry
+            NTuple->>Event: Create Event(raw data)
+            Note over Event: Event dynamically builds Particles (Chapter 2)
+            NTuple->>NTuple: Apply Preprocessors & Filters (Chapter 4)
+            NTuple-->>EventList: Return processed Event (or None)
+            EventList-->>Histogram Filler: Return Event
+
+            alt If Event is not None
+                Histogram Filler->>Histogram Filler: Call fill_histograms(Event, event_histos_only)
+                loop For each event-based histogram
+                    Histogram Filler->>Event: Call histogram's 'func' (e.g., event.genmuons[0].pt)
+                    Event-->>Histogram Filler: Return value
+                    Histogram Filler->>ROOT Histogram: Fill(value)
+                end
+            end
+        end
+        Histogram Filler->>Histogram Filler: Call save_histograms()
+        Histogram Filler->>ROOT File: Write all histograms (event + draw)
+        Histogram Filler-->>dtpr CLI: Done
+        dtpr CLI-->>User: Output messages
+
+You can also use the **methods** ``fill_histograms`` and ``save_histograms`` from the ``dtpr.analysis.fill_histograms`` module directly in your own scripts for more customized workflows.
+
+.. automodule:: dtpr.analysis.fill_histograms
+    :members: fill_histograms, save_histograms
+    :member-order: bysource

@@ -1,0 +1,198 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Release Notes &mdash; DTPatternRecognition main documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
+
+  
+    <link rel="canonical" href="https://intrepid-hep.github.io/DTPatternRecognition/src/release_notes.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a8da1a53"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Performance" href="performance.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" ><div class="dtpr-versions" style="margin: 0.6em 0; text-align: center;"><label for="dtpr-versions"><small>Version</small></label><br><select id="dtpr-versions" style="width: 100%;" onchange="if (this.value) window.location.href = this.value;"><option value="/DTPatternRecognition/latest/" selected>latest (main)</option><option value="/DTPatternRecognition/v3.6.1-beta/">v3.6.1-beta</option><option value="/DTPatternRecognition/v3.6.0-beta/">v3.6.0-beta</option><option value="/DTPatternRecognition/v3.5.0/">v3.5.0</option><option value="/DTPatternRecognition/v3.4.0/">v3.4.0</option><option value="/DTPatternRecognition/v3.3.0/">v3.3.0</option><option value="/DTPatternRecognition/v3.2.0/">v3.2.0</option><option value="/DTPatternRecognition/v3.0.0/">v3.0.0</option><option value="/DTPatternRecognition/v2.1.0/">v2.1.0</option><option value="/DTPatternRecognition/v2.0.0/">v2.0.0</option><option value="/DTPatternRecognition/v1.1.0/">v1.1.0</option><option value="/DTPatternRecognition/v1.0.0/">v1.0.0</option></select></div>
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DTPatternRecognition
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base/main.html">Base</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Performance</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DTPatternRecognition</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Release Notes</li>
+      <li class="wy-breadcrumbs-aside">
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/INTREPID-hep/DTPatternRecognition" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="release-notes">
+<h1>Release Notes<a class="headerlink" href="#release-notes" title="Link to this heading"></a></h1>
+<p>Every release is published three times from the same text: as an annotated git
+tag, as a GitHub
+<a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases">Release</a> and
+as a section of the <cite>CHANGELOG.md</cite> file at the root of the repository.</p>
+<p>The manual of each release is kept next to the manual of the current <code class="docutils literal notranslate"><span class="pre">main</span></code>
+branch and can be selected from the version menu at the top of the page. The
+manual you are reading now describes the version selected there.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 12.0%" />
+<col style="width: 72.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Release</p></th>
+<th class="head"><p>Date</p></th>
+<th class="head"><p>Highlights</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.6.1-beta">v3.6.1-beta</a></p></td>
+<td><p>2026-11-23</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">!include</span></code> of a whole configuration file works again, the manual is built for
+every release and <code class="docutils literal notranslate"><span class="pre">!include</span></code> is documented.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.6.0-beta">v3.6.0-beta</a></p></td>
+<td><p>2026-11-21</p></td>
+<td><p>Particle building through one reader per attribute, <code class="docutils literal notranslate"><span class="pre">entry_range</span></code>
+access, chunked parallel runs whose parts are merged by ROOT, and a
+progress bar that refreshes ten times per run.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.5.0">v3.5.0</a></p></td>
+<td><p>2026-05-11</p></td>
+<td><p>ROOT <code class="docutils literal notranslate"><span class="pre">Draw(...)</span></code> expressions in histogram definitions, multiprocessing
+removed from <code class="docutils literal notranslate"><span class="pre">fill-histos</span></code>, fixes to the events dumper.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.4.0">v3.4.0</a></p></td>
+<td><p>2026-04-20</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">dtpr</span> <span class="pre">dump-events</span></code> and <code class="docutils literal notranslate"><span class="pre">dtpr.utils.dumper</span></code>, lists and glob patterns as
+input, faster <code class="docutils literal notranslate"><span class="pre">EventList</span></code> entry access, <code class="docutils literal notranslate"><span class="pre">--cores</span></code> deprecated.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.3.0">v3.3.0</a></p></td>
+<td><p>2026-02-16</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">!include</span></code> directive for YAML configuration files, visualizer canvas fix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.2.0">v3.2.0</a></p></td>
+<td><p>2026-02-11</p></td>
+<td><p>Several input NTuples, configuration split across files, keyword arguments
+forwarded to <code class="docutils literal notranslate"><span class="pre">src</span></code>, move to the INTREPID-hep organisation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v3.0.0">v3.0.0</a></p></td>
+<td><p>2025-09-11</p></td>
+<td><p>Package restructure, PEP 621 packaging, tests and continuous integration,
+manual on GitHub Pages, YAML artist configuration, parallel
+<code class="docutils literal notranslate"><span class="pre">fill-histos</span></code>, renamed <code class="docutils literal notranslate"><span class="pre">inspect-events</span></code> and <code class="docutils literal notranslate"><span class="pre">events-visualizer</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v2.1.0">v2.1.0</a></p></td>
+<td><p>2025-06-11</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">method3</span></code> classifier and clean-up.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v2.0.0">v2.0.0</a></p></td>
+<td><p>2025-06-05</p></td>
+<td><p>New YAML particle format, custom <code class="docutils literal notranslate"><span class="pre">Particle</span></code> subclasses removed, recursive
+NTuple discovery.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v1.1.0">v1.1.0</a></p></td>
+<td><p>2025-06-03</p></td>
+<td><p>Faster <code class="docutils literal notranslate"><span class="pre">EventList.get_by_number</span></code>, particles no longer share mutable
+attributes, mplDTs v2.0.0.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/INTREPID-hep/DTPatternRecognition/releases/tag/v1.0.0">v1.0.0</a></p></td>
+<td><p>2025-05-16</p></td>
+<td><p>First packaged release: the <code class="docutils literal notranslate"><span class="pre">dtpr</span></code> command line and the event, particle,
+histogram and plotting layers.</p></td>
+</tr>
+</tbody>
+</table>
+<p>No <cite>v3.1.0</cite> was ever tagged. <cite>v3.3.0</cite> and <cite>v3.4.0</cite> were first tagged
+<cite>v3.3.0-beta</cite> and <cite>v3.4.0-beta</cite>, and the version recorded inside those trees
+still carries the <cite>-beta</cite> suffix.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="performance.html" class="btn btn-neutral float-left" title="Performance" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Daniel Estrada, Universidad de Oviedo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
